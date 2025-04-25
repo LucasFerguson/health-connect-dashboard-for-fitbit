@@ -5,7 +5,6 @@ import { DayPicker } from "react-day-picker";
 import type { DayProps } from "react-day-picker";
 import "react-day-picker/dist/style.css";
 import { sleepDataMap } from "../utils/sleepDataMap";
-
 export const SleepCalendar = () => {
 	const CustomDay = (props: DayProps) => {
 		const { day, modifiers } = props;
@@ -13,13 +12,13 @@ export const SleepCalendar = () => {
 		const data = sleepDataMap[dateKey];
 
 		return (
-			<td // Changed from div to td
+			<td
 				className={`
-          h-16 w-16 
-          ${modifiers?.today ? "font-bold text-blue-600" : ""}
-          ${data ? "bg-green-100" : ""}
-          relative
-        `}
+		  h-16 w-16 text-black
+		  ${modifiers?.today ? "font-bold text-blue-600" : ""}
+		  ${data ? "bg-green-100" : ""}
+		  relative
+		`}
 			>
 				<div className="flex flex-col items-center justify-center h-full">
 					<span className="text-sm">{day.date.getDate()}</span>
@@ -37,7 +36,7 @@ export const SleepCalendar = () => {
 	};
 
 	return (
-		<div className="p-4 bg-white rounded-lg shadow-md border">
+		<div className="p-4 bg-white rounded-lg shadow-md border text-black ">
 			<DayPicker
 				mode="single"
 				components={{
