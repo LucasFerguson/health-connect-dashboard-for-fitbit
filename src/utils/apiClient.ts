@@ -1,0 +1,51 @@
+// lib/apiClient.ts
+const API_URL = "http://192.168.8.239:6644";
+
+let expiry: string | null = null;
+let refresh: string | null = null;
+let token: string | null = null;
+
+export async function login() {
+	const response = await fetch(`${API_URL}/api/v2/login`, {
+		method: "POST",
+		headers: { "Content-Type": "application/json" },
+		body: JSON.stringify({
+			username: process.env.API_USERNAME ?? "",
+			password: process.env.API_PASSWORD ?? ""
+		}),
+	});
+	if (!response.ok) throw new Error("Login failed");
+	const data = await response.json();
+	expiry = data.expiry;
+	refresh = data.refresh;
+	token = data.token;
+	return data;
+}
+const VALID_METHODS = [
+	'activeCaloriesBurned', 'basalBodyTemperature', 'basalMetabolicRate',
+	'bloodGlucose', 'bloodPressure', 'bodyFat', 'bodyTemperature',
+	'boneMass', 'cervicalMucus', 'distance', 'exerciseSession',
+	'elevationGained', 'floorsClimbed', 'heartRate', 'height',
+	'hydration', 'leanBodyMass', 'menstruationFlow', 'menstruationPeriod',
+	'nutrition', 'ovulationTest', 'oxygenSaturation', 'power',
+	'respiratoryRate', 'restingHeartRate', 'sleepSession', 'speed',
+	'steps', 'stepsCadence', 'totalCaloriesBurned', 'vo2Max',
+	'weight', 'wheelchairPushes'
+];
+
+export async function getData(method: string, queries = {}) {
+	if (!token) throw new Error("Not authenticated. Call login() first.");
+	if (!VALID_METHODS.includes(method)) {
+		throw new Error(`Invalid method: ${method}. Must be one of: ${VALID_METHODS.join(', ')}`);
+	}
+	const response = await fetch(`${API_URL}/api/v2/fetch/${method}`, {
+		method: "POST",
+		headers: {
+			Authorization: `Bearer ${token}`,
+			"Content-Type": "application/json",
+		},
+		body: JSON.stringify({ queries }),
+	});
+	if (!response.ok) throw new Error(`Failed to fetch ${method}`);
+	return response.json();
+}

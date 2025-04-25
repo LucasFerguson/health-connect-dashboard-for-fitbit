@@ -1,6 +1,19 @@
 import { SleepCalendar } from "~/components/SleepCalendar";
+import { login, getData } from "~/utils/apiClient";
 
 export default function HomePage() {
+
+  const fetchData = async () => {
+    try {
+      await login();
+      const data = await getData("sleepSession");
+      console.log("data:", data);
+    } catch (error) {
+      console.error("Error fetching data:", error);
+    }
+  };
+  fetchData();
+
   return (
     <main className="min-h-screen bg-gradient-to-b from-[#2e026d] to-[#15162c] px-4 py-6 text-white">
       <header className="mb-6 text-center">
