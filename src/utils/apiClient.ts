@@ -1,4 +1,6 @@
 // lib/apiClient.ts
+'use server';
+
 const API_URL = "http://192.168.8.239:6644";
 
 let expiry: string | null = null;
@@ -38,6 +40,7 @@ export async function getData(method: string, queries = {}) {
 	if (!VALID_METHODS.includes(method)) {
 		throw new Error(`Invalid method: ${method}. Must be one of: ${VALID_METHODS.join(', ')}`);
 	}
+	console.log("Fetching data for method:", method);
 	const response = await fetch(`${API_URL}/api/v2/fetch/${method}`, {
 		method: "POST",
 		headers: {
@@ -46,6 +49,32 @@ export async function getData(method: string, queries = {}) {
 		},
 		body: JSON.stringify({ queries }),
 	});
+	console.log("Response:", response);
+
 	if (!response.ok) throw new Error(`Failed to fetch ${method}`);
 	return response.json();
 }
+
+export async function fetchSleepData(): Promise<SleepData> {
+	await login();
+	return await getData("sleepSession");
+}
+
+
+
+export type SleepData = Array<{
+	_id: string;
+	app: string;
+	start: string;
+	end: string;
+	id: string;
+	data: {
+		notes: string | null;
+		title: string | null;
+		stages: Array<{
+			startTime: string;
+			endTime: string;
+			stage: number;
+		}>;
+	};
+}>;

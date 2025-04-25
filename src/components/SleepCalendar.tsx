@@ -2,23 +2,42 @@
 "use client";
 
 import { DayPicker } from "react-day-picker";
-import type { DayProps } from "react-day-picker";
+import { type DayProps } from "react-day-picker";
 import "react-day-picker/dist/style.css";
-import { sleepDataMap } from "../utils/sleepDataMap";
-export const SleepCalendar = () => {
+import { type SleepData } from "~/utils/apiClient";
+import { parseISO, differenceInMinutes, format } from "date-fns";
+
+type SleepCalendarProps = {
+	sleepSessionData: SleepData;
+};
+
+export const SleepCalendar = ({ sleepSessionData }: SleepCalendarProps) => {
+	const sleepDataMap = sleepSessionData.reduce<Record<string, { duration: number }>>((map, session) => {
+		const start = parseISO(session.start);
+		const end = parseISO(session.end);
+		const duration = differenceInMinutes(end, start);
+		const key = format(start, "yyyy-MM-dd");
+
+		map[key] = {
+			duration,
+		};
+
+		return map;
+	}, {});
+
 	const CustomDay = (props: DayProps) => {
 		const { day, modifiers } = props;
-		const dateKey = day.date.toISOString().slice(0, 10);
+		const dateKey = format(day.date, "yyyy-MM-dd");
 		const data = sleepDataMap[dateKey];
 
 		return (
 			<td
 				className={`
-		  h-16 w-16 text-black
-		  ${modifiers?.today ? "font-bold text-blue-600" : ""}
-		  ${data ? "bg-green-100" : ""}
-		  relative
-		`}
+					h-16 w-16 text-black
+					${modifiers?.today ? "font-bold text-blue-600" : ""}
+					${data ? "bg-green-100" : ""}
+					relative
+				`}
 			>
 				<div className="flex flex-col items-center justify-center h-full">
 					<span className="text-sm">{day.date.getDate()}</span>
@@ -36,7 +55,7 @@ export const SleepCalendar = () => {
 	};
 
 	return (
-		<div className="p-4 bg-white rounded-lg shadow-md border text-black ">
+		<div className="p-4 bg-white rounded-lg shadow-md border text-black">
 			<DayPicker
 				mode="single"
 				components={{
