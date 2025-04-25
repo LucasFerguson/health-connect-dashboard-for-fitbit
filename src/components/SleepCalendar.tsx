@@ -1,39 +1,56 @@
 // components/SleepCalendar.tsx
+"use client";
+
 import { DayPicker } from "react-day-picker";
+import type { DayProps } from "react-day-picker";
 import "react-day-picker/dist/style.css";
 import { sleepDataMap } from "../utils/sleepDataMap";
-import { format } from "date-fns";
 
 export const SleepCalendar = () => {
-	// Custom render for each day
-	const renderDay = (date: Date) => {
-		const dateKey = date.toISOString().slice(0, 10);
+	const CustomDay = (props: DayProps) => {
+		const { day, modifiers } = props;
+		const dateKey = day.date.toISOString().slice(0, 10);
 		const data = sleepDataMap[dateKey];
 
 		return (
-			<div className="flex flex-col items-center justify-center h-full">
-				<span>{date.getDate()}</span>
-				{data && (
-					<span className="text-xs text-green-700 font-semibold">
-						{Math.round(data.duration / 60)}h
-					</span>
-				)}
-			</div>
+			<td // Changed from div to td
+				className={`
+          h-16 w-16 
+          ${modifiers?.today ? "font-bold text-blue-600" : ""}
+          ${data ? "bg-green-100" : ""}
+          relative
+        `}
+			>
+				<div className="flex flex-col items-center justify-center h-full">
+					<span className="text-sm">{day.date.getDate()}</span>
+					{data && (
+						<div className="absolute bottom-1 right-2 flex flex-col items-center">
+							<span className="text-[0.6rem] font-semibold text-green-700">
+								{Math.round(data.duration / 60)}h
+							</span>
+							<div className="w-3 h-1 bg-green-200 rounded-full mt-0.5" />
+						</div>
+					)}
+				</div>
+			</td>
 		);
 	};
 
 	return (
-		<div className="p-4 bg-white rounded-lg shadow-md">
+		<div className="p-4 bg-white rounded-lg shadow-md border">
 			<DayPicker
-				showOutsideDays
+				mode="single"
 				components={{
-					Day: ({ date }) => (
-						<div className="h-12 w-12 flex items-center justify-center">
-							{renderDay(date)}
-						</div>
-					),
+					Day: CustomDay
 				}}
-				className="border rounded-lg p-4"
+				classNames={{
+					day: "hover:bg-gray-50",
+					head_cell: "text-gray-500 text-sm font-medium",
+					month: "space-y-3",
+					caption_label: "text-lg font-semibold",
+					nav_button_previous: "text-gray-400 hover:text-gray-600",
+					nav_button_next: "text-gray-400 hover:text-gray-600"
+				}}
 			/>
 		</div>
 	);
