@@ -30,23 +30,50 @@ export const SleepCalendar = ({ sleepSessionData }: SleepCalendarProps) => {
 		const dateKey = format(day.date, "yyyy-MM-dd");
 		const data = sleepDataMap[dateKey];
 
+		const styleConfig = {
+			danger: {
+				bg: "bg-red-100",
+				text: "text-red-700",
+				bar: "bg-red-200"
+			},
+			warning: {
+				bg: "bg-yellow-100",
+				text: "text-yellow-700",
+				bar: "bg-yellow-200"
+			},
+			success: {
+				bg: "bg-green-100",
+				text: "text-green-700",
+				bar: "bg-green-200"
+			}
+		};
+
+		const getStyles = (duration: number) => {
+			const hours = duration / 60;
+			if (hours < 3) return styleConfig.danger;
+			if (hours < 5) return styleConfig.warning;
+			return styleConfig.success;
+		};
+
+		const styles = data ? getStyles(data.duration) : null;
+
 		return (
 			<td
 				className={`
-					h-16 w-16 text-black
-					${modifiers?.today ? "font-bold text-blue-600" : ""}
-					${data ? "bg-green-100" : ""}
-					relative
-				`}
+				h-16 w-16 text-black
+				${modifiers?.today ? "font-bold text-blue-600" : ""}
+				${styles?.bg ?? ""}
+				relative
+			`}
 			>
 				<div className="flex flex-col items-center justify-center h-full">
 					<span className="text-sm">{day.date.getDate()}</span>
 					{data && (
 						<div className="absolute bottom-1 right-2 flex flex-col items-center">
-							<span className="text-[0.6rem] font-semibold text-green-700">
+							<span className={`text-[0.6rem] font-semibold ${styles?.text}`}>
 								{Math.round(data.duration / 60)}h
 							</span>
-							<div className="w-3 h-1 bg-green-200 rounded-full mt-0.5" />
+							<div className={`w-3 h-1 ${styles?.bar} rounded-full mt-0.5`} />
 						</div>
 					)}
 				</div>
