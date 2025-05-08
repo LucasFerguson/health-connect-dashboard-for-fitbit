@@ -17,9 +17,19 @@ export const SleepCalendar = ({ sleepSessionData }: SleepCalendarProps) => {
 		(map, session) => {
 			const start = parseISO(session.start);
 			const end = parseISO(session.end);
-			const duration = differenceInMinutes(end, start);
+
+			// Calculate actual sleep time by excluding awake stages (stage 1)
+			let totalSleepMinutes = 0;
+			session.data.stages.forEach(stage => {
+				if (stage.stage !== 1) { // Exclude awake stages
+					const stageStart = parseISO(stage.startTime);
+					const stageEnd = parseISO(stage.endTime);
+					totalSleepMinutes += differenceInMinutes(stageEnd, stageStart);
+				}
+			});
+
 			const key = format(start, "yyyy-MM-dd");
-			map[key] = { duration };
+			map[key] = { duration: totalSleepMinutes };
 			return map;
 		},
 		{}
@@ -35,6 +45,11 @@ export const SleepCalendar = ({ sleepSessionData }: SleepCalendarProps) => {
 		} else {
 			setSelected(date);
 		}
+		if (date) {
+			const key = format(date, "yyyy-MM-dd");
+			const sleepData = sleepDataMap[key];
+			console.log(`Sleep data for ${key}:`, sleepData);
+		}
 	};
 
 	// Style thresholds: <3h danger, <5h warning, else success
@@ -47,7 +62,7 @@ export const SleepCalendar = ({ sleepSessionData }: SleepCalendarProps) => {
 	const getStyles = (duration: number) => {
 		const hours = duration / 60;
 		if (hours < 3) return styleConfig.danger;
-		if (hours < 5) return styleConfig.warning;
+		if (hours < 6) return styleConfig.warning;
 		return styleConfig.success;
 	};
 
@@ -75,10 +90,10 @@ export const SleepCalendar = ({ sleepSessionData }: SleepCalendarProps) => {
 					</span>
 					{data && (
 						<div className="absolute bottom-1 right-2 flex flex-col items-center">
-							<span className={`text-[0.6rem] font-semibold ${styles.text}`}>
-								{Math.round(data.duration / 60)}h
+							<span className={`text-[0.6rem] font-semibold ${styles?.text ?? ""}`}>
+								{Math.round((data.duration / 60))}h
 							</span>
-							<div className={`w-3 h-1 ${styles.bar} rounded-full mt-0.5`} />
+							<div className={`w-3 h-1 ${styles?.bar ?? ""} rounded-full mt-0.5`} />
 						</div>
 					)}
 				</div>
