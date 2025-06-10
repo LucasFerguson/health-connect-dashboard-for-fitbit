@@ -91,7 +91,7 @@ export const SleepCalendar = ({ sleepSessionData }: SleepCalendarProps) => {
 					{data && (
 						<div className="absolute bottom-1 right-2 flex flex-col items-center">
 							<span className={`text-[0.6rem] font-semibold ${styles?.text ?? ""}`}>
-								{Math.round((data.duration / 60))}h
+								{Math.round((data.duration / 60) * 10) / 10}h
 							</span>
 							<div className={`w-3 h-1 ${styles?.bar ?? ""} rounded-full mt-0.5`} />
 						</div>
