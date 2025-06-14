@@ -7,3 +7,16 @@ The following technologies are used in this project:
   - [Next.js](https://nextjs.org)
   - [Tailwind CSS](https://tailwindcss.com)
 
+# Deployment
+
+Run the following command to build the Docker image for the dashboard:
+
+```bash
+`docker build . -t health-connect-dashboard-build-1`
+```
+
+Run the following command to start the Docker container:
+
+```bash
+docker run -p 3000:3000 health-connect-dashboard-build-1
+```
