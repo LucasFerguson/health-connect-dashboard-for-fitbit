@@ -8,12 +8,31 @@ The following technologies are used in this project:
   - [Tailwind CSS](https://tailwindcss.com)
 
 # Deployment
+## Environment Variables
+Use docker compose to set environment variables with the followoing example:
 
+```yaml
+services:
+  dashboard:
+    image: lucaslad5275/hc-dashboard:1.0
+    container_name: health-connect-dashboard
+    ports:
+      - "3000:3000"
+    environment:
+      - API_USERNAME=EDIT_ME
+      - API_PASSWORD=EDIT_ME
+      - API_URL=http://192.168.8.238:6644
+    restart: unless-stopped
+```
+### OR 
 Create a `.env` file in the root directory of the project with the following content:
 ```
 API_USERNAME=your_username
 API_PASSWORD=your_password
 ```
+
+## Building and Running the Dashboard
+*Make sure you have Docker installed on your machine.*
 
 Run the following command to build the Docker image for the dashboard:
 

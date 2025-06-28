@@ -1,0 +1,11 @@
+services:
+  dashboard:
+    image: lucaslad5275/hc-dashboard:1.0
+    container_name: health-connect-dashboard
+    ports:
+      - "3000:3000"
+    environment:
+      - API_USERNAME=EDIT_ME
+      - API_PASSWORD=EDIT_ME
+      - API_URL=http://192.168.8.238:6644
+    restart: unless-stopped
