@@ -9,14 +9,20 @@ The following technologies are used in this project:
 
 # Deployment
 
+Create a `.env` file in the root directory of the project with the following content:
+```
+API_USERNAME=your_username
+API_PASSWORD=your_password
+```
+
 Run the following command to build the Docker image for the dashboard:
 
 ```bash
-`docker build . -t health-connect-dashboard-build-1`
+docker build -t lucaslad5275/hc-dashboard:1.0 .
 ```
 
 Run the following command to start the Docker container:
 
 ```bash
-docker run -p 3000:3000 health-connect-dashboard-build-1
+docker run -p 3000:3000 lucaslad5275/hc-dashboard:1.0
 ```

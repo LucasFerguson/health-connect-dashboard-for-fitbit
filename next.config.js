@@ -6,7 +6,8 @@ import "./src/env.js";
 
 /** @type {import("next").NextConfig} */
 const config = {
-	output: "standalone"
+	output: "standalone",
+	allowedDevOrigins: ['192.168.8.238'],
 };
 
 export default config;

@@ -8,15 +8,16 @@ let refresh: string | null = null;
 let token: string | null = null;
 
 export async function login() {
+	console.log("Logging in to API...");
 	const response = await fetch(`${API_URL}/api/v2/login`, {
 		method: "POST",
 		headers: { "Content-Type": "application/json" },
 		body: JSON.stringify({
-			username: process.env.API_USERNAME ?? "",
-			password: process.env.API_PASSWORD ?? ""
+			username: process.env.API_USERNAME!,
+			password: process.env.API_PASSWORD!
 		}),
 	});
-	if (!response.ok) throw new Error("Login failed");
+	if (!response.ok) throw new Error("Login failed, you might need to create a .env file with API_USERNAME and API_PASSWORD");
 	const data = await response.json();
 	expiry = data.expiry;
 	refresh = data.refresh;
