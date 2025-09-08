@@ -7,5 +7,5 @@ services:
     environment:
       - API_USERNAME=EDIT_ME
       - API_PASSWORD=EDIT_ME
-      - API_URL=http://192.168.8.238:6644
+      - API_URL=http://192.168.8.EDIT_ME:6644
     restart: unless-stopped

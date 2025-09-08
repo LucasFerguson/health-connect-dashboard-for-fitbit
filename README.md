@@ -16,7 +16,7 @@ The following technologies are used in this project:
 
 # Deployment
 ## Environment Variables
-Use docker compose to set environment variables with the followoing example:
+Use docker compose to set environment variables with the following example:
 
 ```yaml
 services:
@@ -28,7 +28,7 @@ services:
     environment:
       - API_USERNAME=EDIT_ME
       - API_PASSWORD=EDIT_ME
-      - API_URL=http://192.168.8.238:6644
+      - API_URL=http://192.168.8.EDIT_ME:6644
     restart: unless-stopped
 ```
 ### OR 
@@ -52,3 +52,8 @@ Run the following command to start the Docker container:
 ```bash
 docker run -p 3000:3000 lucaslad5275/hc-dashboard:1.0
 ```
+### OR
+```bash
+docker-compose up -d
+```
+
