@@ -1,5 +1,6 @@
 // src/app/page.tsx
 import { SleepCalendarWrapper } from "~/components/SleepCalendarWrapper";
+import { SleepStagesGraph } from "~/components/SleepStagesGraph";
 import { fetchSleepData } from "~/utils/apiClient";
 
 export default async function HomePage() {
@@ -36,6 +37,7 @@ export default async function HomePage() {
               <div className="rounded-xl bg-white/10 p-4 min-h-[150px]">
                 <p className="text-lg font-semibold">Sleep Stages</p>
                 <p className="mt-1 text-white/50">[Graph Placeholder]</p>
+                <SleepStagesGraph dataPromise={sleepDataPromise} />
               </div>
             </div>
           </div>
