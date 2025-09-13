@@ -6,6 +6,8 @@ import "react-day-picker/dist/style.css";
 import { type SleepData } from "~/utils/apiClient";
 import { parseISO, differenceInMinutes, format } from "date-fns";
 import { useState } from "react";
+import { useGlobal } from "~/app/GlobalContext";
+import { setGlobal } from "next/dist/trace";
 
 type SleepCalendarProps = {
 	sleepSessionData: SleepData;
@@ -37,6 +39,7 @@ export const SleepCalendar = ({ sleepSessionData }: SleepCalendarProps) => {
 
 	// Selected date state
 	const [selected, setSelected] = useState<Date | undefined>();
+	const { global, setGlobal } = useGlobal();
 
 	// Toggle selection on/off
 	const handleSelect = (date: Date | undefined) => {
@@ -48,6 +51,8 @@ export const SleepCalendar = ({ sleepSessionData }: SleepCalendarProps) => {
 		if (date) {
 			const key = format(date, "yyyy-MM-dd");
 			const sleepData = sleepDataMap[key];
+			// i want this selection to be available to other components, maybe via context or a callback prop
+			setGlobal({ ...global, selectedDate: key });
 			console.log(`Sleep data for ${key}:`, sleepData);
 		}
 	};

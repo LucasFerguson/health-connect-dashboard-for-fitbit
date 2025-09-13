@@ -31,13 +31,13 @@ export default async function HomePage() {
             {/* Sleep graphs to the right */}
             <div className="lg:col-span-2 flex flex-col gap-4">
               <div className="rounded-xl bg-white/10 p-4 min-h-[150px]">
-                <p className="text-lg font-semibold">Sleep Duration</p>
-                <p className="mt-1 text-white/50">[Graph Placeholder]</p>
-              </div>
-              <div className="rounded-xl bg-white/10 p-4 min-h-[150px]">
                 <p className="text-lg font-semibold">Sleep Stages</p>
                 <p className="mt-1 text-white/50">[Graph Placeholder]</p>
                 <SleepStagesGraph dataPromise={sleepDataPromise} />
+              </div>
+              <div className="rounded-xl bg-white/10 p-4 min-h-[150px]">
+                <p className="text-lg font-semibold">Sleep Duration</p>
+                <p className="mt-1 text-white/50">[Graph Placeholder]</p>
               </div>
             </div>
           </div>

@@ -2,6 +2,7 @@ import "~/styles/globals.css";
 
 import { type Metadata } from "next";
 import { Geist } from "next/font/google";
+import { GlobalProvider } from "./GlobalContext";
 
 export const metadata: Metadata = {
   title: "Health Dashboard",
@@ -20,7 +21,10 @@ export default function RootLayout({
   return (
     <html lang="en" className={`${geist.variable}`}>
       {/* I need to add a provider class here to manage data sync */}
-      <body>{children}</body>
+      {/* Yes I do! 2025-09-13 I'll do that now */}
+      <body>
+        <GlobalProvider>{children}</GlobalProvider>
+      </body>
     </html>
   );
 }

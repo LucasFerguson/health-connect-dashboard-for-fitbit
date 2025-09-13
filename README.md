@@ -5,8 +5,9 @@ Roadmap:
 - [x] Implement a calendar view for sleep data - 2025-05-07
 - [x] Docker support for easy deployment - 2025-06-28
 - [ ] Allow users to click on a day in the calendar to view detailed sleep data
--  
-
+  
+Dashboard Screenshot:
+![alt text](dash-2025-09-13.png)
 
 ## Tech Stack
 The following technologies are used in this project:
