@@ -29,4 +29,6 @@ export interface HealthSnapshot {
   generatedAt: ISODateTime;
   source: "health-connect" | "fixture";
   sleepSessions: SleepSession[];
+  analytics: HealthAnalytics;
 }
+import type { HealthAnalytics } from "./analytics";
