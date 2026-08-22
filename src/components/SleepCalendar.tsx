@@ -1,141 +1,85 @@
-// components/SleepCalendar.tsx
 "use client";
 
+import { format, parseISO } from "date-fns";
 import { DayPicker, type DayProps } from "react-day-picker";
 import "react-day-picker/dist/style.css";
-import { type SleepData } from "~/utils/apiClient";
-import { parseISO, differenceInMinutes, format } from "date-fns";
-import { useState } from "react";
-import { useGlobal } from "~/app/GlobalContext";
-import { setGlobal } from "next/dist/trace";
+import { useHealthData } from "~/features/health/HealthDataProvider";
+import { selectSleepDays } from "~/features/health/selectors";
 
-type SleepCalendarProps = {
-	sleepSessionData: SleepData;
-};
+const stylesForDuration = (minutes: number) =>
+  minutes < 180
+    ? { background: "bg-red-100", text: "text-red-700" }
+    : minutes < 360
+      ? { background: "bg-amber-100", text: "text-amber-700" }
+      : { background: "bg-emerald-100", text: "text-emerald-700" };
 
-export const SleepCalendar = ({ sleepSessionData }: SleepCalendarProps) => {
-	// Build a map: "YYYY-MM-DD" → { duration: minutes }
-	const sleepDataMap = sleepSessionData.reduce<Record<string, { duration: number }>>(
-		(map, session) => {
-			const start = parseISO(session.start);
-			const end = parseISO(session.end);
+export function SleepCalendar() {
+  const { snapshot, selectedDate, selectDate } = useHealthData();
+  const days = selectSleepDays(snapshot);
+  const selected = selectedDate ? parseISO(selectedDate) : undefined;
 
-			// Calculate actual sleep time by excluding awake stages (stage 1)
-			let totalSleepMinutes = 0;
-			session.data.stages.forEach(stage => {
-				if (stage.stage !== 1) { // Exclude awake stages
-					const stageStart = parseISO(stage.startTime);
-					const stageEnd = parseISO(stage.endTime);
-					totalSleepMinutes += differenceInMinutes(stageEnd, stageStart);
-				}
-			});
+  const Day = ({ day, modifiers, ...cellProps }: DayProps) => {
+    const date = format(day.date, "yyyy-MM-dd");
+    const summary = days[date];
+    const styles = summary ? stylesForDuration(summary.sleepMinutes) : null;
 
-			const key = format(start, "yyyy-MM-dd");
-			map[key] = { duration: totalSleepMinutes };
-			return map;
-		},
-		{}
-	);
+    return (
+      <td
+        {...cellProps}
+        className={`relative h-16 w-16 cursor-pointer align-top text-slate-900 ${styles?.background ?? ""}`}
+        onClick={() => selectDate(modifiers.selected ? null : date)}
+      >
+        <div className="flex h-full flex-col items-center justify-center">
+          <span
+            className={`rounded-full px-2 text-sm ${modifiers.selected ? "bg-violet-700 text-white" : ""} ${modifiers.today ? "font-bold text-blue-700" : ""}`}
+          >
+            {day.date.getDate()}
+          </span>
+          {summary ? (
+            <span
+              className={`absolute right-2 bottom-1 text-[0.65rem] font-semibold ${styles?.text ?? ""}`}
+            >
+              {(summary.sleepMinutes / 60).toFixed(1)}h
+            </span>
+          ) : null}
+          {summary && summary.sessionCount > 1 ? (
+            <span
+              className="absolute top-1 right-1 rounded-full bg-violet-700 px-1.5 py-0.5 text-[0.6rem] font-bold text-white"
+              title={`${summary.sessionCount} sleep sessions`}
+            >
+              {summary.sessionCount}x
+            </span>
+          ) : null}
+        </div>
+      </td>
+    );
+  };
 
-	// Selected date state
-	const [selected, setSelected] = useState<Date | undefined>();
-	const { global, setGlobal } = useGlobal();
-
-	// Toggle selection on/off
-	const handleSelect = (date: Date | undefined) => {
-		if (date && selected?.toDateString() === date.toDateString()) {
-			setSelected(undefined);
-		} else {
-			setSelected(date);
-		}
-		if (date) {
-			const key = format(date, "yyyy-MM-dd");
-			const sleepData = sleepDataMap[key];
-			// i want this selection to be available to other components, maybe via context or a callback prop
-			setGlobal({ ...global, selectedDate: key });
-			console.log(`Sleep data for ${key}:`, sleepData);
-		}
-	};
-
-	// Style thresholds: <3h danger, <5h warning, else success
-	const styleConfig = {
-		danger: { bg: "bg-red-100", text: "text-red-700", bar: "bg-red-200" },
-		warning: { bg: "bg-yellow-100", text: "text-yellow-700", bar: "bg-yellow-200" },
-		success: { bg: "bg-green-100", text: "text-green-700", bar: "bg-green-200" },
-	} as const;
-
-	const getStyles = (duration: number) => {
-		const hours = duration / 60;
-		if (hours < 3) return styleConfig.danger;
-		if (hours < 6) return styleConfig.warning;
-		return styleConfig.success;
-	};
-
-	// Custom Day cell: must render <td> to keep table semantics
-	const CustomDay = (props: DayProps) => {
-		const { day, modifiers, ...tdProps } = props;
-
-		const key = format(day.date, "yyyy-MM-dd");
-		const data = sleepDataMap[key];
-		const styles = data ? getStyles(data.duration) : null;
-
-		return (
-			<td
-				{...tdProps}
-				className={`
-		  h-16 w-16 text-black align-top relative cursor-pointer
-		  ${modifiers.today ? "font-bold text-blue-600" : ""}
-		  ${styles?.bg ?? ""}
-		`}
-				onClick={() => handleSelect(day.date)}
-			>
-				<div className="flex flex-col items-center justify-center h-full">
-					<span className={`text-sm ${modifiers.selected ? "text-white bg-blue-800 px-2 rounded-full" : ""}`}>
-						{day.date.getDate()}
-					</span>
-					{data && (
-						<div className="absolute bottom-1 right-2 flex flex-col items-center">
-							<span className={`text-[0.6rem] font-semibold ${styles?.text ?? ""}`}>
-								{Math.round((data.duration / 60) * 10) / 10}h
-							</span>
-							<div className={`w-3 h-1 ${styles?.bar ?? ""} rounded-full mt-0.5`} />
-						</div>
-					)}
-				</div>
-			</td>
-		);
-	};
-
-	return (
-		<div className="p-4 bg-white rounded-lg shadow-md border text-black">
-			<DayPicker
-				mode="single"
-				selected={selected}
-				onSelect={handleSelect}
-				components={{ Day: CustomDay }}
-				classNames={{
-					day: "hover:bg-gray-50",
-					head_cell: "text-gray-500 text-sm font-medium",
-					month: "space-y-3",
-					caption_label: "text-lg font-semibold",
-					nav_button_previous: "text-gray-400 hover:text-gray-600",
-					nav_button_next: "text-gray-400 hover:text-gray-600",
-				}}
-				// add footer 
-				footer={
-					<div className="flex justify-between items-center mt-4">
-						<button
-							className="text-gray-500 hover:text-gray-700"
-							onClick={() => setSelected(undefined)}
-						>
-							Clear Selection
-						</button>
-						<span className="text-sm text-gray-500">
-							{selected ? `Selected: ${format(selected, "yyyy-MM-dd")}` : "No date selected"}
-						</span>
-					</div>
-				}
-			/>
-		</div>
-	);
-};
+  return (
+    <div className="rounded-lg border border-white/20 bg-white p-4 text-slate-950 shadow-md">
+      <DayPicker
+        mode="single"
+        selected={selected}
+        onSelect={(date) =>
+          selectDate(date ? format(date, "yyyy-MM-dd") : null)
+        }
+        components={{ Day }}
+        defaultMonth={selected}
+        footer={
+          <div className="mt-4 flex items-center justify-between gap-4 text-sm text-slate-500">
+            <button
+              type="button"
+              className="hover:text-slate-800"
+              onClick={() => selectDate(null)}
+            >
+              Clear selection
+            </button>
+            <span>
+              {selectedDate ? `Selected: ${selectedDate}` : "No date selected"}
+            </span>
+          </div>
+        }
+      />
+    </div>
+  );
+}

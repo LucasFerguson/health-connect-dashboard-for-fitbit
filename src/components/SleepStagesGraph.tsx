@@ -1,194 +1,145 @@
-// src/components/SleepStagesGraph.tsx
 "use client";
 
-import React, { useEffect, useState, useMemo } from "react";
+import { useMemo } from "react";
 import ReactECharts from "echarts-for-react";
-import type { SleepData } from "~/utils/apiClient";
-import { useGlobal } from "~/app/GlobalContext";
-import { format, parseISO } from "date-fns";
+import type { SleepStageKind } from "~/domain/health";
+import { sleepMinutes } from "~/domain/sleep";
+import { useHealthData } from "~/features/health/HealthDataProvider";
+import { selectSleepSessionsForDate } from "~/features/health/selectors";
 
-interface SleepStagesGraphProps {
-	dataPromise: Promise<SleepData>;
+const stageOrder: Record<SleepStageKind, number> = {
+  awake: 0,
+  rem: 1,
+  light: 2,
+  asleep: 2,
+  deep: 3,
+  unknown: 4,
+};
+const stageLabels = ["Awake", "REM", "Light", "Deep", "Unknown"];
+
+export function SleepStagesGraph() {
+  const { snapshot, selectedDate, selectedSleepSessionId, selectSleepSession } =
+    useHealthData();
+  const sessions = selectSleepSessionsForDate(snapshot, selectedDate);
+  const selectedSession =
+    sessions.find((session) => session.id === selectedSleepSessionId) ??
+    sessions[0];
+  const chartOptions = useMemo(() => {
+    const points =
+      selectedSession?.stages.flatMap((stage) => [
+        [Date.parse(stage.startAt), stageOrder[stage.kind]],
+        [Date.parse(stage.endAt), stageOrder[stage.kind]],
+      ]) ?? [];
+    return {
+      backgroundColor: "#ffffff",
+      tooltip: { trigger: "axis" },
+      grid: { left: 72, right: 24, top: 24, bottom: 48 },
+      xAxis: {
+        type: "time",
+        axisLabel: {
+          formatter: (value: number) =>
+            new Date(value).toLocaleTimeString([], {
+              hour: "2-digit",
+              minute: "2-digit",
+            }),
+        },
+      },
+      yAxis: {
+        type: "value",
+        inverse: true,
+        min: 0,
+        max: 4,
+        interval: 1,
+        axisLabel: { formatter: (value: number) => stageLabels[value] ?? "" },
+      },
+      series: [
+        {
+          name: "Sleep stage",
+          type: "line",
+          step: "end",
+          data: points,
+          symbol: "none",
+          lineStyle: { width: 3, color: "#7c3aed" },
+          areaStyle: { color: "rgba(124, 58, 237, 0.12)" },
+        },
+      ],
+    };
+  }, [selectedSession]);
+
+  if (!selectedDate)
+    return <EmptyState message="Select a day to inspect its sleep stages." />;
+  if (sessions.length === 0)
+    return (
+      <EmptyState
+        message={`No sleep session was recorded on ${selectedDate}.`}
+      />
+    );
+  return (
+    <div className="space-y-3">
+      {sessions.length > 1 ? (
+        <div>
+          <p className="mb-2 text-sm text-white/60">
+            {sessions.length} sleep sessions recorded. The longest is shown by
+            default.
+          </p>
+          <div
+            className="flex flex-wrap gap-2"
+            role="tablist"
+            aria-label="Sleep sessions"
+          >
+            {sessions.map((session, index) => {
+              const active = session.id === selectedSession?.id;
+              const minutes = sleepMinutes(session);
+              return (
+                <button
+                  key={session.id}
+                  type="button"
+                  role="tab"
+                  aria-selected={active}
+                  onClick={() => selectSleepSession(session.id)}
+                  className={`rounded-lg border px-3 py-2 text-left text-sm transition ${active ? "border-violet-300 bg-violet-500 text-white" : "border-white/20 bg-white/5 text-white/75 hover:bg-white/10"}`}
+                >
+                  <span className="block font-semibold">
+                    {index === 0 ? "Longest sleep" : `Session ${index + 1}`}
+                  </span>
+                  <span className="text-xs opacity-75">
+                    {formatSessionTime(session.startAt, session.endAt)} ·{" "}
+                    {formatDuration(minutes)}
+                  </span>
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      ) : null}
+      <div className="overflow-hidden rounded-lg border border-white/20 bg-white">
+        <ReactECharts
+          option={chartOptions}
+          style={{ height: 360, width: "100%" }}
+        />
+      </div>
+    </div>
+  );
 }
 
-export function SleepStagesGraph({ dataPromise }: SleepStagesGraphProps) {
-	const { global } = useGlobal(); // get selectedDate from context
-	const [data, setData] = useState<SleepData | null>(null);
-	const [loading, setLoading] = useState(true);
-	const [error, setError] = useState<string | null>(null);
+function formatSessionTime(startAt: string, endAt: string) {
+  const time = (value: string) =>
+    new Date(value).toLocaleTimeString([], {
+      hour: "numeric",
+      minute: "2-digit",
+    });
+  return `${time(startAt)}–${time(endAt)}`;
+}
 
-	useEffect(() => {
-		let isMounted = true;
+function formatDuration(minutes: number) {
+  const wholeMinutes = Math.round(minutes);
+  return `${Math.floor(wholeMinutes / 60)}h ${wholeMinutes % 60}m`;
+}
 
-		async function loadSleepData() {
-			try {
-				const sleep = await dataPromise;
-				if (isMounted) setData(sleep);
-			} catch (err) {
-				if (isMounted) {
-					setError("Failed to load sleep data");
-					console.error(err);
-				}
-			} finally {
-				if (isMounted) setLoading(false);
-			}
-		}
-
-		loadSleepData();
-
-		return () => {
-			isMounted = false;
-		};
-	}, [dataPromise]);
-
-	const chartOptions = useMemo(() => {
-		if (!data) return null;
-
-		console.log("Selected date in SleepStagesGraph:", global.selectedDate, data);
-
-		// Find sleep data matching the selected date
-		const sleepForDate = data.find(
-			(record) => format(parseISO(record.start), "yyyy-MM-dd") == global.selectedDate
-		);
-
-		if (!sleepForDate) return null;
-
-		const stages = sleepForDate.data.stages;
-
-		console.log("Graphing stages:", stages);
-
-		// const stageSeries = stages.map((s) => [new Date(s.startTime).getTime(), s.stage]);
-
-
-		// Stage names
-		const stageMap: Record<number, string> = {
-			0: "Unknown",
-			1: "Awake",
-			2: "Unknown",
-			3: "Unknown",
-			4: "Light",
-			5: "Deep",
-			6: "REM",
-		};
-
-		// Stage colors
-		const stageColors: Record<number, string> = {
-			0: "#888888", // Unknown - gray
-			1: "#ff4d4f", // Awake - red
-			2: "#bbbbbb", // Unknown - light gray
-			3: "#bbbbbb", // Unknown - light gray
-			4: "#ffd666", // Light - yellow
-			5: "#73d13d", // Deep - green
-			6: "#40a9ff", // REM - blue
-		};
-
-		// Map stages to visual order for y-axis: Awake (top), REM, Light, Deep, Unknown at bottom
-		const stageVisualOrder: Record<number, number> = {
-			1: 0, // Awake
-			6: 1, // REM
-			4: 2, // Light
-			5: 3, // Deep
-			0: 4, // Unknown
-			2: 4,
-			3: 4,
-		};
-
-		// Convert stages for chart: [timestamp, visualOrder, originalStage]
-		const stageSeries = stages.map((s) => [
-			new Date(s.startTime).getTime(),
-			stageVisualOrder[s.stage] ?? 4,
-			s.stage,
-		]);
-
-		return {
-			backgroundColor: "#ffffff",
-			textStyle: { color: "#000000" },
-			tooltip: {
-				trigger: "axis",
-				formatter: (params: any) => {
-					const p = params[0];
-					const originalStage = p.value[2];
-					return `${new Date(p.value[0]).toLocaleTimeString([], {
-						hour: "2-digit",
-						minute: "2-digit",
-					})}: ${stageMap[originalStage] ?? originalStage}`;
-				},
-			},
-			xAxis: {
-				type: "time",
-				name: "Time",
-				axisLabel: {
-					formatter: (value: number) =>
-						new Date(value).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
-					color: "#000000",
-				},
-				splitLine: { lineStyle: { color: "#ddd" } },
-			},
-			yAxis: {
-				type: "value",
-				name: "Stage",
-				inverse: true,
-				min: 0,
-				max: 4,
-				axisLabel: {
-					formatter: (val: number) => {
-						// Reverse map visual order to stage name
-						const stage = Object.keys(stageVisualOrder).find(
-							(k) => stageVisualOrder[parseInt(k)] === val
-						);
-						return stageMap[parseInt(stage!)] ?? "";
-					},
-					color: "#000000",
-				},
-				splitLine: { lineStyle: { color: "#ddd" } },
-			},
-			series: [
-				{
-					name: "Sleep Stage",
-					type: "line",
-					step: "end",
-					data: stageSeries.map(([time, visual]) => [time, visual]),
-					smooth: false,
-					lineStyle: {
-						width: 2,
-						color: "#6e3bff", // fallback line color
-					},
-					itemStyle: {
-						color: (params: any) => {
-							const originalStage = stageSeries[params.dataIndex][2] as number;
-							return stageColors[originalStage] ?? "#000000";
-						},
-					},
-					symbol: "circle",
-					symbolSize: 6,
-				},
-			],
-		};
-	}, [data, global.selectedDate]);
-
-	if (loading) {
-		return (
-			<div className="p-4 bg-white/10 rounded-lg text-white">
-				<p>Loading sleep data...</p>
-			</div>
-		);
-	}
-
-	if (error || !chartOptions) {
-		return (
-			<div className="p-4 bg-white/10 rounded-lg text-red-400">
-				<p>{error ?? "No sleep data available for the date: " + global.selectedDate} </p>
-			</div>
-		);
-	}
-
-	return (
-		<div className="p-4 bg-white/10 rounded-lg shadow-md border text-white">
-			<p className="text-lg font-semibold mb-2">Sleep Stages</p>
-			<ReactECharts
-				option={chartOptions}
-				style={{ height: "400px", width: "100%" }}
-			/>
-		</div>
-	);
+function EmptyState({ message }: { message: string }) {
+  return (
+    <div className="flex min-h-48 items-center justify-center rounded-lg border border-dashed border-white/30 text-sm text-white/60">
+      {message}
+    </div>
+  );
 }
