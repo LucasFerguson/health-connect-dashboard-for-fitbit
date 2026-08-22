@@ -1,0 +1,4 @@
+interface:
+  display_name: "Clean Code Report"
+  short_description: "Assess code quality with an evidence-based rubric"
+  default_prompt: "Evaluate this codebase and produce a prioritized clean code report with scores and evidence."
