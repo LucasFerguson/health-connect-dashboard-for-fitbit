@@ -1,11 +1,12 @@
 "use client";
 
-import { useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import ReactECharts from "echarts-for-react";
 import type { SleepStageKind } from "~/domain/health";
 import { sleepMinutes } from "~/domain/sleep";
 import { useHealthData } from "~/features/health/HealthDataProvider";
-import { selectSleepSessionsForDate } from "~/features/health/selectors";
+import { selectSleepEventsForDate } from "~/features/health/selectors";
+import { healthSourceLabel } from "~/features/health/sourceLabels";
 
 const stageOrder: Record<SleepStageKind, number> = {
   awake: 0,
@@ -16,24 +17,64 @@ const stageOrder: Record<SleepStageKind, number> = {
   unknown: 4,
 };
 const stageLabels = ["Awake", "REM", "Light", "Deep", "Unknown"];
+const recordingColors = ["#7c3aed", "#0891b2", "#ea580c", "#16a34a"];
 
 export function SleepStagesGraph() {
+  const [showCombined, setShowCombined] = useState(true);
   const { snapshot, selectedDate, selectedSleepSessionId, selectSleepSession } =
     useHealthData();
-  const sessions = selectSleepSessionsForDate(snapshot, selectedDate);
+  const events = selectSleepEventsForDate(snapshot, selectedDate);
+  const selectedEvent =
+    events.find((event) =>
+      event.recordings.some(
+        (recording) => recording.id === selectedSleepSessionId,
+      ),
+    ) ?? events[0];
   const selectedSession =
-    sessions.find((session) => session.id === selectedSleepSessionId) ??
-    sessions[0];
+    selectedEvent?.recordings.find(
+      (session) => session.id === selectedSleepSessionId,
+    ) ?? selectedEvent?.primary;
+  const combinedMode =
+    showCombined && (selectedEvent?.recordings.length ?? 0) > 1;
+
+  useEffect(() => {
+    setShowCombined(true);
+  }, [selectedEvent?.id]);
+
   const chartOptions = useMemo(() => {
-    const points =
-      selectedSession?.stages.flatMap((stage) => [
-        [Date.parse(stage.startAt), stageOrder[stage.kind]],
-        [Date.parse(stage.endAt), stageOrder[stage.kind]],
-      ]) ?? [];
+    const displayedRecordings = combinedMode
+      ? (selectedEvent?.recordings ?? [])
+      : selectedSession
+        ? [selectedSession]
+        : [];
+    const labelCounts = new Map<string, number>();
+    const series = displayedRecordings.map((recording, index) => {
+      const source = healthSourceLabel(recording.source);
+      const occurrence = (labelCounts.get(source) ?? 0) + 1;
+      labelCounts.set(source, occurrence);
+      const label = occurrence > 1 ? `${source} ${occurrence}` : source;
+      const color = recordingColors[index % recordingColors.length];
+      return {
+        name: label,
+        type: "line",
+        step: "end",
+        data: recording.stages.flatMap((stage) => [
+          [Date.parse(stage.startAt), stageOrder[stage.kind]],
+          [Date.parse(stage.endAt), stageOrder[stage.kind]],
+        ]),
+        symbol: "none",
+        lineStyle: { width: combinedMode ? 2.5 : 3, color },
+        areaStyle: combinedMode ? undefined : { color: `${color}22` },
+      };
+    });
+
     return {
       backgroundColor: "#ffffff",
       tooltip: { trigger: "axis" },
-      grid: { left: 72, right: 24, top: 24, bottom: 48 },
+      legend: combinedMode
+        ? { top: 12, textStyle: { color: "#334155" } }
+        : undefined,
+      grid: { left: 72, right: 24, top: combinedMode ? 52 : 24, bottom: 48 },
       xAxis: {
         type: "time",
         axisLabel: {
@@ -52,23 +93,13 @@ export function SleepStagesGraph() {
         interval: 1,
         axisLabel: { formatter: (value: number) => stageLabels[value] ?? "" },
       },
-      series: [
-        {
-          name: "Sleep stage",
-          type: "line",
-          step: "end",
-          data: points,
-          symbol: "none",
-          lineStyle: { width: 3, color: "#7c3aed" },
-          areaStyle: { color: "rgba(124, 58, 237, 0.12)" },
-        },
-      ],
+      series,
     };
-  }, [selectedSession]);
+  }, [combinedMode, selectedEvent, selectedSession]);
 
   if (!selectedDate)
     return <EmptyState message="Select a day to inspect its sleep stages." />;
-  if (sessions.length === 0)
+  if (events.length === 0)
     return (
       <EmptyState
         message={`No sleep session was recorded on ${selectedDate}.`}
@@ -76,36 +107,89 @@ export function SleepStagesGraph() {
     );
   return (
     <div className="space-y-3">
-      {sessions.length > 1 ? (
+      {events.length > 1 ? (
         <div>
           <p className="mb-2 text-sm text-white/60">
-            {sessions.length} sleep sessions recorded. The longest is shown by
-            default.
+            {events.length} separate sleep events recorded on this day.
           </p>
           <div
             className="flex flex-wrap gap-2"
             role="tablist"
-            aria-label="Sleep sessions"
+            aria-label="Sleep events"
           >
-            {sessions.map((session, index) => {
-              const active = session.id === selectedSession?.id;
-              const minutes = sleepMinutes(session);
+            {events.map((event, index) => {
+              const active = event.id === selectedEvent?.id;
+              const minutes = sleepMinutes(event.primary);
               return (
                 <button
-                  key={session.id}
+                  key={event.id}
                   type="button"
                   role="tab"
                   aria-selected={active}
-                  onClick={() => selectSleepSession(session.id)}
+                  onClick={() => {
+                    setShowCombined(event.recordings.length > 1);
+                    selectSleepSession(event.primary.id);
+                  }}
                   className={`rounded-lg border px-3 py-2 text-left text-sm transition ${active ? "border-violet-300 bg-violet-500 text-white" : "border-white/20 bg-white/5 text-white/75 hover:bg-white/10"}`}
                 >
                   <span className="block font-semibold">
-                    {index === 0 ? "Longest sleep" : `Session ${index + 1}`}
+                    {`Sleep ${index + 1} · ${event.recordings
+                      .map((recording) => healthSourceLabel(recording.source))
+                      .join(" + ")}`}
                   </span>
                   <span className="text-xs opacity-75">
-                    {formatSessionTime(session.startAt, session.endAt)} ·{" "}
-                    {formatDuration(minutes)}
+                    {formatSessionTime(
+                      event.primary.startAt,
+                      event.primary.endAt,
+                    )}{" "}
+                    · {formatDuration(minutes)}
                   </span>
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      ) : null}
+      {selectedEvent ? (
+        <div>
+          <p className="mb-2 text-sm text-white/60">
+            {selectedEvent.recordings.length > 1
+              ? `This sleep was recorded by ${selectedEvent.recordings.length} devices. Choose which recording to inspect:`
+              : "Recording source:"}
+          </p>
+          <div
+            className="flex flex-wrap gap-2"
+            role="tablist"
+            aria-label="Device recordings"
+          >
+            {selectedEvent.recordings.length > 1 ? (
+              <button
+                type="button"
+                role="tab"
+                aria-selected={combinedMode}
+                onClick={() => setShowCombined(true)}
+                className={`rounded-full border px-3 py-1.5 text-sm transition ${combinedMode ? "border-violet-300 bg-violet-500 text-white" : "border-white/20 bg-white/5 text-white/75 hover:bg-white/10"}`}
+              >
+                Combined · {selectedEvent.recordings.length} devices
+              </button>
+            ) : null}
+            {selectedEvent.recordings.map((recording) => {
+              const active =
+                !combinedMode && recording.id === selectedSession?.id;
+              return (
+                <button
+                  key={recording.id}
+                  type="button"
+                  role="tab"
+                  aria-selected={active}
+                  onClick={() => {
+                    setShowCombined(false);
+                    selectSleepSession(recording.id);
+                  }}
+                  className={`rounded-full border px-3 py-1.5 text-sm transition ${active ? "border-violet-300 bg-violet-500 text-white" : "border-white/20 bg-white/5 text-white/75 hover:bg-white/10"}`}
+                >
+                  {healthSourceLabel(recording.source)} ·{" "}
+                  {formatDuration(sleepMinutes(recording))}
                 </button>
               );
             })}

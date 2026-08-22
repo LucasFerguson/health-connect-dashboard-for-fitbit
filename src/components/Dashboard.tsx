@@ -2,6 +2,7 @@
 
 import type { HealthSnapshot } from "~/domain/health";
 import { HealthDataProvider } from "~/features/health/HealthDataProvider";
+import { DeviceSleepComparison } from "./DeviceSleepComparison";
 import { SleepCalendar } from "./SleepCalendar";
 import { SleepStagesGraph } from "./SleepStagesGraph";
 
@@ -41,6 +42,7 @@ export function Dashboard({ snapshot }: { snapshot: HealthSnapshot }) {
               </article>
             </div>
           </section>
+          <DeviceSleepComparison />
           <section aria-labelledby="coming-heading">
             <h2 id="coming-heading" className="mb-3 text-2xl font-bold">
               More health signals

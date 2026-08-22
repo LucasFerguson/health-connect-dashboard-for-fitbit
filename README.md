@@ -21,6 +21,8 @@ The server renders the initial snapshot, and the client refreshes it through `/a
 
 New data sources should implement `HealthRepository`. New metrics should first be added to `HealthSnapshot`, then mapped at the repository boundary, exposed through a selector, and finally rendered by a component. This keeps backend changes from spreading through the UI.
 
+The non-destructive reconciliation of observations from multiple devices is documented in [Health data model](docs/health-data-model.md).
+
 Roadmap:
 - [x] Implement a calendar view for sleep data - 2025-05-07
 - [x] Docker support for easy deployment - 2025-06-28

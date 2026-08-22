@@ -50,6 +50,14 @@ export function SleepCalendar() {
               {summary.sessionCount}x
             </span>
           ) : null}
+          {summary && summary.recordingCount > summary.sessionCount ? (
+            <span
+              className="absolute top-1 left-1 text-[0.55rem] font-semibold text-violet-700"
+              title={`${summary.recordingCount} device recordings represented`}
+            >
+              {summary.recordingCount} devices
+            </span>
+          ) : null}
         </div>
       </td>
     );
