@@ -1,10 +1,33 @@
-# Project Overview
-We developed a dashboard for users to view health metrics collected from a smartphone and wearable device. The main feature we were able to implement is an interactive sleep summary in a calendar view. Users can easily click on any day in the calendar to see more details from that day. The dashboard is built using the T3 stack, which includes Next.js and Tailwind CSS.
+# Health Dashboard
+
+A self-hosted dashboard for health metrics collected from phones and wearables. The current vertical slice provides an interactive sleep calendar and sleep-stage graph. When API credentials are absent, the app intentionally uses its bundled demo dataset.
+
+## Architecture and data flow
+
+The application uses a one-way flow with explicit boundaries:
+
+```text
+Health Connect API -> repository/DTO validation -> domain model
+    -> server snapshot -> client provider -> selectors -> UI widgets
+                       <- user actions ---------|
+```
+
+- `src/domain` contains provider-independent health models and calculations.
+- `src/server/health` owns external I/O. Repositories translate and validate external payloads with Zod.
+- `src/features/health` owns client state, user actions, and derived selectors.
+- `src/components` renders domain data and dispatches actions; it does not know the backend response format.
+
+The server renders the initial snapshot, and the client refreshes it through `/api/health` every 60 seconds. A refreshed snapshot follows the same reducer and selector path as the initial data, so widgets update without bespoke synchronization code.
+
+New data sources should implement `HealthRepository`. New metrics should first be added to `HealthSnapshot`, then mapped at the repository boundary, exposed through a selector, and finally rendered by a component. This keeps backend changes from spreading through the UI.
 
 Roadmap:
 - [x] Implement a calendar view for sleep data - 2025-05-07
 - [x] Docker support for easy deployment - 2025-06-28
-- [ ] Allow users to click on a day in the calendar to view detailed sleep data
+- [x] Allow users to click on a day in the calendar to view detailed sleep data
+- [x] Represent multiple daily sleep sessions and allow switching between them
+- [ ] Add activity, heart-rate, and body-measurement domain models and adapters
+- [ ] Add persistence, scheduled imports, and historical aggregation
   
 Dashboard Screenshot:
 ![alt text](dash-2025-09-13.png)
@@ -33,10 +56,11 @@ services:
     restart: unless-stopped
 ```
 ### OR 
-Create a `.env` file in the root directory of the project with the following content:
+Create a `.env` file in the root directory of the project with the following content. If these values are omitted, demo data is used.
 ```
 API_USERNAME=your_username
 API_PASSWORD=your_password
+API_URL=http://your-health-connect-api:6644
 ```
 
 ## Building and Running the Dashboard
@@ -57,4 +81,3 @@ docker run -p 3000:3000 lucaslad5275/hc-dashboard:1.0
 ```bash
 docker-compose up -d
 ```
-
