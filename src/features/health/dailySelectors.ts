@@ -10,6 +10,9 @@ export interface DailyHealthView {
   sleep: DailySleepSummary | null;
   sleepEvents: SleepEvent[];
   sleepDebt: HealthSnapshot["analytics"]["sleepDebt"]["daily"][number] | null;
+  sleepConsistency:
+    | HealthSnapshot["analytics"]["sleepConsistency"]["daily"][number]
+    | null;
   steps: DailyMetricSummary | null;
   activeCalories: DailyMetricSummary | null;
   totalCalories: DailyMetricSummary | null;
@@ -28,6 +31,8 @@ export function selectDailyHealth(
     sleepEvents: analytics.sleepEvents.filter((event) => event.date === date),
     sleepDebt:
       analytics.sleepDebt.daily.find((day) => day.date === date) ?? null,
+    sleepConsistency:
+      analytics.sleepConsistency.daily.find((day) => day.date === date) ?? null,
     steps: findMetric(analytics.steps.daily, date),
     activeCalories: findMetric(analytics.activeCalories.daily, date),
     totalCalories: findMetric(analytics.totalCalories.daily, date),

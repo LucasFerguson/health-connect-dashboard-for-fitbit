@@ -9,14 +9,11 @@ import type {
   SleepDebtBreakdown,
 } from "~/domain/analytics";
 import { formatDurationMinutes } from "~/features/health/metricFormatters";
-
-type RangeDays = 7 | 30 | 180;
-
-const ranges: Array<{ label: string; days: RangeDays }> = [
-  { label: "W", days: 7 },
-  { label: "M", days: 30 },
-  { label: "6M", days: 180 },
-];
+import { TrendBreakdown } from "../sleep-trends/TrendBreakdown";
+import {
+  TrendRangeTabs,
+  type TrendRangeDays,
+} from "../sleep-trends/TrendRangeTabs";
 
 export function SleepDebtTrendView({
   analytics,
@@ -25,7 +22,7 @@ export function SleepDebtTrendView({
   analytics: SleepDebtAnalytics;
   selectedDate?: string;
 }) {
-  const [rangeDays, setRangeDays] = useState<RangeDays>(30);
+  const [rangeDays, setRangeDays] = useState<TrendRangeDays>(30);
   const period = useMemo(
     () => selectPeriod(analytics.daily, rangeDays, selectedDate),
     [analytics.daily, rangeDays, selectedDate],
@@ -60,26 +57,7 @@ export function SleepDebtTrendView({
                 calculated from reconciled sleep sessions.
               </p>
             </div>
-            <div
-              className="flex rounded-xl bg-black/20 p-1"
-              aria-label="Time range"
-            >
-              {ranges.map((range) => (
-                <button
-                  key={range.days}
-                  type="button"
-                  onClick={() => setRangeDays(range.days)}
-                  aria-pressed={rangeDays === range.days}
-                  className={`min-w-12 rounded-lg px-4 py-2 text-xs font-bold transition ${
-                    rangeDays === range.days
-                      ? "bg-white/15 text-white"
-                      : "text-white/50 hover:text-white"
-                  }`}
-                >
-                  {range.label}
-                </button>
-              ))}
-            </div>
+            <TrendRangeTabs value={rangeDays} onChange={setRangeDays} />
           </div>
 
           <div className="mt-8 flex flex-wrap items-end justify-between gap-4">
@@ -136,7 +114,20 @@ export function SleepDebtTrendView({
           )}
         </header>
 
-        <Breakdown breakdown={breakdown} />
+        <TrendBreakdown
+          title="Sleep debt breakdown"
+          total={breakdown.recordedDays}
+          items={[
+            { label: "High (>45m)", count: breakdown.high, color: "#7dd3fc" },
+            {
+              label: "Moderate (30–45m)",
+              count: breakdown.moderate,
+              color: "#647f8d",
+            },
+            { label: "Low (<30m)", count: breakdown.low, color: "#405661" },
+            { label: "No debt", count: breakdown.none, color: "#26363e" },
+          ]}
+        />
 
         <section className="mt-6 grid gap-4 md:grid-cols-2">
           <article className="rounded-xl border border-white/10 bg-white/5 p-5">
@@ -160,52 +151,9 @@ export function SleepDebtTrendView({
   );
 }
 
-function Breakdown({ breakdown }: { breakdown: SleepDebtBreakdown }) {
-  const categories = [
-    { key: "high" as const, label: "High (>45m)", color: "#7dd3fc" },
-    {
-      key: "moderate" as const,
-      label: "Moderate (30–45m)",
-      color: "#647f8d",
-    },
-    { key: "low" as const, label: "Low (<30m)", color: "#405661" },
-    { key: "none" as const, label: "No debt", color: "#26363e" },
-  ];
-  return (
-    <section className="mt-6 rounded-xl border border-white/10 bg-white/5 p-5">
-      <h2 className="text-sm font-semibold tracking-wide uppercase">
-        Sleep debt breakdown ({breakdown.recordedDays} recorded days)
-      </h2>
-      <div className="mt-4 flex h-3 overflow-hidden rounded-full bg-white/5">
-        {categories.map((category) => (
-          <span
-            key={category.key}
-            style={{
-              backgroundColor: category.color,
-              width: `${percentage(breakdown[category.key], breakdown.recordedDays)}%`,
-            }}
-          />
-        ))}
-      </div>
-      <div className="mt-5 grid grid-cols-2 gap-3 sm:grid-cols-4">
-        {categories.map((category) => (
-          <div key={category.key} className="flex items-center gap-2 text-sm">
-            <span
-              className="h-3 w-3 rounded-sm"
-              style={{ background: category.color }}
-            />
-            <strong>{breakdown[category.key]}×</strong>
-            <span className="text-white/55">{category.label}</span>
-          </div>
-        ))}
-      </div>
-    </section>
-  );
-}
-
 function selectPeriod(
   data: DailySleepDebt[],
-  rangeDays: RangeDays,
+  rangeDays: TrendRangeDays,
   selectedDate?: string,
 ) {
   const lastDate = selectedDate ?? data.at(-1)?.date;
@@ -284,7 +232,10 @@ function buildBreakdown(days: DailySleepDebt[]): SleepDebtBreakdown {
   );
 }
 
-function periodLabel(days: DailySleepDebt[], rangeDays: RangeDays): string {
+function periodLabel(
+  days: DailySleepDebt[],
+  rangeDays: TrendRangeDays,
+): string {
   if (!days.length) return `Last ${rangeDays} days`;
   return `${days[0]?.date} – ${days.at(-1)?.date}`;
 }
@@ -296,8 +247,4 @@ function formatClockDuration(minutes: number): string {
 
 function parseDate(date: string): number {
   return Date.parse(`${date}T00:00:00Z`);
-}
-
-function percentage(value: number, total: number): number {
-  return total ? (value / total) * 100 : 0;
 }

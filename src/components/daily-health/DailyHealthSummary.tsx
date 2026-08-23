@@ -75,7 +75,7 @@ export function DailyHealthSummary() {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
         <DailyMetricTile
           title="Sleep"
           value={
@@ -104,6 +104,27 @@ export function DailyHealthSummary() {
           source={sleepSources ? `${sleepSources} (calculated)` : null}
           href={`/sleep-debt?date=${date}`}
           accent="#7dd3fc"
+        />
+        <DailyMetricTile
+          title="Sleep consistency"
+          value={
+            day.sleepConsistency?.score !== null &&
+            day.sleepConsistency?.score !== undefined
+              ? `${Math.round(day.sleepConsistency.score)}%`
+              : null
+          }
+          secondary={
+            day.sleepConsistency?.category
+              ? `${day.sleepConsistency.category} schedule`
+              : "Building the rolling baseline"
+          }
+          source={
+            day.sleepConsistency
+              ? `${healthSourceLabel(day.sleepConsistency.source)} (calculated)`
+              : null
+          }
+          href={`/sleep-consistency?date=${date}`}
+          accent="#34d399"
         />
         <DailyMetricTile
           title="Steps"

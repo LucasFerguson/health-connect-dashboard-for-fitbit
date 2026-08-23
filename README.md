@@ -35,6 +35,7 @@ Roadmap:
 - [x] Add daily health summaries and reusable metric detail pages
 - [x] Add year heatmaps, rolling trends, and monthly views
 - [x] Add configurable rolling sleep-debt analytics and persistence
+- [x] Add versioned sleep-consistency analytics and persistence
 - [ ] Add persistence, scheduled imports, and historical aggregation
 
 Dashboard Screenshot:
