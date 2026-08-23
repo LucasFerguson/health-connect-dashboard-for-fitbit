@@ -25,6 +25,8 @@ The non-destructive reconciliation of observations from multiple devices is docu
 
 The independently runnable analytics subsystem is documented in [Health analytics pipeline](pipeline/README.md).
 
+The proposed separation of physical, non-activity physiological, and mental strain is documented in [Strain model](docs/strain-model.md).
+
 Roadmap:
 
 - [x] Implement a calendar view for sleep data - 2025-05-07
@@ -37,6 +39,7 @@ Roadmap:
 - [x] Add configurable rolling sleep-debt analytics and persistence
 - [x] Add versioned sleep-consistency analytics and persistence
 - [x] Add an experimental, auditable health-age and pace-of-aging model
+- [x] Add reusable year heatmaps for sleep quantity, debt, and consistency
 - [ ] Add persistence, scheduled imports, and historical aggregation
 
 Dashboard Screenshot:
