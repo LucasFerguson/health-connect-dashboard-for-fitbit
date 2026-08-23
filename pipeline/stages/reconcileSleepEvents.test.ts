@@ -19,7 +19,7 @@ describe("reconcileSleepEvents", () => {
       "2026-07-27T09:38:21Z",
     );
 
-    const events = reconcileSleepEvents([fitbit, whoop]);
+    const events = reconcileSleepEvents([fitbit, whoop], context);
 
     assert.equal(events.length, 1);
     assert.equal(events[0]?.primary.id, "fitbit");
@@ -43,7 +43,7 @@ describe("reconcileSleepEvents", () => {
       "2026-07-27T18:45:00Z",
     );
 
-    assert.equal(reconcileSleepEvents([overnight, nap]).length, 2);
+    assert.equal(reconcileSleepEvents([overnight, nap], context).length, 2);
   });
 
   it("produces a stable source fingerprint", () => {
@@ -51,11 +51,24 @@ describe("reconcileSleepEvents", () => {
       session("one", "Fitbit", "2026-07-27T04:43:00Z", "2026-07-27T09:39:00Z"),
     ];
     assert.equal(
-      processHealthData(records).sourceFingerprint,
-      processHealthData([...records].reverse()).sourceFingerprint,
+      processHealthData(raw(records)).sourceFingerprint,
+      processHealthData(raw([...records].reverse())).sourceFingerprint,
     );
   });
 });
+
+const context = { homeTimeZone: "UTC" };
+
+function raw(sleepSessions: SleepSession[]) {
+  return {
+    sleepSessions,
+    steps: [],
+    activeCalories: [],
+    totalCalories: [],
+    restingHeartRates: [],
+    weights: [],
+  };
+}
 
 function session(
   id: string,

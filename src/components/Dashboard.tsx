@@ -3,6 +3,7 @@
 import type { HealthSnapshot } from "~/domain/health";
 import { HealthDataProvider } from "~/features/health/HealthDataProvider";
 import { DeviceSleepComparison } from "./DeviceSleepComparison";
+import { HealthSignalsSection } from "./health-signals/HealthSignalsSection";
 import { SleepCalendar } from "./SleepCalendar";
 import { SleepStagesGraph } from "./SleepStagesGraph";
 
@@ -43,26 +44,7 @@ export function Dashboard({ snapshot }: { snapshot: HealthSnapshot }) {
             </div>
           </section>
           <DeviceSleepComparison />
-          <section aria-labelledby="coming-heading">
-            <h2 id="coming-heading" className="mb-3 text-2xl font-bold">
-              More health signals
-            </h2>
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-              {["Steps", "Calories", "Resting heart rate", "Weight"].map(
-                (label) => (
-                  <article
-                    key={label}
-                    className="min-h-28 rounded-xl border border-white/10 bg-white/5 p-4"
-                  >
-                    <h3 className="font-semibold">{label}</h3>
-                    <p className="mt-2 text-sm text-white/50">
-                      Ready for its data adapter
-                    </p>
-                  </article>
-                ),
-              )}
-            </div>
-          </section>
+          <HealthSignalsSection />
         </div>
       </main>
     </HealthDataProvider>

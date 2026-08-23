@@ -10,7 +10,6 @@ import {
   type ReactNode,
 } from "react";
 import type { DateKey, HealthSnapshot } from "~/domain/health";
-import { dateKeyForSession } from "~/domain/sleep";
 import { selectDefaultSleepSession } from "./selectors";
 
 interface HealthDataState {
@@ -33,8 +32,8 @@ const HealthDataContext = createContext<HealthDataContextValue | null>(null);
 
 function mostRecentDate(snapshot: HealthSnapshot): DateKey | null {
   return (
-    snapshot.sleepSessions
-      .map(dateKeyForSession)
+    snapshot.analytics.sleepEvents
+      .map((event) => event.date)
       .sort((a, b) => b.localeCompare(a))[0] ?? null
   );
 }

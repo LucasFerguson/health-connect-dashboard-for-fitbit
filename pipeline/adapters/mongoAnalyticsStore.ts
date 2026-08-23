@@ -1,17 +1,9 @@
-import { MongoClient } from "mongodb";
+import { MongoClient, type Db, type Document } from "mongodb";
 import type { HealthAnalytics } from "../../src/domain/analytics";
 import type { AnalyticsStore } from "../ports/analyticsStore";
 
-interface AnalyticsSnapshotDocument extends HealthAnalytics {
+interface StringIdDocument extends Document {
   _id: string;
-}
-
-interface ProcessingRunDocument {
-  _id: string;
-  algorithmVersion: string;
-  sourceFingerprint: string;
-  processedAt: string;
-  sleepEventCount: number;
 }
 
 export class MongoAnalyticsStore implements AnalyticsStore {
@@ -22,73 +14,201 @@ export class MongoAnalyticsStore implements AnalyticsStore {
 
   async save(analytics: HealthAnalytics): Promise<"saved" | "unchanged"> {
     const client = new MongoClient(this.uri);
+    const runId = `${analytics.algorithmVersion}:${analytics.sourceFingerprint}`;
     try {
       await client.connect();
       const database = client.db(this.databaseName);
+      await ensureIndexes(database);
       const current = await database
-        .collection<AnalyticsSnapshotDocument>("analytics_snapshots")
-        .findOne(
-          { algorithmVersion: analytics.algorithmVersion },
-          { sort: { processedAt: -1 } },
-        );
-
-      if (current?.sourceFingerprint === analytics.sourceFingerprint) {
+        .collection<StringIdDocument>("analytics_current")
+        .findOne({ _id: "current" });
+      if (
+        current?.sourceFingerprint === analytics.sourceFingerprint &&
+        current.algorithmVersion === analytics.algorithmVersion
+      ) {
         return "unchanged";
       }
 
-      const runId = `${analytics.algorithmVersion}:${analytics.sourceFingerprint}`;
-      await Promise.all([
-        database
-          .collection<AnalyticsSnapshotDocument>("analytics_snapshots")
-          .updateOne(
-            { _id: runId },
-            { $setOnInsert: { _id: runId, ...analytics } },
-            { upsert: true },
-          ),
-        database.collection<ProcessingRunDocument>("processing_runs").updateOne(
-          { _id: runId },
-          {
-            $setOnInsert: {
-              _id: runId,
-              algorithmVersion: analytics.algorithmVersion,
-              sourceFingerprint: analytics.sourceFingerprint,
-              processedAt: analytics.processedAt,
-              sleepEventCount: analytics.sleepEvents.length,
-            },
+      await database.collection<StringIdDocument>("processing_runs").updateOne(
+        { _id: runId },
+        {
+          $set: {
+            status: "started",
+            algorithmVersion: analytics.algorithmVersion,
+            sourceFingerprint: analytics.sourceFingerprint,
+            startedAt: analytics.processedAt,
           },
-          { upsert: true },
-        ),
-        ...analytics.sleepEvents.map((event) =>
-          database
-            .collection("sleep_events")
-            .updateOne(
-              { runId, eventId: event.id },
-              { $setOnInsert: { runId, eventId: event.id, ...event } },
-              { upsert: true },
-            ),
-        ),
-        ...analytics.dailySleep.map((summary) =>
-          database
-            .collection("daily_sleep_summaries")
-            .updateOne(
-              { runId, date: summary.date },
-              { $setOnInsert: { runId, ...summary } },
-              { upsert: true },
-            ),
-        ),
-        ...analytics.deviceSleep.map((summary) =>
-          database
-            .collection("device_sleep_comparisons")
-            .updateOne(
-              { runId, source: summary.source },
-              { $setOnInsert: { runId, ...summary } },
-              { upsert: true },
-            ),
-        ),
+        },
+        { upsert: true },
+      );
+      await Promise.all([
+        writeDailyMetrics(database, runId, analytics),
+        writeSleepEvents(database, runId, analytics),
+        writeDeviceComparisons(database, runId, analytics),
       ]);
+
+      const completedAt = new Date().toISOString();
+      await database.collection<StringIdDocument>("processing_runs").updateOne(
+        { _id: runId },
+        {
+          $set: {
+            status: "completed",
+            completedAt,
+            counts: buildCounts(analytics),
+          },
+        },
+      );
+      await database.collection<StringIdDocument>("analytics_current").updateOne(
+        { _id: "current" },
+        {
+          $set: {
+            runId,
+            algorithmVersion: analytics.algorithmVersion,
+            sourceFingerprint: analytics.sourceFingerprint,
+            completedAt,
+          },
+        },
+        { upsert: true },
+      );
       return "saved";
+    } catch (error) {
+      await recordFailure(client, this.databaseName, runId, error);
+      throw error;
     } finally {
       await client.close();
     }
+  }
+}
+
+function buildCounts(analytics: HealthAnalytics) {
+  return {
+    sleepEvents: analytics.sleepEvents.length,
+    dailySleep: analytics.dailySleep.length,
+    dailySteps: analytics.steps.daily.length,
+    dailyActiveCalories: analytics.activeCalories.daily.length,
+    dailyTotalCalories: analytics.totalCalories.daily.length,
+    dailyRestingHeartRate: analytics.restingHeartRate.daily.length,
+    weightMeasurements: analytics.weight.daily.length,
+  };
+}
+
+async function recordFailure(
+  client: MongoClient,
+  databaseName: string,
+  runId: string,
+  error: unknown,
+) {
+  try {
+    await client
+      .db(databaseName)
+      .collection<StringIdDocument>("processing_runs")
+      .updateOne(
+        { _id: runId },
+        {
+          $set: {
+            status: "failed",
+            failedAt: new Date().toISOString(),
+            error: error instanceof Error ? error.message : String(error),
+          },
+        },
+        { upsert: true },
+      );
+  } catch {
+    // Preserve the original pipeline error if failure reporting also fails.
+  }
+}
+
+async function ensureIndexes(database: Db) {
+  await Promise.all([
+    database
+      .collection("daily_metrics")
+      .createIndex({ runId: 1, date: 1 }, { unique: true }),
+    database
+      .collection("sleep_events")
+      .createIndex({ runId: 1, eventId: 1 }, { unique: true }),
+    database
+      .collection("device_comparisons")
+      .createIndex({ runId: 1, metric: 1, source: 1 }, { unique: true }),
+    database
+      .collection("processing_runs")
+      .createIndex({ status: 1, completedAt: -1 }),
+  ]);
+}
+
+async function writeDailyMetrics(
+  database: Db,
+  runId: string,
+  analytics: HealthAnalytics,
+) {
+  const dates = new Set([
+    ...analytics.dailySleep.map((item) => item.date),
+    ...analytics.steps.daily.map((item) => item.date),
+    ...analytics.activeCalories.daily.map((item) => item.date),
+    ...analytics.totalCalories.daily.map((item) => item.date),
+    ...analytics.restingHeartRate.daily.map((item) => item.date),
+    ...analytics.weight.daily.map((item) => item.date),
+  ]);
+  const byDate = <T extends { date: string }>(values: T[]) =>
+    new Map(values.map((value) => [value.date, value]));
+  const sleep = byDate(analytics.dailySleep);
+  const steps = byDate(analytics.steps.daily);
+  const activeCalories = byDate(analytics.activeCalories.daily);
+  const totalCalories = byDate(analytics.totalCalories.daily);
+  const restingHeartRate = byDate(analytics.restingHeartRate.daily);
+  const weight = byDate(analytics.weight.daily);
+  const operations = [...dates].map((date) => ({
+    updateOne: {
+      filter: { runId, date },
+      update: {
+        $setOnInsert: {
+          runId,
+          date,
+          sleep: sleep.get(date) ?? null,
+          steps: steps.get(date) ?? null,
+          activeCalories: activeCalories.get(date) ?? null,
+          totalCalories: totalCalories.get(date) ?? null,
+          restingHeartRate: restingHeartRate.get(date) ?? null,
+          weight: weight.get(date) ?? null,
+        },
+      },
+      upsert: true,
+    },
+  }));
+  if (operations.length) {
+    await database.collection("daily_metrics").bulkWrite(operations);
+  }
+}
+
+async function writeSleepEvents(
+  database: Db,
+  runId: string,
+  analytics: HealthAnalytics,
+) {
+  const operations = analytics.sleepEvents.map((event) => ({
+    updateOne: {
+      filter: { runId, eventId: event.id },
+      update: { $setOnInsert: { runId, eventId: event.id, ...event } },
+      upsert: true,
+    },
+  }));
+  if (operations.length) {
+    await database.collection("sleep_events").bulkWrite(operations);
+  }
+}
+
+async function writeDeviceComparisons(
+  database: Db,
+  runId: string,
+  analytics: HealthAnalytics,
+) {
+  const operations = analytics.deviceSleep.map((summary) => ({
+    updateOne: {
+      filter: { runId, metric: "sleep", source: summary.source },
+      update: { $setOnInsert: { runId, metric: "sleep", ...summary } },
+      upsert: true,
+    },
+  }));
+  if (operations.length) {
+    await database.collection("device_comparisons").bulkWrite(operations);
   }
 }

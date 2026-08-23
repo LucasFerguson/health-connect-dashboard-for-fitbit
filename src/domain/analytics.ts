@@ -22,6 +22,38 @@ export interface DeviceSleepSummary {
   averageDifferenceMinutes: number | null;
 }
 
+export type MetricUnit = "steps" | "kcal" | "bpm" | "kg";
+
+export interface SourceMetricValue {
+  source: string;
+  value: number;
+  observationCount: number;
+  coverageMinutes: number | null;
+}
+
+export interface DailyMetricSummary {
+  date: DateKey;
+  value: number;
+  source: string;
+  bySource: SourceMetricValue[];
+  qualityFlags: string[];
+}
+
+export interface MetricOverview {
+  latest: DailyMetricSummary | null;
+  previous: DailyMetricSummary | null;
+  average7Day: number | null;
+  average30Day: number | null;
+  changeFromPrevious: number | null;
+  sampleCount: number;
+}
+
+export interface MetricAnalytics {
+  unit: MetricUnit;
+  daily: DailyMetricSummary[];
+  overview: MetricOverview;
+}
+
 export interface HealthAnalytics {
   algorithmVersion: string;
   sourceFingerprint: string;
@@ -29,4 +61,9 @@ export interface HealthAnalytics {
   sleepEvents: SleepEvent[];
   dailySleep: DailySleepSummary[];
   deviceSleep: DeviceSleepSummary[];
+  steps: MetricAnalytics;
+  activeCalories: MetricAnalytics;
+  totalCalories: MetricAnalytics;
+  restingHeartRate: MetricAnalytics;
+  weight: MetricAnalytics;
 }

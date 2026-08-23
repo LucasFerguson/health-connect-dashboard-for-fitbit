@@ -25,6 +25,44 @@ export interface SleepSession {
   stages: SleepStage[];
 }
 
+export interface IntervalObservation {
+  id: string;
+  source: string;
+  startAt: ISODateTime;
+  endAt: ISODateTime;
+}
+
+export interface StepsObservation extends IntervalObservation {
+  count: number;
+}
+
+export interface EnergyObservation extends IntervalObservation {
+  energyKcal: number;
+}
+
+export interface RestingHeartRateObservation {
+  id: string;
+  source: string;
+  observedAt: ISODateTime;
+  bpm: number;
+}
+
+export interface WeightObservation {
+  id: string;
+  source: string;
+  observedAt: ISODateTime;
+  kilograms: number;
+}
+
+export interface RawHealthData {
+  sleepSessions: SleepSession[];
+  steps: StepsObservation[];
+  activeCalories: EnergyObservation[];
+  totalCalories: EnergyObservation[];
+  restingHeartRates: RestingHeartRateObservation[];
+  weights: WeightObservation[];
+}
+
 export interface HealthSnapshot {
   generatedAt: ISODateTime;
   source: "health-connect" | "fixture";

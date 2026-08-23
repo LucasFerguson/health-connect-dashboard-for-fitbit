@@ -1,7 +1,8 @@
 import type { SleepEvent } from "../../src/domain/analytics";
 import type { SleepSession } from "../../src/domain/health";
-import { dateKeyForSession } from "../../src/domain/sleep";
 import { SAME_SLEEP_EVENT_OVERLAP_RATIO } from "../config";
+import type { PipelineContext } from "../context";
+import { dateKeyInTimeZone } from "../shared/dateKey";
 import { groupBy } from "../shared/groupBy";
 
 export function sessionDurationMs(session: SleepSession): number {
@@ -18,8 +19,13 @@ function overlapRatio(left: SleepSession, right: SleepSession): number {
   return shorter === 0 ? 0 : overlap / shorter;
 }
 
-export function reconcileSleepEvents(sessions: SleepSession[]): SleepEvent[] {
-  const sessionsByDate = groupBy(sessions, dateKeyForSession);
+export function reconcileSleepEvents(
+  sessions: SleepSession[],
+  context: PipelineContext,
+): SleepEvent[] {
+  const sessionsByDate = groupBy(sessions, (session) =>
+    dateKeyInTimeZone(session.startAt, context.homeTimeZone),
+  );
 
   return [...sessionsByDate.entries()]
     .flatMap(([date, dailySessions]) => groupDailySessions(date, dailySessions))

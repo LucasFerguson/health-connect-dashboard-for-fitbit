@@ -1,6 +1,6 @@
 # Health analytics pipeline
 
-This subsystem is independent from React and turns immutable source observations into versioned frontend-ready analytics.
+This subsystem is independent from React and turns immutable source observations into versioned frontend-ready analytics for sleep, steps, calories, resting heart rate, and weight.
 
 ```text
 source repository -> reconciliation -> aggregation -> comparisons -> analytics store
@@ -14,6 +14,8 @@ source repository -> reconciliation -> aggregation -> comparisons -> analytics s
 - `cli/run.ts` runs the pipeline independently from Next.js.
 
 The pipeline never modifies HCGateway source observations. Mongo output uses a separate database and immutable, fingerprinted runs. Reprocessing unchanged input is a no-op.
+
+Canonical units are steps, kilocalories, beats per minute, and kilograms. Interval metrics are split across calendar days in `HEALTH_HOME_TIME_ZONE`, aggregated per source, and reconciled by source coverage instead of being summed across devices. Resting heart rate uses a daily median; weight uses the latest daily observation. Every selected value retains its source and all per-source alternatives.
 
 Run without persistence:
 

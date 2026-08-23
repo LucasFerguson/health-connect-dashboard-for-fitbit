@@ -31,7 +31,7 @@ Roadmap:
 - [x] Docker support for easy deployment - 2025-06-28
 - [x] Allow users to click on a day in the calendar to view detailed sleep data
 - [x] Represent multiple daily sleep sessions and allow switching between them
-- [ ] Add activity, heart-rate, and body-measurement domain models and adapters
+- [x] Add activity, calorie, resting-heart-rate, and weight analytics
 - [ ] Add persistence, scheduled imports, and historical aggregation
 
 Dashboard Screenshot:

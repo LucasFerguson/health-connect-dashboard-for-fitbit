@@ -1,5 +1,5 @@
-import type { SleepSession } from "~/domain/health";
+import type { RawHealthData } from "~/domain/health";
 
 export interface HealthRepository {
-  getSleepSessions(): Promise<SleepSession[]>;
+  getHealthData(): Promise<RawHealthData>;
 }

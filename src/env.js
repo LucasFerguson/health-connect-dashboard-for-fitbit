@@ -14,6 +14,7 @@ export const env = createEnv({
     ANALYTICS_MONGO_URI: z.string().url().optional(),
     ANALYTICS_DATABASE: z.string().min(1).optional(),
     DEV_ALLOWED_ORIGINS: z.string().min(1).optional(),
+    HEALTH_HOME_TIME_ZONE: z.string().min(1).optional(),
   },
 
   /**
@@ -37,6 +38,7 @@ export const env = createEnv({
     ANALYTICS_MONGO_URI: process.env.ANALYTICS_MONGO_URI,
     ANALYTICS_DATABASE: process.env.ANALYTICS_DATABASE,
     DEV_ALLOWED_ORIGINS: process.env.DEV_ALLOWED_ORIGINS,
+    HEALTH_HOME_TIME_ZONE: process.env.HEALTH_HOME_TIME_ZONE,
     // NEXT_PUBLIC_CLIENTVAR: process.env.NEXT_PUBLIC_CLIENTVAR,
   },
   /**
