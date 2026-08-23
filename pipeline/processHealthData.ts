@@ -6,6 +6,7 @@ import { createPipelineContext, type PipelineContext } from "./context";
 import { aggregateDailySleep } from "./stages/aggregateDailySleep";
 import { calculateSleepDebt } from "./stages/calculateSleepDebt";
 import { calculateSleepConsistency } from "./stages/calculateSleepConsistency";
+import { calculateHealthspan } from "./stages/calculateHealthspan";
 import { compareDevices } from "./stages/compareDevices";
 import { reconcileSleepEvents } from "./stages/reconcileSleepEvents";
 import { aggregateIntervalMetric } from "./stages/metrics/aggregateIntervalMetric";
@@ -17,6 +18,39 @@ export function processHealthData(
 ): HealthAnalytics {
   const sleepEvents = reconcileSleepEvents(healthData.sleepSessions, context);
   const dailySleep = aggregateDailySleep(sleepEvents);
+  const sleepConsistency = calculateSleepConsistency(sleepEvents, context);
+  const steps = aggregateIntervalMetric(
+    healthData.steps,
+    "steps",
+    (record) => record.count,
+    context,
+  );
+  const activeCalories = aggregateIntervalMetric(
+    healthData.activeCalories,
+    "kcal",
+    (record) => record.energyKcal,
+    context,
+  );
+  const totalCalories = aggregateIntervalMetric(
+    healthData.totalCalories,
+    "kcal",
+    (record) => record.energyKcal,
+    context,
+  );
+  const restingHeartRate = aggregatePointMetric(
+    healthData.restingHeartRates,
+    "bpm",
+    (record) => record.bpm,
+    "median",
+    context,
+  );
+  const weight = aggregatePointMetric(
+    healthData.weights,
+    "kg",
+    (record) => record.kilograms,
+    "latest",
+    context,
+  );
   return {
     algorithmVersion: PIPELINE_ALGORITHM_VERSION,
     sourceFingerprint: fingerprint(healthData),
@@ -25,40 +59,17 @@ export function processHealthData(
     sleepEvents,
     dailySleep,
     sleepDebt: calculateSleepDebt(dailySleep, context.sleepTargetMinutes),
-    sleepConsistency: calculateSleepConsistency(sleepEvents, context),
+    sleepConsistency,
+    healthspan: calculateHealthspan(
+      { dailySleep, sleepConsistency, steps, restingHeartRate },
+      context,
+    ),
     deviceSleep: compareDevices(sleepEvents),
-    steps: aggregateIntervalMetric(
-      healthData.steps,
-      "steps",
-      (record) => record.count,
-      context,
-    ),
-    activeCalories: aggregateIntervalMetric(
-      healthData.activeCalories,
-      "kcal",
-      (record) => record.energyKcal,
-      context,
-    ),
-    totalCalories: aggregateIntervalMetric(
-      healthData.totalCalories,
-      "kcal",
-      (record) => record.energyKcal,
-      context,
-    ),
-    restingHeartRate: aggregatePointMetric(
-      healthData.restingHeartRates,
-      "bpm",
-      (record) => record.bpm,
-      "median",
-      context,
-    ),
-    weight: aggregatePointMetric(
-      healthData.weights,
-      "kg",
-      (record) => record.kilograms,
-      "latest",
-      context,
-    ),
+    steps,
+    activeCalories,
+    totalCalories,
+    restingHeartRate,
+    weight,
   };
 }
 

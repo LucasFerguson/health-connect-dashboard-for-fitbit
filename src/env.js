@@ -16,6 +16,10 @@ export const env = createEnv({
     DEV_ALLOWED_ORIGINS: z.string().min(1).optional(),
     HEALTH_HOME_TIME_ZONE: z.string().min(1).optional(),
     SLEEP_TARGET_MINUTES: z.coerce.number().int().min(240).max(720).optional(),
+    HEALTH_BIRTH_DATE: z
+      .string()
+      .regex(/^\d{4}-\d{2}-\d{2}$/)
+      .optional(),
   },
 
   /**
@@ -41,6 +45,7 @@ export const env = createEnv({
     DEV_ALLOWED_ORIGINS: process.env.DEV_ALLOWED_ORIGINS,
     HEALTH_HOME_TIME_ZONE: process.env.HEALTH_HOME_TIME_ZONE,
     SLEEP_TARGET_MINUTES: process.env.SLEEP_TARGET_MINUTES,
+    HEALTH_BIRTH_DATE: process.env.HEALTH_BIRTH_DATE,
     // NEXT_PUBLIC_CLIENTVAR: process.env.NEXT_PUBLIC_CLIENTVAR,
   },
   /**

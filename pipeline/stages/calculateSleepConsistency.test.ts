@@ -8,7 +8,11 @@ import {
   consistencyScore,
 } from "./calculateSleepConsistency";
 
-const context = { homeTimeZone: "UTC", sleepTargetMinutes: 480 };
+const context = {
+  homeTimeZone: "UTC",
+  sleepTargetMinutes: 480,
+  birthDate: null,
+};
 
 describe("calculateSleepConsistency", () => {
   it("requires three prior nights before assigning a score", () => {

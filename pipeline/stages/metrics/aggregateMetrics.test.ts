@@ -8,7 +8,11 @@ import type {
 import { aggregateIntervalMetric } from "./aggregateIntervalMetric";
 import { aggregatePointMetric } from "./aggregatePointMetric";
 
-const context = { homeTimeZone: "America/Chicago", sleepTargetMinutes: 480 };
+const context = {
+  homeTimeZone: "America/Chicago",
+  sleepTargetMinutes: 480,
+  birthDate: null,
+};
 
 describe("metric aggregation", () => {
   it("splits an interval across local calendar days", () => {
@@ -140,7 +144,7 @@ describe("metric aggregation", () => {
       records,
       "steps",
       (item) => item.count,
-      { homeTimeZone: "UTC", sleepTargetMinutes: 480 },
+      { homeTimeZone: "UTC", sleepTargetMinutes: 480, birthDate: null },
     );
 
     assert.deepEqual(

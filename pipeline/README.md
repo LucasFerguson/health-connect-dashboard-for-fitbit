@@ -23,10 +23,12 @@ Sleep debt is calculated from the reconciled daily sleep record as `max(target -
 
 Sleep consistency uses the longest reconciled sleep event as each day’s main sleep. After three baseline nights are available, local bedtime and wake time are compared with a circular baseline from the preceding 14 calendar days. Circular time math allows 11:50 PM and 12:10 AM to remain close together. The score begins at 100 and loses one point for every three minutes of average bedtime/wake deviation. Scores are classified as optimal (80–100), sufficient (70–79), or poor (below 70). Intermediate baseline and deviation fields are retained so this deliberately versioned heuristic can be audited and refined.
 
+Healthspan v1 is explicitly experimental and is not a medical measurement. It combines 30-day sleep duration, sleep consistency, steps, and resting heart rate into separate, capped age adjustments. Health age is chronological age plus those auditable adjustments; `HEALTH_BIRTH_DATE` must be configured before the engine publishes an age. Pace of aging is the annualized regression slope of the health-age estimates from the latest 180 days. The precise factor values, references, coverage, contributions, and quality flags are retained so future models can be compared rather than silently replacing this heuristic.
+
 Run without persistence:
 
 ```bash
 npm run pipeline:run
 ```
 
-To persist results, configure `ANALYTICS_MONGO_URI` and optionally `ANALYTICS_DATABASE`. The default database name is `health_analytics`. Daily sleep debt and sleep consistency are stored with the other prepared daily metrics. Their versioned methodologies, rolling overviews, and 30-day breakdowns are also stored in `sleep_debt_summaries` and `sleep_consistency_summaries`.
+To persist results, configure `ANALYTICS_MONGO_URI` and optionally `ANALYTICS_DATABASE`. The default database name is `health_analytics`. Daily sleep debt, sleep consistency, and healthspan estimates are stored with the other prepared daily metrics. Versioned summaries are stored in `sleep_debt_summaries`, `sleep_consistency_summaries`, and `healthspan_summaries`.

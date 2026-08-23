@@ -26,6 +26,21 @@ console.log({
   scoredSleepConsistencyDays: result.analytics.sleepConsistency.daily.filter(
     (day) => day.score !== null,
   ).length,
+  healthspanStatus: result.analytics.healthspan.status,
+  healthspanEstimateDays: result.analytics.healthspan.trend.filter(
+    (day) => day.healthAgeYears !== null,
+  ).length,
+  healthAgeYears: result.analytics.healthspan.latest?.healthAgeYears ?? null,
+  healthAgeAdjustmentYears:
+    result.analytics.healthspan.latest?.ageDeltaYears ?? null,
+  healthspanFactors:
+    result.analytics.healthspan.latest?.factors.map((factor) => ({
+      key: factor.key,
+      value: factor.value,
+      ageImpactYears: factor.ageImpactYears,
+      coverageDays: factor.coverageDays,
+    })) ?? [],
+  paceOfAging: result.analytics.healthspan.paceOfAging,
   sleepTargetMinutes: result.analytics.sleepDebt.targetMinutes,
   deviceComparisons: result.analytics.deviceSleep.length,
   metricDays: {

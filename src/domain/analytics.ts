@@ -87,6 +87,45 @@ export interface SleepConsistencyAnalytics {
   breakdown30Day: SleepConsistencyBreakdown;
 }
 
+export type HealthspanStatus = "calibrating" | "partial" | "ready";
+export type HealthspanFactorKey =
+  | "sleep_duration"
+  | "sleep_consistency"
+  | "steps"
+  | "resting_heart_rate";
+
+export interface HealthspanFactor {
+  key: HealthspanFactorKey;
+  label: string;
+  value: number;
+  unit: "minutes" | "percent" | "steps" | "bpm";
+  referenceValue: number;
+  ageImpactYears: number;
+  coverageDays: number;
+}
+
+export interface DailyHealthspanEstimate {
+  date: DateKey;
+  chronologicalAgeYears: number | null;
+  healthAgeYears: number | null;
+  ageDeltaYears: number | null;
+  paceOfAging: number | null;
+  factors: HealthspanFactor[];
+  qualityFlags: string[];
+}
+
+export interface HealthspanAnalytics {
+  modelVersion: string;
+  status: HealthspanStatus;
+  birthDateConfigured: boolean;
+  methodology: string;
+  calibrationReasons: string[];
+  trend: DailyHealthspanEstimate[];
+  latest: DailyHealthspanEstimate | null;
+  paceOfAging: number | null;
+  paceWindowDays: number;
+}
+
 export interface DeviceSleepSummary {
   source: string;
   recordingCount: number;
@@ -150,6 +189,7 @@ export interface HealthAnalytics {
   dailySleep: DailySleepSummary[];
   sleepDebt: SleepDebtAnalytics;
   sleepConsistency: SleepConsistencyAnalytics;
+  healthspan: HealthspanAnalytics;
   deviceSleep: DeviceSleepSummary[];
   steps: MetricAnalytics;
   activeCalories: MetricAnalytics;
