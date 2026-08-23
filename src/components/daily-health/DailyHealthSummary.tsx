@@ -6,6 +6,7 @@ import { useHealthData } from "~/features/health/HealthDataProvider";
 import { selectDailyHealth } from "~/features/health/dailySelectors";
 import {
   formatCalories,
+  formatDurationMinutes,
   formatHeartRate,
   formatKilograms,
   formatPounds,
@@ -74,10 +75,12 @@ export function DailyHealthSummary() {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
         <DailyMetricTile
           title="Sleep"
-          value={day.sleep ? formatDuration(day.sleep.sleepMinutes) : null}
+          value={
+            day.sleep ? formatDurationMinutes(day.sleep.sleepMinutes) : null
+          }
           secondary={
             day.sleep
               ? `${day.sleep.eventCount} session${day.sleep.eventCount === 1 ? "" : "s"}`
@@ -85,6 +88,22 @@ export function DailyHealthSummary() {
           }
           source={sleepSources || null}
           accent="#8b5cf6"
+        />
+        <DailyMetricTile
+          title="Sleep debt"
+          value={
+            day.sleepDebt
+              ? formatDurationMinutes(day.sleepDebt.debtMinutes)
+              : null
+          }
+          secondary={
+            day.sleepDebt
+              ? `${day.sleepDebt.category} · ${formatDurationMinutes(day.sleepDebt.targetMinutes)} target`
+              : null
+          }
+          source={sleepSources ? `${sleepSources} (calculated)` : null}
+          href={`/sleep-debt?date=${date}`}
+          accent="#7dd3fc"
         />
         <DailyMetricTile
           title="Steps"
@@ -134,10 +153,4 @@ export function DailyHealthSummary() {
 
 function source(value: string | undefined): string | null {
   return value ? healthSourceLabel(value) : null;
-}
-
-function formatDuration(minutes: number): string {
-  const hours = Math.floor(minutes / 60);
-  const remainingMinutes = Math.round(minutes % 60);
-  return `${hours}h ${remainingMinutes}m`;
 }

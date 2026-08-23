@@ -14,3 +14,10 @@ export const formatPounds = (value: number) =>
   `${decimal.format(kilogramsToPounds(value))} lb`;
 export const formatWeight = (value: number) =>
   `${formatKilograms(value)} / ${formatPounds(value)}`;
+
+export function formatDurationMinutes(value: number): string {
+  const rounded = Math.round(Math.abs(value));
+  const hours = Math.floor(rounded / 60);
+  const minutes = rounded % 60;
+  return hours ? `${hours}h ${minutes}m` : `${minutes}m`;
+}

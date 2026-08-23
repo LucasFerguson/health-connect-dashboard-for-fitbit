@@ -9,6 +9,7 @@ export interface DailyHealthView {
   date: DateKey;
   sleep: DailySleepSummary | null;
   sleepEvents: SleepEvent[];
+  sleepDebt: HealthSnapshot["analytics"]["sleepDebt"]["daily"][number] | null;
   steps: DailyMetricSummary | null;
   activeCalories: DailyMetricSummary | null;
   totalCalories: DailyMetricSummary | null;
@@ -25,6 +26,8 @@ export function selectDailyHealth(
     date,
     sleep: analytics.dailySleep.find((day) => day.date === date) ?? null,
     sleepEvents: analytics.sleepEvents.filter((event) => event.date === date),
+    sleepDebt:
+      analytics.sleepDebt.daily.find((day) => day.date === date) ?? null,
     steps: findMetric(analytics.steps.daily, date),
     activeCalories: findMetric(analytics.activeCalories.daily, date),
     totalCalories: findMetric(analytics.totalCalories.daily, date),

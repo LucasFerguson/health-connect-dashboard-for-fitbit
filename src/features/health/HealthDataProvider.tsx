@@ -35,6 +35,7 @@ function mostRecentDate(snapshot: HealthSnapshot): DateKey | null {
   return (
     [
       ...analytics.sleepEvents.map((event) => event.date),
+      ...analytics.sleepDebt.daily.map((day) => day.date),
       ...analytics.steps.daily.map((day) => day.date),
       ...analytics.activeCalories.daily.map((day) => day.date),
       ...analytics.totalCalories.daily.map((day) => day.date),

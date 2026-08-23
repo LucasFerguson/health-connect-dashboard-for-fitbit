@@ -6,6 +6,7 @@ import { DeviceSleepComparison } from "./DeviceSleepComparison";
 import { DailyHealthSummary } from "./daily-health/DailyHealthSummary";
 import { HealthSignalsSection } from "./health-signals/HealthSignalsSection";
 import { SleepCalendar } from "./SleepCalendar";
+import { SleepDebtSummaryCard } from "./sleep-debt/SleepDebtSummaryCard";
 import { SleepStagesGraph } from "./SleepStagesGraph";
 
 export function Dashboard({ snapshot }: { snapshot: HealthSnapshot }) {
@@ -45,6 +46,7 @@ export function Dashboard({ snapshot }: { snapshot: HealthSnapshot }) {
               </article>
             </div>
           </section>
+          <SleepDebtSummaryCard />
           <DeviceSleepComparison />
           <HealthSignalsSection />
         </div>
