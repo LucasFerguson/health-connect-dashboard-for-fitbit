@@ -7,7 +7,7 @@ import type {
 import type { IntervalObservation } from "../../../src/domain/health";
 import type { PipelineContext } from "../../context";
 import { dateKeyInTimeZone } from "../../shared/dateKey";
-import { buildMetricOverview } from "./buildMetricOverview";
+import { buildMetricAnalytics } from "./buildMetricOverview";
 
 interface SourceAccumulator {
   value: number;
@@ -87,7 +87,7 @@ export function aggregateIntervalMetric<T extends IntervalObservation>(
     })
     .sort((left, right) => left.date.localeCompare(right.date));
 
-  return { unit, daily, overview: buildMetricOverview(daily) };
+  return buildMetricAnalytics(unit, daily);
 }
 
 function splitByLocalDay(start: number, end: number, timeZone: string) {

@@ -104,6 +104,70 @@ describe("metric aggregation", () => {
     );
     assert.equal(result.daily[0]?.value, 69.5);
   });
+
+  it("prepares calendar-aware rolling and monthly trend series", () => {
+    const records: StepsObservation[] = [
+      steps(
+        "one",
+        "watch",
+        "2026-01-01T12:00:00Z",
+        "2026-01-01T13:00:00Z",
+        100,
+      ),
+      steps(
+        "two",
+        "watch",
+        "2026-01-02T12:00:00Z",
+        "2026-01-02T13:00:00Z",
+        300,
+      ),
+      steps(
+        "three",
+        "watch",
+        "2026-01-10T12:00:00Z",
+        "2026-01-10T13:00:00Z",
+        900,
+      ),
+      steps(
+        "four",
+        "watch",
+        "2026-02-01T12:00:00Z",
+        "2026-02-01T13:00:00Z",
+        500,
+      ),
+    ];
+    const result = aggregateIntervalMetric(
+      records,
+      "steps",
+      (item) => item.count,
+      { homeTimeZone: "UTC" },
+    );
+
+    assert.deepEqual(
+      result.rolling7Day.map((point) => [
+        point.date,
+        point.value,
+        point.sampleCount,
+      ]),
+      [
+        ["2026-01-01", 100, 1],
+        ["2026-01-02", 200, 2],
+        ["2026-01-10", 900, 1],
+        ["2026-02-01", 500, 1],
+      ],
+    );
+    assert.deepEqual(
+      result.monthly.map((month) => [
+        month.month,
+        month.value,
+        month.sampleCount,
+      ]),
+      [
+        ["2026-01", 433.3333333333333, 3],
+        ["2026-02", 500, 1],
+      ],
+    );
+  });
 });
 
 function steps(

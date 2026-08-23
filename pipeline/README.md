@@ -17,6 +17,8 @@ The pipeline never modifies HCGateway source observations. Mongo output uses a s
 
 Canonical units are steps, kilocalories, beats per minute, and kilograms. Interval metrics are split across calendar days in `HEALTH_HOME_TIME_ZONE`, aggregated per source, and reconciled by source coverage instead of being summed across devices. Resting heart rate uses a daily median; weight uses the latest daily observation. Every selected value retains its source and all per-source alternatives.
 
+Each metric also produces calendar-aware seven-day trends and monthly averages. Missing days are excluded from averages rather than silently becoming zero. These prepared series are shared by the dashboard and metric detail pages.
+
 Run without persistence:
 
 ```bash

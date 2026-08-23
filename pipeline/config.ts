@@ -1,2 +1,2 @@
-export const PIPELINE_ALGORITHM_VERSION = "health-analytics-v2";
+export const PIPELINE_ALGORITHM_VERSION = "health-analytics-v3";
 export const SAME_SLEEP_EVENT_OVERLAP_RATIO = 0.8;

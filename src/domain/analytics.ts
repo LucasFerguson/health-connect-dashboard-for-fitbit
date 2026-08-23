@@ -48,10 +48,24 @@ export interface MetricOverview {
   sampleCount: number;
 }
 
+export interface MetricTrendPoint {
+  date: DateKey;
+  value: number;
+  sampleCount: number;
+}
+
+export interface MonthlyMetricSummary {
+  month: string;
+  value: number;
+  sampleCount: number;
+}
+
 export interface MetricAnalytics {
   unit: MetricUnit;
   daily: DailyMetricSummary[];
   overview: MetricOverview;
+  rolling7Day: MetricTrendPoint[];
+  monthly: MonthlyMetricSummary[];
 }
 
 export interface HealthAnalytics {

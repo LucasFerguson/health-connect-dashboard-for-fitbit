@@ -6,7 +6,7 @@ import type {
 } from "../../../src/domain/analytics";
 import type { PipelineContext } from "../../context";
 import { dateKeyInTimeZone } from "../../shared/dateKey";
-import { buildMetricOverview } from "./buildMetricOverview";
+import { buildMetricAnalytics } from "./buildMetricOverview";
 
 interface PointObservation {
   id: string;
@@ -75,7 +75,7 @@ export function aggregatePointMetric<T extends PointObservation>(
     })
     .sort((left, right) => left.date.localeCompare(right.date));
 
-  return { unit, daily, overview: buildMetricOverview(daily) };
+  return buildMetricAnalytics(unit, daily);
 }
 
 function median(values: number[]): number {
