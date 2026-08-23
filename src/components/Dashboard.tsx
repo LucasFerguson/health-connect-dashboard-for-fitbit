@@ -3,6 +3,7 @@
 import type { HealthSnapshot } from "~/domain/health";
 import { HealthDataProvider } from "~/features/health/HealthDataProvider";
 import { DeviceSleepComparison } from "./DeviceSleepComparison";
+import { DailyHealthSummary } from "./daily-health/DailyHealthSummary";
 import { HealthSignalsSection } from "./health-signals/HealthSignalsSection";
 import { SleepCalendar } from "./SleepCalendar";
 import { SleepStagesGraph } from "./SleepStagesGraph";
@@ -28,6 +29,7 @@ export function Dashboard({ snapshot }: { snapshot: HealthSnapshot }) {
           </div>
         </header>
         <div className="mx-auto flex max-w-7xl flex-col gap-8">
+          <DailyHealthSummary />
           <section aria-labelledby="sleep-heading">
             <h2 id="sleep-heading" className="mb-3 text-2xl font-bold">
               Sleep overview

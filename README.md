@@ -1,6 +1,6 @@
 # Health Dashboard
 
-A self-hosted dashboard for health metrics collected from phones and wearables. The current vertical slice provides an interactive sleep calendar and sleep-stage graph. When API credentials are absent, the app intentionally uses its bundled demo dataset.
+A self-hosted dashboard for health metrics collected from phones and wearables. It provides daily and long-term views of sleep, steps, calories, resting heart rate, and weight. When API credentials are absent, the app intentionally uses its bundled demo dataset.
 
 ## Architecture and data flow
 
@@ -32,6 +32,8 @@ Roadmap:
 - [x] Allow users to click on a day in the calendar to view detailed sleep data
 - [x] Represent multiple daily sleep sessions and allow switching between them
 - [x] Add activity, calorie, resting-heart-rate, and weight analytics
+- [x] Add daily health summaries and reusable metric detail pages
+- [x] Add year heatmaps, rolling trends, and monthly views
 - [ ] Add persistence, scheduled imports, and historical aggregation
 
 Dashboard Screenshot:

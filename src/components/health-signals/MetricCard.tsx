@@ -1,3 +1,4 @@
+import Link from "next/link";
 import type { ReactNode } from "react";
 import type { MetricAnalytics } from "~/domain/analytics";
 import { healthSourceLabel } from "~/features/health/sourceLabels";
@@ -12,6 +13,7 @@ export function MetricCard({
   chartType,
   secondary,
   trendDays,
+  href,
 }: {
   id: string;
   title: string;
@@ -21,12 +23,13 @@ export function MetricCard({
   chartType: "bar" | "line";
   secondary?: ReactNode;
   trendDays?: number;
+  href: string;
 }) {
   const { latest, average7Day, changeFromPrevious } = analytics.overview;
 
-  return (
+  const card = (
     <article
-      className="rounded-xl border border-white/10 bg-white/10 p-5"
+      className="group rounded-xl border border-white/10 bg-white/10 p-5 transition hover:border-white/25 hover:bg-white/[0.13]"
       aria-labelledby={`${id}-heading`}
     >
       <div className="flex min-h-24 items-start justify-between gap-3">
@@ -76,7 +79,19 @@ export function MetricCard({
           Trend appears after data is recorded
         </div>
       )}
+      <p className="mt-2 text-xs font-medium text-violet-200 group-hover:text-white">
+        Open detailed analytics →
+      </p>
     </article>
+  );
+
+  return (
+    <Link
+      href={href}
+      className="block rounded-xl focus:ring-2 focus:ring-violet-300 focus:outline-none"
+    >
+      {card}
+    </Link>
   );
 }
 

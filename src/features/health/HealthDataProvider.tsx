@@ -31,10 +31,16 @@ interface HealthDataContextValue extends HealthDataState {
 const HealthDataContext = createContext<HealthDataContextValue | null>(null);
 
 function mostRecentDate(snapshot: HealthSnapshot): DateKey | null {
+  const { analytics } = snapshot;
   return (
-    snapshot.analytics.sleepEvents
-      .map((event) => event.date)
-      .sort((a, b) => b.localeCompare(a))[0] ?? null
+    [
+      ...analytics.sleepEvents.map((event) => event.date),
+      ...analytics.steps.daily.map((day) => day.date),
+      ...analytics.activeCalories.daily.map((day) => day.date),
+      ...analytics.totalCalories.daily.map((day) => day.date),
+      ...analytics.restingHeartRate.daily.map((day) => day.date),
+      ...analytics.weight.daily.map((day) => day.date),
+    ].sort((a, b) => b.localeCompare(a))[0] ?? null
   );
 }
 
