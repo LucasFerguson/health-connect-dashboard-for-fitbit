@@ -14,6 +14,39 @@ export interface DailySleepSummary {
   recordingCount: number;
 }
 
+export type SleepDebtCategory = "none" | "low" | "moderate" | "high";
+
+export interface DailySleepDebt {
+  date: DateKey;
+  sleepMinutes: number;
+  targetMinutes: number;
+  debtMinutes: number;
+  surplusMinutes: number;
+  category: SleepDebtCategory;
+  rolling7DayAverageMinutes: number;
+  rolling7DayTotalMinutes: number;
+  rolling30DayAverageMinutes: number;
+}
+
+export interface SleepDebtBreakdown {
+  recordedDays: number;
+  none: number;
+  low: number;
+  moderate: number;
+  high: number;
+}
+
+export interface SleepDebtAnalytics {
+  targetMinutes: number;
+  methodology: string;
+  daily: DailySleepDebt[];
+  latest: DailySleepDebt | null;
+  average7DayMinutes: number | null;
+  average30DayMinutes: number | null;
+  previous30DayAverageMinutes: number | null;
+  breakdown30Day: SleepDebtBreakdown;
+}
+
 export interface DeviceSleepSummary {
   source: string;
   recordingCount: number;
@@ -71,9 +104,11 @@ export interface MetricAnalytics {
 export interface HealthAnalytics {
   algorithmVersion: string;
   sourceFingerprint: string;
+  configurationFingerprint: string;
   processedAt: ISODateTime;
   sleepEvents: SleepEvent[];
   dailySleep: DailySleepSummary[];
+  sleepDebt: SleepDebtAnalytics;
   deviceSleep: DeviceSleepSummary[];
   steps: MetricAnalytics;
   activeCalories: MetricAnalytics;

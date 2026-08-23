@@ -4,6 +4,7 @@ import type { RawHealthData } from "../src/domain/health";
 import { PIPELINE_ALGORITHM_VERSION } from "./config";
 import { createPipelineContext, type PipelineContext } from "./context";
 import { aggregateDailySleep } from "./stages/aggregateDailySleep";
+import { calculateSleepDebt } from "./stages/calculateSleepDebt";
 import { compareDevices } from "./stages/compareDevices";
 import { reconcileSleepEvents } from "./stages/reconcileSleepEvents";
 import { aggregateIntervalMetric } from "./stages/metrics/aggregateIntervalMetric";
@@ -14,12 +15,15 @@ export function processHealthData(
   context: PipelineContext = createPipelineContext(),
 ): HealthAnalytics {
   const sleepEvents = reconcileSleepEvents(healthData.sleepSessions, context);
+  const dailySleep = aggregateDailySleep(sleepEvents);
   return {
     algorithmVersion: PIPELINE_ALGORITHM_VERSION,
     sourceFingerprint: fingerprint(healthData),
+    configurationFingerprint: fingerprint(context),
     processedAt: new Date().toISOString(),
     sleepEvents,
-    dailySleep: aggregateDailySleep(sleepEvents),
+    dailySleep,
+    sleepDebt: calculateSleepDebt(dailySleep, context.sleepTargetMinutes),
     deviceSleep: compareDevices(sleepEvents),
     steps: aggregateIntervalMetric(
       healthData.steps,
@@ -56,12 +60,17 @@ export function processHealthData(
   };
 }
 
-function fingerprint(healthData: RawHealthData): string {
-  const stableInput = Object.fromEntries(
-    Object.entries(healthData).map(([metric, observations]) => [
-      metric,
-      [...observations].sort((left, right) => left.id.localeCompare(right.id)),
-    ]),
-  );
+function fingerprint(value: RawHealthData | PipelineContext): string {
+  const stableInput =
+    "sleepSessions" in value
+      ? Object.fromEntries(
+          Object.entries(value).map(([metric, observations]) => [
+            metric,
+            [...observations].sort((left, right) =>
+              left.id.localeCompare(right.id),
+            ),
+          ]),
+        )
+      : value;
   return createHash("sha256").update(JSON.stringify(stableInput)).digest("hex");
 }

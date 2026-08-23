@@ -57,7 +57,7 @@ describe("reconcileSleepEvents", () => {
   });
 });
 
-const context = { homeTimeZone: "UTC" };
+const context = { homeTimeZone: "UTC", sleepTargetMinutes: 480 };
 
 function raw(sleepSessions: SleepSession[]) {
   return {

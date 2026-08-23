@@ -14,7 +14,7 @@ export class MongoAnalyticsStore implements AnalyticsStore {
 
   async save(analytics: HealthAnalytics): Promise<"saved" | "unchanged"> {
     const client = new MongoClient(this.uri);
-    const runId = `${analytics.algorithmVersion}:${analytics.sourceFingerprint}`;
+    const runId = `${analytics.algorithmVersion}:${analytics.sourceFingerprint}:${analytics.configurationFingerprint}`;
     try {
       await client.connect();
       const database = client.db(this.databaseName);
@@ -24,6 +24,8 @@ export class MongoAnalyticsStore implements AnalyticsStore {
         .findOne({ _id: "current" });
       if (
         current?.sourceFingerprint === analytics.sourceFingerprint &&
+        current.configurationFingerprint ===
+          analytics.configurationFingerprint &&
         current.algorithmVersion === analytics.algorithmVersion
       ) {
         return "unchanged";
@@ -36,6 +38,7 @@ export class MongoAnalyticsStore implements AnalyticsStore {
             status: "started",
             algorithmVersion: analytics.algorithmVersion,
             sourceFingerprint: analytics.sourceFingerprint,
+            configurationFingerprint: analytics.configurationFingerprint,
             startedAt: analytics.processedAt,
           },
         },
@@ -45,6 +48,7 @@ export class MongoAnalyticsStore implements AnalyticsStore {
         writeDailyMetrics(database, runId, analytics),
         writeSleepEvents(database, runId, analytics),
         writeDeviceComparisons(database, runId, analytics),
+        writeSleepDebtSummary(database, runId, analytics),
       ]);
 
       const completedAt = new Date().toISOString();
@@ -58,18 +62,21 @@ export class MongoAnalyticsStore implements AnalyticsStore {
           },
         },
       );
-      await database.collection<StringIdDocument>("analytics_current").updateOne(
-        { _id: "current" },
-        {
-          $set: {
-            runId,
-            algorithmVersion: analytics.algorithmVersion,
-            sourceFingerprint: analytics.sourceFingerprint,
-            completedAt,
+      await database
+        .collection<StringIdDocument>("analytics_current")
+        .updateOne(
+          { _id: "current" },
+          {
+            $set: {
+              runId,
+              algorithmVersion: analytics.algorithmVersion,
+              sourceFingerprint: analytics.sourceFingerprint,
+              configurationFingerprint: analytics.configurationFingerprint,
+              completedAt,
+            },
           },
-        },
-        { upsert: true },
-      );
+          { upsert: true },
+        );
       return "saved";
     } catch (error) {
       await recordFailure(client, this.databaseName, runId, error);
@@ -84,6 +91,7 @@ function buildCounts(analytics: HealthAnalytics) {
   return {
     sleepEvents: analytics.sleepEvents.length,
     dailySleep: analytics.dailySleep.length,
+    dailySleepDebt: analytics.sleepDebt.daily.length,
     dailySteps: analytics.steps.daily.length,
     dailyActiveCalories: analytics.activeCalories.daily.length,
     dailyTotalCalories: analytics.totalCalories.daily.length,
@@ -132,6 +140,9 @@ async function ensureIndexes(database: Db) {
     database
       .collection("processing_runs")
       .createIndex({ status: 1, completedAt: -1 }),
+    database
+      .collection("sleep_debt_summaries")
+      .createIndex({ runId: 1 }, { unique: true }),
   ]);
 }
 
@@ -142,6 +153,7 @@ async function writeDailyMetrics(
 ) {
   const dates = new Set([
     ...analytics.dailySleep.map((item) => item.date),
+    ...analytics.sleepDebt.daily.map((item) => item.date),
     ...analytics.steps.daily.map((item) => item.date),
     ...analytics.activeCalories.daily.map((item) => item.date),
     ...analytics.totalCalories.daily.map((item) => item.date),
@@ -151,6 +163,7 @@ async function writeDailyMetrics(
   const byDate = <T extends { date: string }>(values: T[]) =>
     new Map(values.map((value) => [value.date, value]));
   const sleep = byDate(analytics.dailySleep);
+  const sleepDebt = byDate(analytics.sleepDebt.daily);
   const steps = byDate(analytics.steps.daily);
   const activeCalories = byDate(analytics.activeCalories.daily);
   const totalCalories = byDate(analytics.totalCalories.daily);
@@ -164,6 +177,7 @@ async function writeDailyMetrics(
           runId,
           date,
           sleep: sleep.get(date) ?? null,
+          sleepDebt: sleepDebt.get(date) ?? null,
           steps: steps.get(date) ?? null,
           activeCalories: activeCalories.get(date) ?? null,
           totalCalories: totalCalories.get(date) ?? null,
@@ -177,6 +191,26 @@ async function writeDailyMetrics(
   if (operations.length) {
     await database.collection("daily_metrics").bulkWrite(operations);
   }
+}
+
+async function writeSleepDebtSummary(
+  database: Db,
+  runId: string,
+  analytics: HealthAnalytics,
+) {
+  const { daily: _, ...summary } = analytics.sleepDebt;
+  await database.collection("sleep_debt_summaries").updateOne(
+    { runId },
+    {
+      $setOnInsert: {
+        runId,
+        algorithmVersion: analytics.algorithmVersion,
+        configurationFingerprint: analytics.configurationFingerprint,
+        ...summary,
+      },
+    },
+    { upsert: true },
+  );
 }
 
 async function writeSleepEvents(

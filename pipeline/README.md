@@ -19,10 +19,12 @@ Canonical units are steps, kilocalories, beats per minute, and kilograms. Interv
 
 Each metric also produces calendar-aware seven-day trends and monthly averages. Missing days are excluded from averages rather than silently becoming zero. These prepared series are shared by the dashboard and metric detail pages.
 
+Sleep debt is calculated from the reconciled daily sleep record as `max(target - recorded sleep, 0)`. Surplus sleep is retained separately and never erases source data. The target defaults to 480 minutes and can be set with `SLEEP_TARGET_MINUTES`. Rolling windows exclude days without a sleep record so an importer outage does not become eight hours of artificial debt.
+
 Run without persistence:
 
 ```bash
 npm run pipeline:run
 ```
 
-To persist results, configure `ANALYTICS_MONGO_URI` and optionally `ANALYTICS_DATABASE`. The default database name is `health_analytics`.
+To persist results, configure `ANALYTICS_MONGO_URI` and optionally `ANALYTICS_DATABASE`. The default database name is `health_analytics`. Daily sleep debt is stored with the other prepared daily metrics, while its target, methodology, rolling overview, and 30-day breakdown are stored in `sleep_debt_summaries`.
