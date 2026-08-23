@@ -5,6 +5,7 @@ import { HealthDataProvider } from "~/features/health/HealthDataProvider";
 import { DeviceSleepComparison } from "./DeviceSleepComparison";
 import { DailyHealthSummary } from "./daily-health/DailyHealthSummary";
 import { HealthSignalsSection } from "./health-signals/HealthSignalsSection";
+import { HealthspanCard } from "./healthspan/HealthspanCard";
 import { SleepCalendar } from "./SleepCalendar";
 import { SleepConsistencySummaryCard } from "./sleep-consistency/SleepConsistencySummaryCard";
 import { SleepDebtSummaryCard } from "./sleep-debt/SleepDebtSummaryCard";
@@ -32,6 +33,7 @@ export function Dashboard({ snapshot }: { snapshot: HealthSnapshot }) {
         </header>
         <div className="mx-auto flex max-w-7xl flex-col gap-8">
           <DailyHealthSummary />
+          <HealthspanCard />
           <section aria-labelledby="sleep-heading">
             <h2 id="sleep-heading" className="mb-3 text-2xl font-bold">
               Sleep overview

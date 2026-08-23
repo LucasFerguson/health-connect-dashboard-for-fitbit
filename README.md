@@ -36,6 +36,7 @@ Roadmap:
 - [x] Add year heatmaps, rolling trends, and monthly views
 - [x] Add configurable rolling sleep-debt analytics and persistence
 - [x] Add versioned sleep-consistency analytics and persistence
+- [x] Add an experimental, auditable health-age and pace-of-aging model
 - [ ] Add persistence, scheduled imports, and historical aggregation
 
 Dashboard Screenshot:
@@ -77,6 +78,9 @@ Create a `.env` file in the root directory of the project with the following con
 API_USERNAME=your_username
 API_PASSWORD=your_password
 API_URL=http://your-health-connect-api:6644
+HEALTH_HOME_TIME_ZONE=America/Chicago
+SLEEP_TARGET_MINUTES=480
+HEALTH_BIRTH_DATE=1990-01-31
 ```
 
 ## Building and Running the Dashboard
