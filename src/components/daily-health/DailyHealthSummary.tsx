@@ -87,6 +87,7 @@ export function DailyHealthSummary() {
               : null
           }
           source={sleepSources || null}
+          href={`/sleep?date=${date}`}
           accent="#8b5cf6"
         />
         <DailyMetricTile

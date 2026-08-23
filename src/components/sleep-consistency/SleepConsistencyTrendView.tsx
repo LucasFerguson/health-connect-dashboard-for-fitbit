@@ -9,6 +9,7 @@ import type {
   SleepConsistencyBreakdown,
 } from "~/domain/analytics";
 import { healthSourceLabel } from "~/features/health/sourceLabels";
+import { CalendarHeatmap } from "../heatmap/CalendarHeatmap";
 import { TrendBreakdown } from "../sleep-trends/TrendBreakdown";
 import {
   TrendRangeTabs,
@@ -113,6 +114,20 @@ export function SleepConsistencyTrendView({
         {selectedDate ? (
           <SelectedNight day={selected ?? null} date={selectedDate} />
         ) : null}
+
+        <div className="mt-6">
+          <CalendarHeatmap
+            data={analytics.daily.flatMap((day) =>
+              day.score === null ? [] : [{ date: day.date, value: day.score }],
+            )}
+            title="Consistency calendar"
+            description="A year of schedule regularity. Darker days represent more consistent bedtime and wake timing."
+            label="Sleep consistency"
+            color="#34d399"
+            formatValue={(value) => `${Math.round(value)}%`}
+            initialDate={selectedDate}
+          />
+        </div>
 
         <TrendBreakdown
           title="Sleep consistency breakdown"

@@ -9,6 +9,7 @@ import type {
   SleepDebtBreakdown,
 } from "~/domain/analytics";
 import { formatDurationMinutes } from "~/features/health/metricFormatters";
+import { CalendarHeatmap } from "../heatmap/CalendarHeatmap";
 import { TrendBreakdown } from "../sleep-trends/TrendBreakdown";
 import {
   TrendRangeTabs,
@@ -113,6 +114,21 @@ export function SleepDebtTrendView({
             </div>
           )}
         </header>
+
+        <div className="mt-6">
+          <CalendarHeatmap
+            data={analytics.daily.map((day) => ({
+              date: day.date,
+              value: day.debtMinutes,
+            }))}
+            title="Sleep debt calendar"
+            description="A year of daily shortfall. Darker days represent more debt; lower is better."
+            label="Sleep debt"
+            color="#7dd3fc"
+            formatValue={formatDurationMinutes}
+            initialDate={selectedDate}
+          />
+        </div>
 
         <TrendBreakdown
           title="Sleep debt breakdown"
