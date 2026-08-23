@@ -49,6 +49,7 @@ export class MongoAnalyticsStore implements AnalyticsStore {
         writeSleepEvents(database, runId, analytics),
         writeDeviceComparisons(database, runId, analytics),
         writeSleepDebtSummary(database, runId, analytics),
+        writeSleepConsistencySummary(database, runId, analytics),
       ]);
 
       const completedAt = new Date().toISOString();
@@ -92,6 +93,7 @@ function buildCounts(analytics: HealthAnalytics) {
     sleepEvents: analytics.sleepEvents.length,
     dailySleep: analytics.dailySleep.length,
     dailySleepDebt: analytics.sleepDebt.daily.length,
+    dailySleepConsistency: analytics.sleepConsistency.daily.length,
     dailySteps: analytics.steps.daily.length,
     dailyActiveCalories: analytics.activeCalories.daily.length,
     dailyTotalCalories: analytics.totalCalories.daily.length,
@@ -143,6 +145,9 @@ async function ensureIndexes(database: Db) {
     database
       .collection("sleep_debt_summaries")
       .createIndex({ runId: 1 }, { unique: true }),
+    database
+      .collection("sleep_consistency_summaries")
+      .createIndex({ runId: 1 }, { unique: true }),
   ]);
 }
 
@@ -154,6 +159,7 @@ async function writeDailyMetrics(
   const dates = new Set([
     ...analytics.dailySleep.map((item) => item.date),
     ...analytics.sleepDebt.daily.map((item) => item.date),
+    ...analytics.sleepConsistency.daily.map((item) => item.date),
     ...analytics.steps.daily.map((item) => item.date),
     ...analytics.activeCalories.daily.map((item) => item.date),
     ...analytics.totalCalories.daily.map((item) => item.date),
@@ -164,6 +170,7 @@ async function writeDailyMetrics(
     new Map(values.map((value) => [value.date, value]));
   const sleep = byDate(analytics.dailySleep);
   const sleepDebt = byDate(analytics.sleepDebt.daily);
+  const sleepConsistency = byDate(analytics.sleepConsistency.daily);
   const steps = byDate(analytics.steps.daily);
   const activeCalories = byDate(analytics.activeCalories.daily);
   const totalCalories = byDate(analytics.totalCalories.daily);
@@ -178,6 +185,7 @@ async function writeDailyMetrics(
           date,
           sleep: sleep.get(date) ?? null,
           sleepDebt: sleepDebt.get(date) ?? null,
+          sleepConsistency: sleepConsistency.get(date) ?? null,
           steps: steps.get(date) ?? null,
           activeCalories: activeCalories.get(date) ?? null,
           totalCalories: totalCalories.get(date) ?? null,
@@ -200,6 +208,26 @@ async function writeSleepDebtSummary(
 ) {
   const { daily: _, ...summary } = analytics.sleepDebt;
   await database.collection("sleep_debt_summaries").updateOne(
+    { runId },
+    {
+      $setOnInsert: {
+        runId,
+        algorithmVersion: analytics.algorithmVersion,
+        configurationFingerprint: analytics.configurationFingerprint,
+        ...summary,
+      },
+    },
+    { upsert: true },
+  );
+}
+
+async function writeSleepConsistencySummary(
+  database: Db,
+  runId: string,
+  analytics: HealthAnalytics,
+) {
+  const { daily: _, ...summary } = analytics.sleepConsistency;
+  await database.collection("sleep_consistency_summaries").updateOne(
     { runId },
     {
       $setOnInsert: {

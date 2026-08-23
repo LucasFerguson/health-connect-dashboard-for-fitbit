@@ -21,10 +21,12 @@ Each metric also produces calendar-aware seven-day trends and monthly averages. 
 
 Sleep debt is calculated from the reconciled daily sleep record as `max(target - recorded sleep, 0)`. Surplus sleep is retained separately and never erases source data. The target defaults to 480 minutes and can be set with `SLEEP_TARGET_MINUTES`. Rolling windows exclude days without a sleep record so an importer outage does not become eight hours of artificial debt.
 
+Sleep consistency uses the longest reconciled sleep event as each day’s main sleep. After three baseline nights are available, local bedtime and wake time are compared with a circular baseline from the preceding 14 calendar days. Circular time math allows 11:50 PM and 12:10 AM to remain close together. The score begins at 100 and loses one point for every three minutes of average bedtime/wake deviation. Scores are classified as optimal (80–100), sufficient (70–79), or poor (below 70). Intermediate baseline and deviation fields are retained so this deliberately versioned heuristic can be audited and refined.
+
 Run without persistence:
 
 ```bash
 npm run pipeline:run
 ```
 
-To persist results, configure `ANALYTICS_MONGO_URI` and optionally `ANALYTICS_DATABASE`. The default database name is `health_analytics`. Daily sleep debt is stored with the other prepared daily metrics, while its target, methodology, rolling overview, and 30-day breakdown are stored in `sleep_debt_summaries`.
+To persist results, configure `ANALYTICS_MONGO_URI` and optionally `ANALYTICS_DATABASE`. The default database name is `health_analytics`. Daily sleep debt and sleep consistency are stored with the other prepared daily metrics. Their versioned methodologies, rolling overviews, and 30-day breakdowns are also stored in `sleep_debt_summaries` and `sleep_consistency_summaries`.

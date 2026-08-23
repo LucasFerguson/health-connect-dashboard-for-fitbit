@@ -5,6 +5,7 @@ import { PIPELINE_ALGORITHM_VERSION } from "./config";
 import { createPipelineContext, type PipelineContext } from "./context";
 import { aggregateDailySleep } from "./stages/aggregateDailySleep";
 import { calculateSleepDebt } from "./stages/calculateSleepDebt";
+import { calculateSleepConsistency } from "./stages/calculateSleepConsistency";
 import { compareDevices } from "./stages/compareDevices";
 import { reconcileSleepEvents } from "./stages/reconcileSleepEvents";
 import { aggregateIntervalMetric } from "./stages/metrics/aggregateIntervalMetric";
@@ -24,6 +25,7 @@ export function processHealthData(
     sleepEvents,
     dailySleep,
     sleepDebt: calculateSleepDebt(dailySleep, context.sleepTargetMinutes),
+    sleepConsistency: calculateSleepConsistency(sleepEvents, context),
     deviceSleep: compareDevices(sleepEvents),
     steps: aggregateIntervalMetric(
       healthData.steps,

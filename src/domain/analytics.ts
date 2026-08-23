@@ -47,6 +47,46 @@ export interface SleepDebtAnalytics {
   breakdown30Day: SleepDebtBreakdown;
 }
 
+export type SleepConsistencyCategory = "optimal" | "sufficient" | "poor";
+
+export interface DailySleepConsistency {
+  date: DateKey;
+  source: string;
+  bedtimeAt: ISODateTime;
+  wakeAt: ISODateTime;
+  bedtimeMinutesLocal: number;
+  wakeMinutesLocal: number;
+  baselineBedtimeMinutesLocal: number | null;
+  baselineWakeMinutesLocal: number | null;
+  bedtimeDeviationMinutes: number | null;
+  wakeDeviationMinutes: number | null;
+  baselineNightCount: number;
+  score: number | null;
+  category: SleepConsistencyCategory | null;
+  rolling7DayAverageScore: number | null;
+  rolling30DayAverageScore: number | null;
+  qualityFlags: string[];
+}
+
+export interface SleepConsistencyBreakdown {
+  scoredDays: number;
+  optimal: number;
+  sufficient: number;
+  poor: number;
+}
+
+export interface SleepConsistencyAnalytics {
+  baselineWindowDays: number;
+  minimumBaselineNights: number;
+  methodology: string;
+  daily: DailySleepConsistency[];
+  latest: DailySleepConsistency | null;
+  average7DayScore: number | null;
+  average30DayScore: number | null;
+  previous30DayAverageScore: number | null;
+  breakdown30Day: SleepConsistencyBreakdown;
+}
+
 export interface DeviceSleepSummary {
   source: string;
   recordingCount: number;
@@ -109,6 +149,7 @@ export interface HealthAnalytics {
   sleepEvents: SleepEvent[];
   dailySleep: DailySleepSummary[];
   sleepDebt: SleepDebtAnalytics;
+  sleepConsistency: SleepConsistencyAnalytics;
   deviceSleep: DeviceSleepSummary[];
   steps: MetricAnalytics;
   activeCalories: MetricAnalytics;

@@ -22,6 +22,10 @@ console.log({
   sleepEvents: result.analytics.sleepEvents.length,
   dailySummaries: result.analytics.dailySleep.length,
   sleepDebtDays: result.analytics.sleepDebt.daily.length,
+  sleepConsistencyDays: result.analytics.sleepConsistency.daily.length,
+  scoredSleepConsistencyDays: result.analytics.sleepConsistency.daily.filter(
+    (day) => day.score !== null,
+  ).length,
   sleepTargetMinutes: result.analytics.sleepDebt.targetMinutes,
   deviceComparisons: result.analytics.deviceSleep.length,
   metricDays: {
