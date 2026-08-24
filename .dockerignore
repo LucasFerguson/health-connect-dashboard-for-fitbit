@@ -1,0 +1,14 @@
+node_modules
+.next
+.git
+.env.local
+.env
+*.tsbuildinfo
+npm-debug.log*
+Dockerfile
+docker-compose*.yml
+Health Dashboard Desktop Mockups
+docs/inspo
+audit-logs
+JOURNAL.md
+CLEAN_CODE_REPORT.md

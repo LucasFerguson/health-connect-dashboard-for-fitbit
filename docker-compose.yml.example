@@ -1,6 +1,6 @@
 services:
   dashboard:
-    image: lucaslad5275/hc-dashboard:1.0
+    build: .
     container_name: health-connect-dashboard
     ports:
       - "3000:3000"
@@ -8,4 +8,5 @@ services:
       - API_USERNAME=EDIT_ME
       - API_PASSWORD=EDIT_ME
       - API_URL=http://192.168.8.EDIT_ME:6644
+      - HEALTH_HOME_TIME_ZONE=EDIT_ME # e.g. America/Chicago; affects the legacy pages only — see README
     restart: unless-stopped
