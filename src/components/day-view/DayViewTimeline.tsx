@@ -2,7 +2,7 @@
 
 import { useRef } from "react";
 import { Card } from "~/components/ui/Card";
-import type { HourlySteps, SleepStageSegment } from "~/domain/dayViewData";
+import type { HealthDay } from "~/server/health/dayAnalyticsSchema";
 import { HeartRateLane } from "./HeartRateLane";
 import { HoverCrosshair } from "./HoverCrosshair";
 import { MovementLane } from "./MovementLane";
@@ -17,29 +17,27 @@ import { HR_RAMP } from "./timelineConstants";
  * The 24-hour timeline — the core of the day view. Four lanes (HR
  * candlesticks, sleep stages, movement, plan) share one time axis built
  * from `~/domain/dayViewTime`'s shared math, so a heart-rate bump can be
- * read straight down into "REM" even though only the sleep and movement
- * lanes have real backing data today.
+ * read straight down into "REM". Lane data comes straight from
+ * `timeline.*` in the `health-day-v1` response — no local bucketing.
  */
 export function DayViewTimeline({
-  sleepSegments,
-  stepBuckets,
+  day,
   dayStartHour,
-  restingHeartRateBpm,
   isToday,
   isPastDay,
   nowIso,
   nowPercent,
   timeZone,
+  restingHeartRateBpm,
 }: {
-  sleepSegments: SleepStageSegment[];
-  stepBuckets: HourlySteps[];
+  day: HealthDay;
   dayStartHour: number;
-  restingHeartRateBpm: number | null;
   isToday: boolean;
   isPastDay: boolean;
   nowIso: string;
   nowPercent: number;
   timeZone: string;
+  restingHeartRateBpm: number | null;
 }) {
   const plotRef = useRef<HTMLDivElement>(null);
 
@@ -74,11 +72,22 @@ export function DayViewTimeline({
       <div className="flex min-h-0 flex-1 gap-[9px]">
         <TimelineGutter />
         <div ref={plotRef} className="relative flex min-h-0 flex-1 flex-col">
-          <HeartRateLane restingHeartRateBpm={restingHeartRateBpm} />
+          <HeartRateLane
+            heartRate={day.timeline.heartRate}
+            restingHeartRateBpm={restingHeartRateBpm}
+          />
           <TimeAxisLabels />
-          <SleepStageLane segments={sleepSegments} />
-          <MovementLane buckets={stepBuckets} dayStartHour={dayStartHour} />
-          <PlanLane />
+          <SleepStageLane
+            segments={day.timeline.sleepStages}
+            date={day.date}
+            dayStartHour={dayStartHour}
+            timeZone={timeZone}
+          />
+          <MovementLane
+            hours={day.timeline.steps}
+            dayStartHour={dayStartHour}
+          />
+          <PlanLane schedule={day.timeline.schedule} />
 
           {isToday ? (
             <TimelineOverlays

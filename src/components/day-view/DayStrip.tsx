@@ -4,31 +4,28 @@ import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { clsx } from "clsx";
 import { Spinner } from "~/components/ui/Spinner";
+import type { DayStripCellData } from "~/domain/dayViewPresentation";
 
-export interface DayStripCell {
-  date: string;
-  weekdayLabel: string;
-  dayLabel: string;
-  /** Recorded-day sleep fraction of a ~8h reference, 0-1, or null if there
-   * is no sleep data for the day (renders as a flattened bar). */
-  sleepFraction: number | null;
-  /** Recorded-day step fraction of a rough daily target, 0-1, or null. */
-  stepsFraction: number | null;
-  isFuture: boolean;
-  isSelected: boolean;
+const WEEKDAYS = ["SUN", "MON", "TUE", "WED", "THU", "FRI", "SAT"];
+
+function weekdayLabelFor(date: string): string {
+  return WEEKDAYS[new Date(`${date}T00:00:00Z`).getUTCDay()]!;
+}
+
+function dayLabelFor(date: string): string {
+  return String(new Date(`${date}T00:00:00Z`).getUTCDate());
 }
 
 /**
- * Band 3 — the ±7-day scrubbable strip. Bars are a deliberately
- * low-resolution sparkline built from real recorded daily sleep/steps
- * summaries where available. There is no recovery or strain score in this
- * app yet (see the pillar cards), so the strip only lights up the sleep
- * bar for recorded days and renders the other two bars as flattened
- * "no data" ticks rather than fabricating scores — the design's third
- * (strain) bar and per-day recovery number are left out for the same
- * reason the pillar cards are.
+ * Band 3 — the ±7-day scrubbable strip (radius=7: 15 cells total). Built
+ * directly from the response's `nearbyDays` array (via
+ * `buildDayStripCells`) rather than synthesizing a local date range. Bars
+ * show real sleep-duration and strain fractions when the underlying
+ * metric's status is displayable; recovery has no per-day strip bar since
+ * that pillar has no numeric value to show (see the pillar cards' own
+ * "not available" handling).
  */
-export function DayStrip({ cells }: { cells: DayStripCell[] }) {
+export function DayStrip({ cells }: { cells: DayStripCellData[] }) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
   const [pendingDate, setPendingDate] = useState<string | null>(null);
@@ -76,7 +73,7 @@ export function DayStrip({ cells }: { cells: DayStripCell[] }) {
                 )}
               >
                 <span>
-                  {cell.weekdayLabel} {cell.dayLabel}
+                  {weekdayLabelFor(cell.date)} {dayLabelFor(cell.date)}
                 </span>
                 {isCellPending ? (
                   <Spinner size={8} />
@@ -117,7 +114,7 @@ export function DayStrip({ cells }: { cells: DayStripCell[] }) {
                       : "var(--color-ink-300)",
                     opacity: 0.35,
                   }}
-                  title="Recovery score not modeled yet"
+                  title="Recovery is not available"
                 />
                 <div
                   className="flex-1"
@@ -126,11 +123,11 @@ export function DayStrip({ cells }: { cells: DayStripCell[] }) {
                       ? "var(--color-ink-300)"
                       : "var(--color-strain)",
                     opacity:
-                      cell.stepsFraction === null
+                      cell.strainFraction === null
                         ? 0.2
                         : cell.isSelected
                           ? 1
-                          : 0.4 + cell.stepsFraction * 0.4,
+                          : 0.4 + cell.strainFraction * 0.4,
                   }}
                 />
               </div>

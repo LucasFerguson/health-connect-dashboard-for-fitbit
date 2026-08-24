@@ -2,16 +2,14 @@ import { Card } from "~/components/ui/Card";
 import { SegmentedBar } from "~/components/ui/SegmentedBar";
 import { StatValue } from "~/components/ui/StatValue";
 import { formatClock } from "~/domain/dayViewTime";
-
-export interface SleepPillarData {
-  totalMinutes: number;
-  deepMinutes: number;
-  remMinutes: number;
-  lightMinutes: number;
-  awakeMinutes: number;
-  windowStartIso: string | null;
-  windowEndIso: string | null;
-}
+import {
+  absenceReason,
+  isDisplayableStatus,
+} from "~/domain/dayViewPresentation";
+import type {
+  SleepDurationMetric,
+  SleepNeedMetric,
+} from "~/server/health/dayAnalyticsSchema";
 
 function formatHm(minutes: number): string {
   const sign = minutes < 0 ? "-" : "";
@@ -20,18 +18,25 @@ function formatHm(minutes: number): string {
 }
 
 /**
- * SLEEP pillar card, built from real sleep-session stage data for the
- * selected date. There's no modeled "sleep need" in this app yet, so the
- * qualifier reads the recorded window instead of a % of a computed target.
+ * SLEEP pillar card, built from `headlineScores.sleepDuration` (window,
+ * stage totals) and `headlineScores.sleepNeed` (fixed-target percentage)
+ * per requirement #7. Renders the honest "no data" shell whenever
+ * `sleepDuration.status` isn't displayable, using the API's own note rather
+ * than a hardcoded string.
  */
 export function SleepPillarCard({
-  data,
+  sleepDuration,
+  sleepNeed,
   timeZone,
 }: {
-  data: SleepPillarData | null;
+  sleepDuration: SleepDurationMetric;
+  sleepNeed: SleepNeedMetric;
   timeZone: string;
 }) {
-  if (!data || data.totalMinutes === 0) {
+  if (
+    !isDisplayableStatus(sleepDuration.status) ||
+    sleepDuration.value === null
+  ) {
     return (
       <Card topAccent="var(--color-sleep)">
         <PillarHeader
@@ -39,7 +44,11 @@ export function SleepPillarCard({
           hue="var(--color-sleep)"
           qualifier="NO DATA"
         />
-        <StatValue value="—" context="No sleep recorded" className="my-[7px]" />
+        <StatValue
+          value="—"
+          context={absenceReason(sleepDuration.status, sleepDuration.note)}
+          className="my-[7px]"
+        />
         <SegmentedBar segments={[{ flex: 1, color: "var(--color-ink-500)" }]} />
         <PillarFooter
           items={[
@@ -53,11 +62,20 @@ export function SleepPillarCard({
     );
   }
 
-  const { deepMinutes, remMinutes, lightMinutes, awakeMinutes } = data;
-  const window =
-    data.windowStartIso && data.windowEndIso
-      ? `${formatClock(data.windowStartIso, timeZone)} → ${formatClock(data.windowEndIso, timeZone)}`
-      : null;
+  const stages = sleepDuration.stageMinutes;
+  const deepMinutes = stages?.deep ?? 0;
+  const remMinutes = stages?.rem ?? 0;
+  const lightMinutes = stages?.light ?? 0;
+  const awakeMinutes = stages?.awake ?? 0;
+
+  const window = sleepDuration.window
+    ? `${formatClock(sleepDuration.window.startAt, timeZone)} → ${formatClock(sleepDuration.window.endAt, timeZone)}`
+    : undefined;
+
+  const sleepNeedDisplay =
+    isDisplayableStatus(sleepNeed.status) && sleepNeed.value !== null
+      ? `${Math.round(sleepNeed.value)}% OF NEED`
+      : undefined;
 
   return (
     <Card topAccent="var(--color-sleep)">
@@ -67,8 +85,10 @@ export function SleepPillarCard({
         qualifier="RECORDED"
       />
       <StatValue
-        value={formatHm(data.totalMinutes)}
-        context={window ?? undefined}
+        value={formatHm(sleepDuration.value)}
+        delta={sleepNeedDisplay}
+        deltaTone={sleepNeedDisplay ? "neutral" : undefined}
+        context={window}
         className="my-[7px]"
       />
       <SegmentedBar

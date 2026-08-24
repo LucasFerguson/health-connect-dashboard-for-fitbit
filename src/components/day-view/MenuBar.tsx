@@ -4,6 +4,8 @@ import Link, { useLinkStatus } from "next/link";
 import { clsx } from "clsx";
 import { notchStyle } from "~/components/ui/notch";
 import { Spinner } from "~/components/ui/Spinner";
+import { describeSyncStatus } from "~/domain/dayViewPresentation";
+import type { SyncStatusResponse } from "~/server/health/dayAnalyticsSchema";
 
 const MENUS: Array<{ label: string; href?: string; active?: boolean }> = [
   { label: "DAY", href: "/day", active: true },
@@ -19,19 +21,19 @@ const MENUS: Array<{ label: string; href?: string; active?: boolean }> = [
  * Band 1 — the 38px top menu bar: logo mark + wordmark, the six top-level
  * menus (DAY is active on this screen; menus without an equivalent existing
  * route render as inert styled labels rather than dead links), and a right
- * cluster of freshness/user chrome.
- *
- * `syncFreshness`/`userInitials` are optional and omitted rather than
- * faked when there's no backing data (there's no sync-cadence or user
- * profile data in this app today).
+ * cluster with a small phone-ingestion sync indicator (requirement #12,
+ * from `GET /api/v2/sync/status`) plus optional user chrome.
  */
 export function MenuBar({
-  syncFreshness,
+  syncStatus,
   userInitials,
 }: {
-  syncFreshness?: string;
+  /** Phone-upload heartbeat, or null if the fetch is still pending/failed
+   * (the indicator is simply omitted rather than shown stale or fake). */
+  syncStatus?: SyncStatusResponse | null;
   userInitials?: string;
 }) {
+  const sync = syncStatus ? describeSyncStatus(syncStatus, new Date()) : null;
   return (
     <div className="border-ink-600 bg-ink-950 flex h-[38px] shrink-0 items-center border-b px-4">
       <div className="flex items-center gap-2 pr-[18px]">
@@ -71,7 +73,15 @@ export function MenuBar({
         ),
       )}
       <div className="text-ink-200 ml-auto flex items-center gap-3.5 font-mono text-[9.5px] tracking-[.08em]">
-        {syncFreshness ? <span>SYNC {syncFreshness}</span> : null}
+        {sync ? (
+          <span
+            title={syncStatus?.note}
+            className={clsx(sync.label === "RECEIVING" && "text-recovery")}
+          >
+            SYNC {sync.label}
+            {sync.detail ? ` · ${sync.detail}` : ""}
+          </span>
+        ) : null}
         {userInitials ? (
           <span className="text-ink-100">{userInitials}</span>
         ) : null}

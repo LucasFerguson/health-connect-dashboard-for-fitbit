@@ -1,13 +1,10 @@
 import type { ReactNode } from "react";
 import { Card } from "~/components/ui/Card";
-
-const ZONE_ROWS = [
-  { label: "Z5 175+", color: "var(--color-alert)" },
-  { label: "Z4 155", color: "var(--color-strain)" },
-  { label: "Z3 135", color: "var(--color-caution)" },
-  { label: "Z2 115", color: "var(--color-recovery)" },
-  { label: "Z1 95", color: "var(--color-sleep)" },
-];
+import {
+  absenceReason,
+  isDisplayableStatus,
+} from "~/domain/dayViewPresentation";
+import type { HealthDay } from "~/server/health/dayAnalyticsSchema";
 
 function PanelHeader({
   title,
@@ -39,19 +36,61 @@ function PanelFooter({ children }: { children: ReactNode }) {
   );
 }
 
+const ZONE_COLORS = [
+  "var(--color-sleep)",
+  "var(--color-recovery)",
+  "var(--color-caution)",
+  "var(--color-strain)",
+  "var(--color-alert)",
+];
+
 /**
- * TIME IN ZONE — needs personal HR zone thresholds (from an LT2 test) and
- * cumulative zone minutes for the day. Neither exists in this app, so
- * every row renders at 0 with an explanatory footer instead of the
- * "ZONES FROM LT2 TEST" provenance line the design specifies (there is no
- * test date to show).
+ * TIME IN ZONE — needs personal HR zone thresholds (`heartRateZones`) plus
+ * cumulative per-zone minutes for the day. The contract only carries the
+ * calibrated thresholds and one rolled-up `zone3AndAbove` minutes figure
+ * (no full per-zone minute breakdown), so this renders the real thresholds
+ * when calibrated and the one real minutes figure this account has, and
+ * otherwise the placeholder/absent state using the API's own note
+ * (requirement #10) — never the old hardcoded "Z5 175+"-style boundaries.
  */
-function TimeInZonePanel() {
+function TimeInZonePanel({ day }: { day: HealthDay }) {
+  const { heartRateZones, supportingMetrics } = day;
+  const zonesAvailable =
+    isDisplayableStatus(heartRateZones.status) &&
+    Array.isArray(heartRateZones.value) &&
+    heartRateZones.value.length > 0;
+
+  if (!zonesAvailable) {
+    return (
+      <Card className="flex flex-col">
+        <PanelHeader title="TIME IN ZONE" right="SO FAR TODAY" />
+        <div className="text-ink-200 flex flex-1 items-center justify-center px-2 text-center font-mono text-[9px] tracking-[.02em]">
+          {absenceReason(heartRateZones.status, heartRateZones.note)}
+        </div>
+        <PanelFooter>NO ZONE THRESHOLDS CONFIGURED</PanelFooter>
+      </Card>
+    );
+  }
+
+  const thresholds = heartRateZones.value!;
+  const zoneRows = thresholds
+    .map((threshold, index) => ({
+      label: `Z${index + 1} ${Math.round(threshold)}+`,
+      color: ZONE_COLORS[index % ZONE_COLORS.length]!,
+    }))
+    .reverse();
+
+  const zone3Plus = supportingMetrics.zone3AndAbove;
+  const zone3PlusDisplay =
+    isDisplayableStatus(zone3Plus.status) && typeof zone3Plus.value === "number"
+      ? `${Math.round(zone3Plus.value)} MIN`
+      : "—";
+
   return (
     <Card className="flex flex-col">
       <PanelHeader title="TIME IN ZONE" right="SO FAR TODAY" />
       <div className="flex flex-1 flex-col justify-center gap-[5px]">
-        {ZONE_ROWS.map((zone) => (
+        {zoneRows.map((zone) => (
           <div key={zone.label} className="flex items-center gap-2.5">
             <span
               className="w-11 font-mono text-[8.5px]"
@@ -66,17 +105,16 @@ function TimeInZonePanel() {
           </div>
         ))}
       </div>
-      <PanelFooter>NO ZONE THRESHOLDS CONFIGURED YET</PanelFooter>
+      <PanelFooter>ZONE 3+ TODAY: {zone3PlusDisplay}</PanelFooter>
     </Card>
   );
 }
 
 /**
- * REST OF DAY — needs plan-block data, which doesn't exist (see PlanLane).
- * Renders an explanatory empty state instead of the four scheduled-item
- * rows in the mock.
+ * REST OF DAY — needs plan-block data, which the backend doesn't provide
+ * (`timeline.schedule` is `not_implemented`). Renders the API's own note.
  */
-function RestOfDayPanel() {
+function RestOfDayPanel({ day }: { day: HealthDay }) {
   return (
     <Card className="flex flex-col">
       <PanelHeader
@@ -85,7 +123,10 @@ function RestOfDayPanel() {
         rightColor="var(--color-brand-500)"
       />
       <div className="text-ink-200 flex flex-1 items-center justify-center px-2 text-center font-mono text-[9px] tracking-[.02em]">
-        No schedule source connected yet.
+        {absenceReason(
+          day.timeline.schedule.status,
+          day.timeline.schedule.note,
+        )}
       </div>
       <PanelFooter>DRAG A BLOCK ON THE TIMELINE TO RESCHEDULE</PanelFooter>
     </Card>
@@ -94,26 +135,27 @@ function RestOfDayPanel() {
 
 /**
  * SIGNALS — needs a rolling-baseline insight-generation pipeline, which
- * doesn't exist. Renders the spec's 0-state rather than fabricated
- * insights.
+ * doesn't exist in this contract. Uses the day's own availability notes
+ * when there's a specific one to surface, otherwise a generic empty state.
  */
-function SignalsPanel() {
+function SignalsPanel({ day }: { day: HealthDay }) {
+  const firstNote = day.availabilityNotes[0];
   return (
     <Card className="flex flex-col gap-2">
       <span className="font-display text-[15px] tracking-[.12em]">SIGNALS</span>
       <div className="text-ink-200 font-prose flex flex-1 items-center text-[10px]">
-        No signals yet — insight generation isn&apos;t built.
+        {firstNote?.note ?? "No signals yet — insight generation isn't built."}
       </div>
     </Card>
   );
 }
 
-export function PanelRow() {
+export function PanelRow({ day }: { day: HealthDay }) {
   return (
     <div className="grid h-[158px] shrink-0 grid-cols-3 gap-3">
-      <TimeInZonePanel />
-      <RestOfDayPanel />
-      <SignalsPanel />
+      <TimeInZonePanel day={day} />
+      <RestOfDayPanel day={day} />
+      <SignalsPanel day={day} />
     </div>
   );
 }

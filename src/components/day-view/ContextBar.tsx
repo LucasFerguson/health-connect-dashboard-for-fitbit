@@ -7,17 +7,13 @@ import { Chip } from "~/components/ui/Chip";
 import { DropdownTrigger } from "~/components/ui/DropdownTrigger";
 import { notchStyle } from "~/components/ui/notch";
 import { Spinner } from "~/components/ui/Spinner";
-import { dateKeyOf } from "~/domain/dayViewTime";
+import type { DayState } from "~/server/health/dayAnalyticsSchema";
 
 const RANGE_SEGMENTS = ["24H", "7D", "30D", "90D", "1Y", "CUSTOM…"];
 
 function shiftDate(date: string, days: number): string {
   const instant = Date.parse(`${date}T00:00:00Z`);
   return new Date(instant + days * 86_400_000).toISOString().slice(0, 10);
-}
-
-function todayKey(timeZone: string): string {
-  return dateKeyOf(new Date().toISOString(), timeZone);
 }
 
 const WEEKDAYS = ["SUN", "MON", "TUE", "WED", "THU", "FRI", "SAT"];
@@ -53,18 +49,29 @@ function dayOfYear(date: string): number {
  */
 export function ContextBar({
   selectedDate,
-  timeZone,
+  dayState,
 }: {
   selectedDate: string;
-  timeZone: string;
+  /** Authoritative from the API response — never recomputed locally from
+   * the browser/server clock (requirement #2). `"future"` days are the
+   * only ones we can identify without a server round trip; "is this the
+   * open/current day" for the TODAY chip's disabled state is approximated
+   * as "not future", which is close enough for a disabled-button hint. */
+  dayState: DayState;
 }) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
-  const isToday = selectedDate === todayKey(timeZone);
+  const isFuture = dayState === "future";
 
   const goTo = (date: string) => {
     startTransition(() => {
       router.push(`/day/${date}`);
+    });
+  };
+
+  const goToToday = () => {
+    startTransition(() => {
+      router.push("/day");
     });
   };
 
@@ -117,6 +124,11 @@ export function ContextBar({
           <span className="text-ink-200 font-mono text-[9px] tracking-[.08em]">
             {year} · DAY {doy}
           </span>
+          {isFuture ? (
+            <span className="text-brand-500 font-mono text-[9px] tracking-[.08em]">
+              PLANNED
+            </span>
+          ) : null}
           {isPending ? <Spinner size={10} /> : null}
         </div>
         <button
@@ -130,15 +142,11 @@ export function ContextBar({
         </button>
       </div>
 
-      <button
-        type="button"
-        onClick={() => goTo(todayKey(timeZone))}
-        disabled={isToday || isPending}
-      >
+      <button type="button" onClick={goToToday} disabled={isPending}>
         <Chip
           className={clsx(
             "cursor-pointer transition-opacity duration-[120ms] ease-out",
-            (isToday || isPending) && "cursor-not-allowed opacity-40",
+            isPending && "cursor-not-allowed opacity-40",
           )}
         >
           TODAY

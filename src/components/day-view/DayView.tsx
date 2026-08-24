@@ -1,152 +1,106 @@
-import type { HealthAnalytics } from "~/domain/analytics";
-import type { SleepSession, StepsObservation } from "~/domain/health";
+import type {
+  HealthDayResponse,
+  SyncStatusResponse,
+} from "~/server/health/dayAnalyticsSchema";
 import {
-  bucketStepsByHour,
-  buildSleepStageSegments,
-  stageMinutesByKind,
-} from "~/domain/dayViewData";
-import { dateKeyOf, timeToPercent } from "~/domain/dayViewTime";
+  buildDayStripCells,
+  isDisplayableStatus,
+} from "~/domain/dayViewPresentation";
+import { timeToPercent } from "~/domain/dayViewTime";
+import { AutoRefresh } from "./AutoRefresh";
 import { ContextBar } from "./ContextBar";
-import { DayStrip, type DayStripCell } from "./DayStrip";
+import { DayStrip } from "./DayStrip";
 import { DayViewTimeline } from "./DayViewTimeline";
 import { MenuBar } from "./MenuBar";
 import { PanelRow } from "./PanelRow";
 import { PillarRow } from "./PillarRow";
-import type { SleepPillarData } from "./SleepPillarCard";
 
 const DAY_START_HOUR = 0;
-const WEEKDAYS = ["MON", "TUE", "WED", "THU", "FRI", "SAT", "SUN"];
-
-/** Shifts a `YYYY-MM-DD` calendar-day key by whole days. This is pure
- * calendar-day arithmetic (not an instant), so UTC-anchored parsing is
- * correct here regardless of `timeZone` — it never crosses a DST boundary
- * mid-calculation the way computing "today" from `Date.now()` would. */
-function shiftDate(date: string, days: number): string {
-  const instant = Date.parse(`${date}T00:00:00Z`);
-  return new Date(instant + days * 86_400_000).toISOString().slice(0, 10);
-}
-
-function todayKey(timeZone: string): string {
-  return dateKeyOf(new Date().toISOString(), timeZone);
-}
 
 /**
  * The DAY view screen: composes the menu bar, context bar, day strip,
- * pillar row, 24-hour timeline, and panel row from real data where it
- * exists (sleep sessions/stages, steps observations, daily analytics
- * summaries) and honest placeholder shells everywhere the design calls
- * for a score or dataset this app's backend doesn't have yet (recovery,
- * strain, HR zones, plan blocks, signals — see backend-data-questions.md).
+ * pillar row, 24-hour timeline, and panel row from the `health-day-v1`
+ * contract (`HealthDayResponse`). Every metric renders according to its own
+ * `status` — a `missing`/`not_implemented` value never becomes a displayed
+ * zero (see `~/domain/dayViewPresentation`'s `isDisplayableStatus`) — and
+ * every explanatory string for an unavailable metric comes from the API's
+ * own `note`/`availabilityNotes`, never a hardcoded frontend string.
  */
 export function DayView({
-  date,
-  analytics,
-  sleepSessions,
-  steps,
-  timeZone,
+  response,
+  syncStatus,
 }: {
-  date: string;
-  analytics: HealthAnalytics;
-  sleepSessions: SleepSession[];
-  steps: StepsObservation[];
-  /** IANA time zone (e.g. "America/Chicago") the day is anchored to —
-   * `HEALTH_HOME_TIME_ZONE`, the same setting the analytics pipeline uses
-   * for local-day bucketing. Every clock label and axis position on this
-   * screen is computed against this zone, not the server's or browser's
-   * own zone, so a self-hosted deployment shows the same times regardless
-   * of where the Node process or the viewer happens to be. */
-  timeZone: string;
+  response: HealthDayResponse;
+  /** Optional: the phone-ingestion heartbeat for the small sync indicator
+   * in the menu bar's right cluster. Fetched separately from the day
+   * analytics so a slow/erroring sync-status call never blocks the day
+   * itself from rendering. */
+  syncStatus: SyncStatusResponse | null;
 }) {
+  const { day, nearbyDays } = response;
+  const { date, timeZone, dayState } = day;
+
+  const isToday =
+    dayState !== "future" && day.date === newestRecordedDate(nearbyDays, date);
+  const isFuture = dayState === "future";
+  const isPastDay = !isFuture && !isToday;
+
   const now = new Date();
-  const today = todayKey(timeZone);
-  const isToday = date === today;
-  const isPastDay = date < today;
-
-  const daySleep = analytics.dailySleep.find((day) => day.date === date);
-  const sessionsEndingOnDate = sleepSessions.filter(
-    (session) => session.endAt.slice(0, 10) === date,
-  );
-  const sleepPillar: SleepPillarData | null = daySleep
-    ? (() => {
-        const stageTotals = stageMinutesByKind(sessionsEndingOnDate);
-        const sorted = [...sessionsEndingOnDate].sort((a, b) =>
-          a.startAt.localeCompare(b.startAt),
-        );
-        return {
-          totalMinutes: daySleep.sleepMinutes,
-          deepMinutes: stageTotals.deep,
-          remMinutes: stageTotals.rem,
-          lightMinutes: stageTotals.light,
-          awakeMinutes: stageTotals.awake,
-          windowStartIso: sorted[0]?.startAt ?? null,
-          windowEndIso: sorted.at(-1)?.endAt ?? null,
-        };
-      })()
-    : null;
-
-  const sleepSegments = buildSleepStageSegments(
-    sleepSessions,
-    date,
-    DAY_START_HOUR,
-    timeZone,
-  );
-  const stepBuckets = bucketStepsByHour(
-    steps,
-    date,
-    DAY_START_HOUR,
-    now,
-    timeZone,
-  );
-
-  const restingHeartRateBpm =
-    analytics.restingHeartRate.daily.find((day) => day.date === date)?.value ??
-    null;
-
   const nowIso = now.toISOString();
   const nowPercent = isToday
     ? timeToPercent(nowIso, date, DAY_START_HOUR, timeZone)
     : 0;
 
-  const stripCells: DayStripCell[] = Array.from({ length: 11 }, (_, index) => {
-    const offset = index - 7;
-    const cellDate = shiftDate(date, offset);
-    const cellIsFuture = cellDate > today;
-    const cellDaily = analytics.dailySleep.find((d) => d.date === cellDate);
-    const cellSteps = analytics.steps.daily.find((d) => d.date === cellDate);
-    const parsed = new Date(`${cellDate}T00:00:00Z`);
-    return {
-      date: cellDate,
-      weekdayLabel: WEEKDAYS[(parsed.getUTCDay() + 6) % 7]!,
-      dayLabel: String(parsed.getUTCDate()),
-      sleepFraction: cellDaily
-        ? Math.min(1, cellDaily.sleepMinutes / 480)
-        : null,
-      stepsFraction: cellSteps ? Math.min(1, cellSteps.value / 10_000) : null,
-      isFuture: cellIsFuture,
-      isSelected: cellDate === date,
-    };
-  });
+  const stripCells = buildDayStripCells(nearbyDays, date);
+
+  const restingHeartRate = day.supportingMetrics.restingHeartRate;
+  const restingHeartRateBpm =
+    isDisplayableStatus(restingHeartRate.status) &&
+    typeof restingHeartRate.value === "number"
+      ? restingHeartRate.value
+      : null;
 
   return (
     <div className="bg-ink-900 text-ink-0 flex h-screen min-h-[720px] flex-col overflow-hidden">
-      <MenuBar />
-      <ContextBar selectedDate={date} timeZone={timeZone} />
+      <AutoRefresh active={isToday} />
+      <MenuBar syncStatus={syncStatus} />
+      <ContextBar selectedDate={date} dayState={dayState} />
       <DayStrip cells={stripCells} />
       <div className="flex min-h-0 flex-1 flex-col gap-3 p-4 pt-3.5">
-        <PillarRow sleep={sleepPillar} timeZone={timeZone} />
+        <PillarRow day={day} timeZone={timeZone} />
         <DayViewTimeline
-          sleepSegments={sleepSegments}
-          stepBuckets={stepBuckets}
+          day={day}
           dayStartHour={DAY_START_HOUR}
-          restingHeartRateBpm={restingHeartRateBpm}
           isToday={isToday}
           isPastDay={isPastDay}
           nowIso={nowIso}
           nowPercent={nowPercent}
           timeZone={timeZone}
+          restingHeartRateBpm={restingHeartRateBpm}
         />
-        <PanelRow />
+        <PanelRow day={day} />
       </div>
     </div>
   );
+}
+
+/**
+ * "Is this the open/current day" is derived from the response itself
+ * (never recomputed from the browser/server clock, per requirement #2):
+ * the newest date among the fetched days that isn't in the future is the
+ * open day. This matches the server-side cache's own `isProbablyOpen`
+ * high-water-mark heuristic in `dayAnalyticsCache.ts`, applied here purely
+ * for display (e.g. whether to show the NOW line) rather than for caching.
+ */
+function newestRecordedDate(
+  nearbyDays: HealthDayResponse["nearbyDays"],
+  focusedDate: string,
+): string {
+  let newest = focusedDate;
+  for (const day of nearbyDays) {
+    if (day.dayState !== "future" && day.date > newest) {
+      newest = day.date;
+    }
+  }
+  return newest;
 }
