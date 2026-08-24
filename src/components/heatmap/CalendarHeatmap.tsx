@@ -12,6 +12,20 @@ const BOX = 11;
 const LEFT = 30;
 const TOP = 22;
 const WEEKDAYS = ["", "Mon", "", "Wed", "", "Fri", ""];
+const MONTHS = [
+  "Jan",
+  "Feb",
+  "Mar",
+  "Apr",
+  "May",
+  "Jun",
+  "Jul",
+  "Aug",
+  "Sep",
+  "Oct",
+  "Nov",
+  "Dec",
+] as const;
 
 export function CalendarHeatmap({
   data,
@@ -162,10 +176,7 @@ function monthPositions(year: number) {
     const start = Date.UTC(year, month, 1);
     const offset = Math.round((start - Date.UTC(year, 0, 1)) / 86_400_000);
     return {
-      label: new Intl.DateTimeFormat(undefined, {
-        month: "short",
-        timeZone: "UTC",
-      }).format(new Date(start)),
+      label: MONTHS[month]!,
       week: Math.floor((offset + firstWeekday) / 7),
     };
   });

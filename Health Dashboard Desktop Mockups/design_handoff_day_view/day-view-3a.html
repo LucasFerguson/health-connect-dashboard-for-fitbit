@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Meridian — DAY view (design reference 3a)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Iceland&family=Public+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+body{margin:0;padding:28px;background:#E9E7EE;font-family:'Public Sans',system-ui,sans-serif}
+.dv-card{max-width:100%;background:#fff;border:1px solid rgba(0,0,0,.10);box-shadow:0 1px 3px rgba(0,0,0,.06);overflow:hidden}
+</style>
+</head>
+<body>
+<div class="dv-card" style="width:1320px;border-color:#241D30">
+      <div style="display:flex;flex-direction:column;height:940px;background:#0C0A11;color:#EFECF5;position:relative">
+
+        <div style="height:38px;flex:none;background:#08060C;border-bottom:1px solid #1D1826;display:flex;align-items:center;padding:0 16px;gap:2px">
+          <div style="display:flex;align-items:center;gap:8px;padding-right:18px">
+            <div style="width:14px;height:14px;background:#A97BFF;clip-path:polygon(0 0,100% 0,100% calc(100% - 6px),calc(100% - 6px) 100%,0 100%)"></div>
+            <div style="font-family:Iceland,sans-serif;font-size:18px;letter-spacing:.14em">MERIDIAN</div>
+          </div>
+          <div style="height:38px;padding:0 13px;display:flex;align-items:center;gap:6px;font-family:Iceland,sans-serif;font-size:15px;letter-spacing:.08em;color:#EFECF5;background:#15121C;box-shadow:inset 0 -2px 0 #A97BFF">DAY <span style="font-size:9px;color:#9A93AB">▼</span></div>
+          <div style="height:38px;padding:0 13px;display:flex;align-items:center;gap:6px;font-family:Iceland,sans-serif;font-size:15px;letter-spacing:.08em;color:#9A93AB">SLEEP <span style="font-size:9px;color:#5E5870">▼</span></div>
+          <div style="height:38px;padding:0 13px;display:flex;align-items:center;gap:6px;font-family:Iceland,sans-serif;font-size:15px;letter-spacing:.08em;color:#9A93AB">RECOVERY <span style="font-size:9px;color:#5E5870">▼</span></div>
+          <div style="height:38px;padding:0 13px;display:flex;align-items:center;gap:6px;font-family:Iceland,sans-serif;font-size:15px;letter-spacing:.08em;color:#9A93AB">STRAIN <span style="font-size:9px;color:#5E5870">▼</span></div>
+          <div style="height:38px;padding:0 13px;display:flex;align-items:center;gap:6px;font-family:Iceland,sans-serif;font-size:15px;letter-spacing:.08em;color:#9A93AB">BODY <span style="font-size:9px;color:#5E5870">▼</span></div>
+          <div style="height:38px;padding:0 13px;display:flex;align-items:center;gap:6px;font-family:Iceland,sans-serif;font-size:15px;letter-spacing:.08em;color:#9A93AB">DATA <span style="font-size:9px;color:#5E5870">▼</span></div>
+          <div style="height:38px;padding:0 13px;display:flex;align-items:center;gap:6px;font-family:Iceland,sans-serif;font-size:15px;letter-spacing:.08em;color:#9A93AB">VIEW <span style="font-size:9px;color:#5E5870">▼</span></div>
+          <div style="margin-left:auto;display:flex;align-items:center;gap:14px;font:400 9.5px/1 'JetBrains Mono',monospace;color:#5E5870;letter-spacing:.08em">
+            <span>BAND 87%</span><span>SYNC 4M</span><span style="color:#9A93AB">LF</span>
+          </div>
+        </div>
+
+        <div style="height:40px;flex:none;background:#0C0A11;border-bottom:1px solid #1D1826;display:flex;align-items:center;padding:0 16px;gap:12px">
+          <div style="display:flex;align-items:center;gap:1px">
+            <div style="width:24px;height:24px;border:1px solid #241D30;display:flex;align-items:center;justify-content:center;font:400 11px/1 'JetBrains Mono',monospace;color:#9A93AB">‹</div>
+            <div style="height:24px;padding:0 12px;border:1px solid #241D30;border-left:none;border-right:none;display:flex;align-items:center;gap:9px;background:#15121C">
+              <span style="font-family:Iceland,sans-serif;font-size:18px;letter-spacing:.1em">SUN 23 AUG</span>
+              <span style="font:400 9px/1 'JetBrains Mono',monospace;color:#5E5870;letter-spacing:.08em">2026 · DAY 235</span>
+            </div>
+            <div style="width:24px;height:24px;border:1px solid #241D30;display:flex;align-items:center;justify-content:center;font:400 11px/1 'JetBrains Mono',monospace;color:#9A93AB">›</div>
+          </div>
+          <div style="height:24px;padding:0 9px;background:#6B3FD4;display:flex;align-items:center;font:500 9px/1 'JetBrains Mono',monospace;color:#fff;letter-spacing:.1em;clip-path:polygon(0 0,100% 0,100% calc(100% - 6px),calc(100% - 6px) 100%,0 100%)">TODAY</div>
+          <div style="width:1px;height:16px;background:#241D30"></div>
+          <div style="height:24px;padding:0 10px;border:1px solid #241D30;display:flex;align-items:center;gap:7px;font:400 9.5px/1 'JetBrains Mono',monospace;color:#9A93AB;letter-spacing:.06em;clip-path:polygon(0 0,100% 0,100% calc(100% - 7px),calc(100% - 7px) 100%,0 100%)">DAY START 00:00 <span style="color:#5E5870">▾</span></div>
+          <div style="height:24px;padding:0 10px;border:1px solid #241D30;display:flex;align-items:center;gap:7px;font:400 9.5px/1 'JetBrains Mono',monospace;color:#9A93AB;letter-spacing:.06em;clip-path:polygon(0 0,100% 0,100% calc(100% - 7px),calc(100% - 7px) 100%,0 100%)">COMPARE <span style="color:#5E5870">▾</span></div>
+          <div style="margin-left:auto;display:flex;align-items:center;gap:10px">
+            <div style="font:400 9px/1 'JetBrains Mono',monospace;color:#5E5870;letter-spacing:.14em">RANGE</div>
+            <div style="display:flex;border:1px solid #241D30;opacity:.55;clip-path:polygon(0 0,100% 0,100% calc(100% - 8px),calc(100% - 8px) 100%,0 100%)">
+              <div style="height:24px;padding:0 11px;background:#6B3FD4;display:flex;align-items:center;gap:5px;font:500 9.5px/1 'JetBrains Mono',monospace;color:#fff;letter-spacing:.06em">24H <span style="font-size:8px">▮</span></div>
+              <div style="height:24px;padding:0 11px;display:flex;align-items:center;font:400 9.5px/1 'JetBrains Mono',monospace;color:#5E5870;letter-spacing:.06em">7D</div>
+              <div style="height:24px;padding:0 11px;display:flex;align-items:center;font:400 9.5px/1 'JetBrains Mono',monospace;color:#5E5870;letter-spacing:.06em">30D</div>
+              <div style="height:24px;padding:0 11px;display:flex;align-items:center;font:400 9.5px/1 'JetBrains Mono',monospace;color:#5E5870;letter-spacing:.06em">90D</div>
+              <div style="height:24px;padding:0 11px;display:flex;align-items:center;font:400 9.5px/1 'JetBrains Mono',monospace;color:#5E5870;letter-spacing:.06em">1Y</div>
+              <div style="height:24px;padding:0 11px;display:flex;align-items:center;font:400 9.5px/1 'JetBrains Mono',monospace;color:#5E5870;letter-spacing:.06em">CUSTOM…</div>
+            </div>
+            <div style="font:400 8px/1 'JetBrains Mono',monospace;color:#5E5870;letter-spacing:.06em">LOCKED ON DAY</div>
+          </div>
+        </div>
+
+        <div style="height:54px;flex:none;background:#08060C;border-bottom:1px solid #1D1826;display:flex;align-items:stretch;padding:0 16px;gap:0">
+          <div style="display:flex;flex-direction:column;justify-content:center;gap:2px;padding-right:12px;border-right:1px solid #1D1826;margin-right:10px">
+            <div style="font:400 8px/1 'JetBrains Mono',monospace;color:#5E5870;letter-spacing:.12em">RECORDED</div>
+            <div style="font:400 8px/1 'JetBrains Mono',monospace;color:#6B3FD4;letter-spacing:.12em">PLANNED</div>
+          </div>
+          <div style="flex:1;display:flex;gap:3px">
+            <div style="flex:1;display:flex;flex-direction:column;justify-content:center;gap:4px;padding:0 6px;background:#0C0A11"><div style="display:flex;justify-content:space-between;font:400 8.5px/1 'JetBrains Mono',monospace;color:#5E5870"><span>MON 17</span><span>71</span></div><div style="display:flex;gap:2px;height:5px"><div style="flex:1;background:#6E9CFF"></div><div style="flex:1;background:#4FC98A;opacity:.7"></div><div style="flex:1;background:#F59A3E;opacity:.5"></div></div></div>
+            <div style="flex:1;display:flex;flex-direction:column;justify-content:center;gap:4px;padding:0 6px;background:#0C0A11"><div style="display:flex;justify-content:space-between;font:400 8.5px/1 'JetBrains Mono',monospace;color:#5E5870"><span>TUE 18</span><span>64</span></div><div style="display:flex;gap:2px;height:5px"><div style="flex:1;background:#6E9CFF;opacity:.7"></div><div style="flex:1;background:#D9C13A;opacity:.7"></div><div style="flex:1;background:#F59A3E;opacity:.8"></div></div></div>
+            <div style="flex:1;display:flex;flex-direction:column;justify-content:center;gap:4px;padding:0 6px;background:#0C0A11"><div style="display:flex;justify-content:space-between;font:400 8.5px/1 'JetBrains Mono',monospace;color:#5E5870"><span>WED 19</span><span>58</span></div><div style="display:flex;gap:2px;height:5px"><div style="flex:1;background:#2E4A8A"></div><div style="flex:1;background:#F59A3E;opacity:.7"></div><div style="flex:1;background:#FF6B7A;opacity:.6"></div></div></div>
+            <div style="flex:1;display:flex;flex-direction:column;justify-content:center;gap:4px;padding:0 6px;background:#0C0A11"><div style="display:flex;justify-content:space-between;font:400 8.5px/1 'JetBrains Mono',monospace;color:#5E5870"><span>THU 20</span><span>69</span></div><div style="display:flex;gap:2px;height:5px"><div style="flex:1;background:#6E9CFF;opacity:.8"></div><div style="flex:1;background:#4FC98A;opacity:.6"></div><div style="flex:1;background:#D9C13A;opacity:.6"></div></div></div>
+            <div style="flex:1;display:flex;flex-direction:column;justify-content:center;gap:4px;padding:0 6px;background:#0C0A11"><div style="display:flex;justify-content:space-between;font:400 8.5px/1 'JetBrains Mono',monospace;color:#5E5870"><span>FRI 21</span><span>75</span></div><div style="display:flex;gap:2px;height:5px"><div style="flex:1;background:#6E9CFF"></div><div style="flex:1;background:#4FC98A"></div><div style="flex:1;background:#D9C13A;opacity:.5"></div></div></div>
+            <div style="flex:1;display:flex;flex-direction:column;justify-content:center;gap:4px;padding:0 6px;background:#0C0A11"><div style="display:flex;justify-content:space-between;font:400 8.5px/1 'JetBrains Mono',monospace;color:#5E5870"><span>SAT 22</span><span>78</span></div><div style="display:flex;gap:2px;height:5px"><div style="flex:1;background:#6E9CFF"></div><div style="flex:1;background:#4FC98A"></div><div style="flex:1;background:#F59A3E;opacity:.6"></div></div></div>
+            <div style="flex:1.35;display:flex;flex-direction:column;justify-content:center;gap:4px;padding:0 8px;background:#15121C;border:1px solid #A97BFF"><div style="display:flex;justify-content:space-between;font:500 8.5px/1 'JetBrains Mono',monospace;color:#EFECF5"><span>SUN 23</span><span style="color:#4FC98A">82</span></div><div style="display:flex;gap:2px;height:5px"><div style="flex:1;background:#6E9CFF"></div><div style="flex:1;background:#4FC98A"></div><div style="flex:1;background:#F59A3E"></div></div></div>
+            <div style="flex:1;display:flex;flex-direction:column;justify-content:center;gap:4px;padding:0 6px;background:#0C0A11;border:1px dashed #302842"><div style="display:flex;justify-content:space-between;font:400 8.5px/1 'JetBrains Mono',monospace;color:#5E5870"><span>MON 24</span><span style="color:#6B3FD4">PLAN</span></div><div style="display:flex;gap:2px;height:5px"><div style="flex:1;background:#302842"></div><div style="flex:1;background:#302842"></div><div style="flex:1;background:#3E2E6E"></div></div></div>
+            <div style="flex:1;display:flex;flex-direction:column;justify-content:center;gap:4px;padding:0 6px;background:#0C0A11;border:1px dashed #302842"><div style="display:flex;justify-content:space-between;font:400 8.5px/1 'JetBrains Mono',monospace;color:#5E5870"><span>TUE 25</span><span style="color:#6B3FD4">PLAN</span></div><div style="display:flex;gap:2px;height:5px"><div style="flex:1;background:#302842"></div><div style="flex:1;background:#302842"></div><div style="flex:1;background:#3E2E6E"></div></div></div>
+            <div style="flex:1;display:flex;flex-direction:column;justify-content:center;gap:4px;padding:0 6px;background:#0C0A11;border:1px dashed #302842"><div style="display:flex;justify-content:space-between;font:400 8.5px/1 'JetBrains Mono',monospace;color:#5E5870"><span>WED 26</span><span style="color:#6B3FD4">PLAN</span></div><div style="display:flex;gap:2px;height:5px"><div style="flex:1;background:#302842"></div><div style="flex:1;background:#302842"></div><div style="flex:1;background:#3E2E6E"></div></div></div>
+          </div>
+        </div>
+
+        <div style="flex:1;padding:14px 16px 16px;display:flex;flex-direction:column;gap:12px;overflow:hidden">
+
+          <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;flex:none">
+            <div style="background:#15121C;border:1px solid #241D30;border-top:2px solid #6E9CFF;clip-path:polygon(0 0,100% 0,100% calc(100% - 15px),calc(100% - 15px) 100%,0 100%);padding:13px 17px 12px">
+              <div style="display:flex;justify-content:space-between;align-items:baseline">
+                <div style="font-family:Iceland,sans-serif;font-size:16px;letter-spacing:.12em;color:#6E9CFF">SLEEP</div>
+                <div style="font:400 9px/1 'JetBrains Mono',monospace;color:#5E5870;letter-spacing:.08em">96% OF NEED</div>
+              </div>
+              <div style="display:flex;align-items:baseline;gap:8px;margin:7px 0 9px">
+                <div style="font:700 34px/1 'JetBrains Mono',monospace;letter-spacing:-.03em">7:42</div>
+                <div style="font:500 11px/1 'JetBrains Mono',monospace;color:#4FC98A">+0:34</div>
+                <div style="margin-left:auto;font:400 9px/1 'JetBrains Mono',monospace;color:#5E5870">00:04 → 07:04</div>
+              </div>
+              <div style="display:flex;height:7px;gap:2px">
+                <div style="flex:2.2;background:#6E9CFF"></div><div style="flex:1.5;background:#4A78D6"></div><div style="flex:3.1;background:#2E4A8A"></div><div style="flex:.6;background:#241D30"></div>
+              </div>
+              <div style="display:flex;justify-content:space-between;font:400 8.5px/1 'JetBrains Mono',monospace;color:#5E5870;margin-top:6px"><span>DEEP 1:38</span><span>REM 2:04</span><span>LGT 3:32</span><span>AWK 0:28</span></div>
+            </div>
+
+            <div style="background:#15121C;border:1px solid #241D30;border-top:2px solid #4FC98A;clip-path:polygon(0 0,100% 0,100% calc(100% - 15px),calc(100% - 15px) 100%,0 100%);padding:13px 17px 12px">
+              <div style="display:flex;justify-content:space-between;align-items:baseline">
+                <div style="font-family:Iceland,sans-serif;font-size:16px;letter-spacing:.12em;color:#4FC98A">RECOVERY</div>
+                <div style="font:400 9px/1 'JetBrains Mono',monospace;color:#5E5870;letter-spacing:.08em">HIGH</div>
+              </div>
+              <div style="display:flex;align-items:baseline;gap:8px;margin:7px 0 9px">
+                <div style="font:700 34px/1 'JetBrains Mono',monospace;letter-spacing:-.03em">82<span style="font-size:16px;font-weight:400;color:#5E5870">%</span></div>
+                <div style="font:500 11px/1 'JetBrains Mono',monospace;color:#4FC98A">+11</div>
+                <div style="margin-left:auto;font:400 9px/1 'JetBrains Mono',monospace;color:#5E5870">14D AVG 71</div>
+              </div>
+              <div style="height:7px;background:#241D30;position:relative">
+                <div style="position:absolute;inset:0 18% 0 0;background:#4FC98A"></div>
+                <div style="position:absolute;top:-3px;bottom:-3px;left:71%;width:2px;background:#EFECF5"></div>
+              </div>
+              <div style="display:flex;justify-content:space-between;font:400 8.5px/1 'JetBrains Mono',monospace;color:#5E5870;margin-top:6px"><span>HRV 64ms</span><span>RHR 48</span><span>RESP 14.2</span><span>SKIN -0.2</span></div>
+            </div>
+
+            <div style="background:#15121C;border:1px solid #241D30;border-top:2px solid #F59A3E;clip-path:polygon(0 0,100% 0,100% calc(100% - 15px),calc(100% - 15px) 100%,0 100%);padding:13px 17px 12px">
+              <div style="display:flex;justify-content:space-between;align-items:baseline">
+                <div style="font-family:Iceland,sans-serif;font-size:16px;letter-spacing:.12em;color:#F59A3E">STRAIN</div>
+                <div style="font:400 9px/1 'JetBrains Mono',monospace;color:#5E5870;letter-spacing:.08em">TARGET 14.0</div>
+              </div>
+              <div style="display:flex;align-items:baseline;gap:8px;margin:7px 0 9px">
+                <div style="font:700 34px/1 'JetBrains Mono',monospace;letter-spacing:-.03em">6.4</div>
+                <div style="font:500 11px/1 'JetBrains Mono',monospace;color:#5E5870">46% OF PLAN</div>
+                <div style="margin-left:auto;font:400 9px/1 'JetBrains Mono',monospace;color:#5E5870">RUN AT 17:35</div>
+              </div>
+              <div style="height:7px;background:#241D30;position:relative">
+                <div style="position:absolute;inset:0 70% 0 0;background:#F59A3E"></div>
+                <div style="position:absolute;top:-3px;bottom:-3px;left:66%;width:2px;background:#EFECF5"></div>
+              </div>
+              <div style="display:flex;justify-content:space-between;font:400 8.5px/1 'JetBrains Mono',monospace;color:#5E5870;margin-top:6px"><span>STEPS 11,204</span><span>KCAL 2,684</span><span>ZONE 3+ 0:26</span></div>
+            </div>
+          </div>
+
+          <div style="background:#15121C;border:1px solid #241D30;clip-path:polygon(0 0,100% 0,100% calc(100% - 16px),calc(100% - 16px) 100%,0 100%);padding:14px 20px 12px;flex:1;min-height:0;display:flex;flex-direction:column">
+            <div style="display:flex;align-items:baseline;gap:14px;margin-bottom:11px">
+              <div style="font-family:Iceland,sans-serif;font-size:17px;letter-spacing:.12em">24-HOUR TIMELINE</div>
+              <div style="font:400 9px/1 'JetBrains Mono',monospace;color:#5E5870;letter-spacing:.08em">00:00 → 24:00 · HR CANDLES · SLEEP STAGES · MOVEMENT · PLAN</div>
+              <div style="margin-left:auto;display:flex;align-items:center;gap:8px;font:400 8.5px/1 'JetBrains Mono',monospace;color:#5E5870">
+                <span>40</span>
+                <div style="display:flex;width:120px;height:7px"><div style="flex:1;background:#3FC4D9"></div><div style="flex:1;background:#6E9CFF"></div><div style="flex:1;background:#4FC98A"></div><div style="flex:1;background:#D9C13A"></div><div style="flex:1;background:#F59A3E"></div><div style="flex:1;background:#FF6B7A"></div></div>
+                <span>180 BPM AVG</span>
+              </div>
+            </div>
+
+            <div style="flex:1;display:flex;gap:9px;min-height:0">
+              <div style="width:30px;flex:none;display:flex;flex-direction:column;font:400 8.5px/1 'JetBrains Mono',monospace;color:#5E5870;text-align:right">
+                <div style="flex:1;display:flex;flex-direction:column;justify-content:space-between;padding:1px 0"><span>180</span><span>145</span><span>110</span><span>75</span><span>40</span></div>
+                <div style="height:14px"></div>
+                <div style="height:30px;display:flex;align-items:center;justify-content:flex-end;font-size:7.5px;letter-spacing:.08em">SLEEP</div>
+                <div style="height:22px;display:flex;align-items:center;justify-content:flex-end;font-size:7.5px;letter-spacing:.08em;margin-top:4px">MOVE</div>
+                <div style="height:46px;display:flex;align-items:center;justify-content:flex-end;font-size:7.5px;letter-spacing:.08em;margin-top:8px">PLAN</div>
+              </div>
+
+              <div style="flex:1;position:relative;display:flex;flex-direction:column;min-height:0">
+
+                <div style="flex:1;position:relative;background:#100D17;border-left:1px solid #241D30;border-bottom:1px solid #241D30;min-height:0">
+                  <div style="position:absolute;left:0;top:0;bottom:0;width:29.17%;background:#0D1226"></div>
+                  <div style="position:absolute;left:0;right:0;top:25%;height:1px;background:#1D1826"></div>
+                  <div style="position:absolute;left:0;right:0;top:50%;height:1px;background:#1D1826"></div>
+                  <div style="position:absolute;left:0;right:0;top:75%;height:1px;background:#1D1826"></div>
+                  <div style="position:absolute;left:0;right:0;top:65.7%;height:1px;background:#A97BFF;opacity:.45"></div>
+                  <div style="position:absolute;right:4px;top:65.7%;transform:translateY(-115%);font:400 8px/1 'JetBrains Mono',monospace;color:#A97BFF;letter-spacing:.06em">RHR 48</div>
+
+                  <div style="position:absolute;inset:0;display:flex;gap:2px">
+                    <div style="flex:1;position:relative"><div style="position:absolute;left:50%;width:1px;margin-left:-.5px;top:87.1%;bottom:4.3%;background:#3FC4D9;opacity:.5"></div><div style="position:absolute;left:1px;right:1px;top:90.7%;bottom:6.4%;background:#3FC4D9"></div></div>
+                    <div style="flex:1;position:relative"><div style="position:absolute;left:50%;width:1px;margin-left:-.5px;top:88.6%;bottom:2.9%;background:#3FC4D9;opacity:.5"></div><div style="position:absolute;left:1px;right:1px;top:92.1%;bottom:5%;background:#3FC4D9"></div></div>
+                    <div style="flex:1;position:relative"><div style="position:absolute;left:50%;width:1px;margin-left:-.5px;top:89.3%;bottom:2.1%;background:#3FC4D9;opacity:.5"></div><div style="position:absolute;left:1px;right:1px;top:92.9%;bottom:4.3%;background:#3FC4D9"></div></div>
+                    <div style="flex:1;position:relative"><div style="position:absolute;left:50%;width:1px;margin-left:-.5px;top:85.7%;bottom:3.6%;background:#3FC4D9;opacity:.5"></div><div style="position:absolute;left:1px;right:1px;top:91.4%;bottom:5.7%;background:#3FC4D9"></div></div>
+                    <div style="flex:1;position:relative"><div style="position:absolute;left:50%;width:1px;margin-left:-.5px;top:87.9%;bottom:2.9%;background:#3FC4D9;opacity:.5"></div><div style="position:absolute;left:1px;right:1px;top:92.1%;bottom:5%;background:#3FC4D9"></div></div>
+                    <div style="flex:1;position:relative"><div style="position:absolute;left:50%;width:1px;margin-left:-.5px;top:84.3%;bottom:4.3%;background:#3FC4D9;opacity:.5"></div><div style="position:absolute;left:1px;right:1px;top:90%;bottom:6.4%;background:#3FC4D9"></div></div>
+                    <div style="flex:1;position:relative"><div style="position:absolute;left:50%;width:1px;margin-left:-.5px;top:82.9%;bottom:5%;background:#3FC4D9;opacity:.5"></div><div style="position:absolute;left:1px;right:1px;top:89.3%;bottom:7.1%;background:#3FC4D9"></div></div>
+                    <div style="flex:1;position:relative"><div style="position:absolute;left:50%;width:1px;margin-left:-.5px;top:60%;bottom:8.6%;background:#6E9CFF;opacity:.5"></div><div style="position:absolute;left:1px;right:1px;top:77.1%;bottom:12.9%;background:#6E9CFF"></div></div>
+                    <div style="flex:1;position:relative"><div style="position:absolute;left:50%;width:1px;margin-left:-.5px;top:54.3%;bottom:15.7%;background:#6E9CFF;opacity:.5"></div><div style="position:absolute;left:1px;right:1px;top:68.6%;bottom:21.4%;background:#6E9CFF"></div></div>
+                    <div style="flex:1;position:relative"><div style="position:absolute;left:50%;width:1px;margin-left:-.5px;top:62.9%;bottom:12.9%;background:#6E9CFF;opacity:.5"></div><div style="position:absolute;left:1px;right:1px;top:72.9%;bottom:18.6%;background:#6E9CFF"></div></div>
+                    <div style="flex:1;position:relative"><div style="position:absolute;left:1px;right:1px;bottom:0;height:1px;background:#241D30"></div></div>
+                    <div style="flex:1;position:relative"><div style="position:absolute;left:1px;right:1px;bottom:0;height:1px;background:#241D30"></div></div>
+                    <div style="flex:1;position:relative"><div style="position:absolute;left:1px;right:1px;bottom:0;height:1px;background:#241D30"></div></div>
+                    <div style="flex:1;position:relative"><div style="position:absolute;left:1px;right:1px;bottom:0;height:1px;background:#241D30"></div></div>
+                    <div style="flex:1;position:relative"><div style="position:absolute;left:1px;right:1px;bottom:0;height:1px;background:#241D30"></div></div>
+                    <div style="flex:1;position:relative"><div style="position:absolute;left:1px;right:1px;bottom:0;height:1px;background:#241D30"></div></div>
+                    <div style="flex:1;position:relative"><div style="position:absolute;left:1px;right:1px;bottom:0;height:1px;background:#241D30"></div></div>
+                    <div style="flex:1;position:relative"><div style="position:absolute;left:1px;right:1px;bottom:0;height:1px;background:#241D30"></div></div>
+                    <div style="flex:1;position:relative"><div style="position:absolute;left:1px;right:1px;bottom:0;height:1px;background:#241D30"></div></div>
+                    <div style="flex:1;position:relative"><div style="position:absolute;left:1px;right:1px;bottom:0;height:1px;background:#241D30"></div></div>
+                    <div style="flex:1;position:relative"><div style="position:absolute;left:1px;right:1px;bottom:0;height:1px;background:#241D30"></div></div>
+                    <div style="flex:1;position:relative"><div style="position:absolute;left:1px;right:1px;bottom:0;height:1px;background:#241D30"></div></div>
+                    <div style="flex:1;position:relative"><div style="position:absolute;left:1px;right:1px;bottom:0;height:1px;background:#241D30"></div></div>
+                    <div style="flex:1;position:relative"><div style="position:absolute;left:1px;right:1px;bottom:0;height:1px;background:#241D30"></div></div>
+                  </div>
+
+                  <div style="position:absolute;left:40.35%;top:38px;z-index:7;transform:translateX(-100%);margin-left:-8px;white-space:nowrap;background:#241D30;border:1px solid #302842;padding:5px 8px;font:400 8.5px/1.6 'JetBrains Mono',monospace;color:#EFECF5">09:00–09:41 · WORK<br><span style="color:#FF6B7A">MAX 92</span> · <span style="color:#9A93AB">MIN 58</span> · AVG 74</div>
+                </div>
+
+                <div style="height:14px;flex:none;display:flex;font:400 8px/14px 'JetBrains Mono',monospace;color:#5E5870">
+                  <div style="flex:1">00</div><div style="flex:1">02</div><div style="flex:1">04</div><div style="flex:1">06</div><div style="flex:1">08</div><div style="flex:1">10</div><div style="flex:1">12</div><div style="flex:1">14</div><div style="flex:1">16</div><div style="flex:1">18</div><div style="flex:1">20</div><div style="flex:1;position:relative">22<span style="position:absolute;right:0">24</span></div>
+                </div>
+
+                <div style="height:30px;flex:none;position:relative;background:#100D17;border-left:1px solid #241D30">
+                  <div style="position:absolute;left:0;width:1.39%;top:2px;height:5px;background:#3E2E6E"></div>
+                  <div style="position:absolute;left:1.39%;width:5.56%;top:20px;height:8px;background:#2E4A8A"></div>
+                  <div style="position:absolute;left:6.94%;width:3.47%;top:13px;height:8px;background:#4A78D6"></div>
+                  <div style="position:absolute;left:10.42%;width:3.13%;top:8px;height:8px;background:#6E9CFF"></div>
+                  <div style="position:absolute;left:13.54%;width:4.51%;top:13px;height:8px;background:#4A78D6"></div>
+                  <div style="position:absolute;left:18.06%;width:2.78%;top:20px;height:8px;background:#2E4A8A"></div>
+                  <div style="position:absolute;left:20.83%;width:0.83%;top:2px;height:5px;background:#3E2E6E"></div>
+                  <div style="position:absolute;left:21.67%;width:4.03%;top:8px;height:8px;background:#6E9CFF"></div>
+                  <div style="position:absolute;left:25.69%;width:3.47%;top:13px;height:8px;background:#4A78D6"></div>
+                  <div style="position:absolute;right:6px;top:11px;z-index:6;display:flex;gap:9px;font:400 7.5px/1 'JetBrains Mono',monospace;letter-spacing:.06em"><span style="color:#2E4A8A">DEEP</span><span style="color:#4A78D6">LIGHT</span><span style="color:#6E9CFF">REM</span><span style="color:#3E2E6E">AWAKE</span></div>
+                </div>
+
+                <div style="height:22px;flex:none;margin-top:4px;position:relative;background:#100D17;border-left:1px solid #241D30;display:flex;align-items:flex-end;gap:2px">
+                  <div style="flex:1;height:4%;background:#A97BFF;opacity:.35"></div><div style="flex:1;height:2%;background:#A97BFF;opacity:.35"></div><div style="flex:1;height:2%;background:#A97BFF;opacity:.35"></div><div style="flex:1;height:4%;background:#A97BFF;opacity:.35"></div><div style="flex:1;height:2%;background:#A97BFF;opacity:.35"></div><div style="flex:1;height:6%;background:#A97BFF;opacity:.35"></div><div style="flex:1;height:8%;background:#A97BFF;opacity:.35"></div>
+                  <div style="flex:1;height:22%;background:#A97BFF;opacity:.6"></div><div style="flex:1;height:62%;background:#A97BFF"></div><div style="flex:1;height:26%;background:#A97BFF;opacity:.6"></div><div style="flex:1;height:1px;background:#241D30"></div><div style="flex:1;height:1px;background:#241D30"></div><div style="flex:1;height:1px;background:#241D30"></div><div style="flex:1;height:1px;background:#241D30"></div><div style="flex:1;height:1px;background:#241D30"></div><div style="flex:1;height:1px;background:#241D30"></div><div style="flex:1;height:1px;background:#241D30"></div><div style="flex:1;height:1px;background:#241D30"></div><div style="flex:1;height:1px;background:#241D30"></div><div style="flex:1;height:1px;background:#241D30"></div><div style="flex:1;height:1px;background:#241D30"></div><div style="flex:1;height:1px;background:#241D30"></div><div style="flex:1;height:1px;background:#241D30"></div><div style="flex:1;height:1px;background:#241D30"></div>
+                  <div style="position:absolute;right:6px;top:3px;z-index:6;font:400 7.5px/1 'JetBrains Mono',monospace;color:#5E5870;letter-spacing:.06em">STEPS/H · PEAK 1,180 AT 08:00</div>
+                </div>
+
+                <div style="height:46px;flex:none;margin-top:8px;position:relative;background:#100D17;border-left:1px solid #241D30">
+                  <div style="position:absolute;left:0;width:29.17%;top:0;bottom:0;background:#182448;border-left:2px solid #6E9CFF;padding:6px 8px;display:flex;flex-direction:column;justify-content:space-between"><span style="font:600 10px/1 'Public Sans',sans-serif;color:#C6D6FF">SLEEP</span><span style="font:400 8px/1 'JetBrains Mono',monospace;color:#7E93C9">00:00–07:00 · 7:00</span></div>
+                  <div style="position:absolute;left:29.17%;width:3.47%;top:0;bottom:0;background:#241D30;border-left:2px solid #A97BFF;padding:6px 5px;display:flex;flex-direction:column;justify-content:space-between;overflow:hidden"><span style="font:600 9px/1 'Public Sans',sans-serif;color:#EFECF5">WAKE</span><span style="font:400 7.5px/1 'JetBrains Mono',monospace;color:#9A93AB">07:00</span></div>
+                  <div style="position:absolute;left:32.64%;width:2.43%;top:0;bottom:0;background:#1A1622;border-left:2px solid #5E5870;padding:6px 4px;display:flex;flex-direction:column;justify-content:space-between;overflow:hidden"><span style="font:600 8.5px/1 'Public Sans',sans-serif;color:#C8C2D6">CMT</span><span style="font:400 7.5px/1 'JetBrains Mono',monospace;color:#5E5870">35M</span></div>
+                  <div style="position:absolute;left:34.72%;width:35.76%;top:0;bottom:0;background:#1D1826;border-left:2px solid #C8C2D6;padding:6px 9px;display:flex;flex-direction:column;justify-content:space-between"><span style="font:600 10px/1 'Public Sans',sans-serif;color:#EFECF5">WORK</span><span style="font:400 8px/1 'JetBrains Mono',monospace;color:#9A93AB">08:25–17:00 · DESK 6:10 · STOOD 1:05</span></div>
+                  <div style="position:absolute;left:70.83%;width:2.43%;top:0;bottom:0;background:#1A1622;border-left:2px solid #5E5870;padding:6px 4px;display:flex;flex-direction:column;justify-content:space-between;overflow:hidden"><span style="font:600 8.5px/1 'Public Sans',sans-serif;color:#C8C2D6">CMT</span><span style="font:400 7.5px/1 'JetBrains Mono',monospace;color:#5E5870">35M</span></div>
+                  <div style="position:absolute;left:73.26%;width:3.82%;top:0;bottom:0;background:#3A2610;border-left:2px solid #F59A3E;padding:6px 5px;display:flex;flex-direction:column;justify-content:space-between;overflow:hidden"><span style="font:600 9px/1 'Public Sans',sans-serif;color:#F9C48A">RUN</span><span style="font:400 7.5px/1 'JetBrains Mono',monospace;color:#B57B3C">55M</span></div>
+                  <div style="position:absolute;left:77.08%;width:4.17%;top:0;bottom:0;background:#2E2A12;border-left:2px solid #D9C13A;padding:6px 5px;display:flex;flex-direction:column;justify-content:space-between;overflow:hidden"><span style="font:600 9px/1 'Public Sans',sans-serif;color:#E8DC93">DINNER</span><span style="font:400 7.5px/1 'JetBrains Mono',monospace;color:#9A8F42">18:30</span></div>
+                  <div style="position:absolute;left:81.25%;width:12.5%;top:0;bottom:0;background:#15121C;border-left:2px solid #5E5870;padding:6px 8px;display:flex;flex-direction:column;justify-content:space-between"><span style="font:600 9.5px/1 'Public Sans',sans-serif;color:#C8C2D6">EVENING</span><span style="font:400 7.5px/1 'JetBrains Mono',monospace;color:#5E5870">19:30–22:30</span></div>
+                  <div style="position:absolute;left:93.75%;width:6.25%;top:0;bottom:0;background:#211640;border-left:2px solid #6B3FD4;padding:6px 6px;display:flex;flex-direction:column;justify-content:space-between;overflow:hidden"><span style="font:600 9px/1 'Public Sans',sans-serif;color:#C9B4FF">WIND DOWN</span><span style="font:400 7.5px/1 'JetBrains Mono',monospace;color:#8A73C4">22:30</span></div>
+                </div>
+
+                <div style="position:absolute;left:29.17%;top:0;bottom:0;width:1px;background:repeating-linear-gradient(#A97BFF 0 4px,transparent 4px 8px);z-index:5"></div>
+                <div style="position:absolute;left:29.17%;top:0;transform:translate(-100%,0);padding-right:5px;z-index:5;text-align:right;font:500 8px/1.4 'JetBrains Mono',monospace;color:#A97BFF;letter-spacing:.06em;white-space:nowrap">ALARM<br>07:00</div>
+                <div style="position:absolute;left:40.35%;top:0;bottom:0;width:1px;background:#EFECF5;z-index:5"></div>
+                <div style="position:absolute;left:40.35%;top:0;transform:translateX(4px);z-index:5;font:500 8px/1.4 'JetBrains Mono',monospace;color:#EFECF5;letter-spacing:.06em;white-space:nowrap">NOW<br>09:41</div>
+                <div style="position:absolute;right:0;top:0;bottom:0;width:1px;background:repeating-linear-gradient(#6B3FD4 0 4px,transparent 4px 8px);z-index:5"></div>
+                <div style="position:absolute;right:0;top:0;transform:translateX(-100%);padding-right:5px;z-index:5;text-align:right;font:500 8px/1.4 'JetBrains Mono',monospace;color:#8A73C4;letter-spacing:.06em;white-space:nowrap">BED TARGET<br>00:00</div>
+                <div style="position:absolute;left:40.35%;right:0;top:0;bottom:0;background:rgba(12,10,17,.55);z-index:4;pointer-events:none"></div>
+              </div>
+            </div>
+          </div>
+
+          <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;height:158px;flex:none">
+            <div style="background:#15121C;border:1px solid #241D30;clip-path:polygon(0 0,100% 0,100% calc(100% - 15px),calc(100% - 15px) 100%,0 100%);padding:13px 17px;display:flex;flex-direction:column">
+              <div style="display:flex;align-items:baseline;gap:10px;margin-bottom:9px">
+                <div style="font-family:Iceland,sans-serif;font-size:15px;letter-spacing:.12em">TIME IN ZONE</div>
+                <div style="margin-left:auto;font:400 8.5px/1 'JetBrains Mono',monospace;color:#5E5870">SO FAR TODAY</div>
+              </div>
+              <div style="flex:1;display:flex;flex-direction:column;gap:5px;justify-content:center">
+                <div style="display:flex;align-items:center;gap:9px"><div style="width:44px;font:400 8.5px/1 'JetBrains Mono',monospace;color:#FF6B7A">Z5 175+</div><div style="flex:1;height:10px;background:#100D17"><div style="width:4%;height:100%;background:#FF6B7A"></div></div><div style="width:34px;text-align:right;font:500 9.5px/1 'JetBrains Mono',monospace">0:02</div></div>
+                <div style="display:flex;align-items:center;gap:9px"><div style="width:44px;font:400 8.5px/1 'JetBrains Mono',monospace;color:#F59A3E">Z4 155</div><div style="flex:1;height:10px;background:#100D17"><div style="width:14%;height:100%;background:#F59A3E"></div></div><div style="width:34px;text-align:right;font:500 9.5px/1 'JetBrains Mono',monospace">0:09</div></div>
+                <div style="display:flex;align-items:center;gap:9px"><div style="width:44px;font:400 8.5px/1 'JetBrains Mono',monospace;color:#D9C13A">Z3 135</div><div style="flex:1;height:10px;background:#100D17"><div style="width:23%;height:100%;background:#D9C13A"></div></div><div style="width:34px;text-align:right;font:500 9.5px/1 'JetBrains Mono',monospace">0:15</div></div>
+                <div style="display:flex;align-items:center;gap:9px"><div style="width:44px;font:400 8.5px/1 'JetBrains Mono',monospace;color:#4FC98A">Z2 115</div><div style="flex:1;height:10px;background:#100D17"><div style="width:41%;height:100%;background:#4FC98A"></div></div><div style="width:34px;text-align:right;font:500 9.5px/1 'JetBrains Mono',monospace">0:27</div></div>
+                <div style="display:flex;align-items:center;gap:9px"><div style="width:44px;font:400 8.5px/1 'JetBrains Mono',monospace;color:#6E9CFF">Z1 95</div><div style="flex:1;height:10px;background:#100D17"><div style="width:68%;height:100%;background:#6E9CFF"></div></div><div style="width:34px;text-align:right;font:500 9.5px/1 'JetBrains Mono',monospace">1:12</div></div>
+              </div>
+              <div style="font:400 8.5px/1 'JetBrains Mono',monospace;color:#5E5870;margin-top:8px;padding-top:7px;border-top:1px solid #241D30">ZONES FROM LT2 TEST · 2026-06-14</div>
+            </div>
+
+            <div style="background:#15121C;border:1px solid #241D30;clip-path:polygon(0 0,100% 0,100% calc(100% - 15px),calc(100% - 15px) 100%,0 100%);padding:13px 17px;display:flex;flex-direction:column">
+              <div style="display:flex;align-items:baseline;gap:10px;margin-bottom:9px">
+                <div style="font-family:Iceland,sans-serif;font-size:15px;letter-spacing:.12em">REST OF DAY</div>
+                <div style="margin-left:auto;font:400 8.5px/1 'JetBrains Mono',monospace;color:#6B3FD4">PLANNED</div>
+              </div>
+              <div style="flex:1;display:flex;flex-direction:column;gap:7px;justify-content:center">
+                <div style="display:flex;align-items:center;gap:10px"><div style="width:38px;font:500 9.5px/1 'JetBrains Mono',monospace;color:#F59A3E">17:35</div><div style="flex:1;font:400 10px/1.3 'Public Sans',sans-serif;color:#C8C2D6">Easy 8k — hold Z2, cap at 145</div></div>
+                <div style="display:flex;align-items:center;gap:10px"><div style="width:38px;font:500 9.5px/1 'JetBrains Mono',monospace;color:#D9C13A">18:30</div><div style="flex:1;font:400 10px/1.3 'Public Sans',sans-serif;color:#C8C2D6">Dinner — last meal 3h before bed</div></div>
+                <div style="display:flex;align-items:center;gap:10px"><div style="width:38px;font:500 9.5px/1 'JetBrains Mono',monospace;color:#6B3FD4">22:30</div><div style="flex:1;font:400 10px/1.3 'Public Sans',sans-serif;color:#C8C2D6">Wind down — screens off, lights 20%</div></div>
+                <div style="display:flex;align-items:center;gap:10px"><div style="width:38px;font:500 9.5px/1 'JetBrains Mono',monospace;color:#6E9CFF">00:00</div><div style="flex:1;font:400 10px/1.3 'Public Sans',sans-serif;color:#C8C2D6">Bed — 7:00 to hit the 07:00 alarm</div></div>
+              </div>
+              <div style="font:400 8.5px/1 'JetBrains Mono',monospace;color:#5E5870;margin-top:8px;padding-top:7px;border-top:1px solid #241D30">DRAG A BLOCK ON THE TIMELINE TO RESCHEDULE</div>
+            </div>
+
+            <div style="background:#15121C;border:1px solid #241D30;clip-path:polygon(0 0,100% 0,100% calc(100% - 15px),calc(100% - 15px) 100%,0 100%);padding:13px 17px;display:flex;flex-direction:column;gap:8px">
+              <div style="font-family:Iceland,sans-serif;font-size:15px;letter-spacing:.12em">SIGNALS</div>
+              <div style="display:flex;gap:9px"><div style="width:2px;flex:none;background:#6E9CFF"></div><div><div style="font:600 11px/1.35 'Public Sans',sans-serif">Sleep midpoint 03:32 — 26 min later than target</div><div style="font:400 10px/1.4 'Public Sans',sans-serif;color:#9A93AB;margin-top:2px">Fourth night drifting. The 07:00 alarm is the fixed end.</div></div></div>
+              <div style="display:flex;gap:9px"><div style="width:2px;flex:none;background:#F59A3E"></div><div><div style="font:600 11px/1.35 'Public Sans',sans-serif">Morning HR ceiling 20 bpm above your Sunday norm</div><div style="font:400 10px/1.4 'Public Sans',sans-serif;color:#9A93AB;margin-top:2px">Keep the 17:35 run in Z2 or the bed target slips again.</div></div></div>
+              <div style="display:flex;gap:9px"><div style="width:2px;flex:none;background:#4FC98A"></div><div><div style="font:600 11px/1.35 'Public Sans',sans-serif">Resting HR at a 90-day low</div><div style="font:400 10px/1.4 'Public Sans',sans-serif;color:#9A93AB;margin-top:2px">48 bpm, down from 53 in May.</div></div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+</body>
+</html>

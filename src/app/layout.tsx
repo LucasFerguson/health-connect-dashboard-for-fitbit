@@ -1,7 +1,8 @@
 import "~/styles/globals.css";
 
 import { type Metadata } from "next";
-import { Geist } from "next/font/google";
+import { Geist, Iceland, JetBrains_Mono, Public_Sans } from "next/font/google";
+import { AppNavigation } from "~/components/AppNavigation";
 
 export const metadata: Metadata = {
   title: "Health Dashboard",
@@ -14,12 +15,36 @@ const geist = Geist({
   variable: "--font-geist-sans",
 });
 
+const iceland = Iceland({
+  subsets: ["latin"],
+  weight: "400",
+  variable: "--font-iceland",
+});
+
+const jetbrainsMono = JetBrains_Mono({
+  subsets: ["latin"],
+  weight: ["400", "500", "700"],
+  variable: "--font-jetbrains-mono",
+});
+
+const publicSans = Public_Sans({
+  subsets: ["latin"],
+  weight: ["400", "600"],
+  variable: "--font-public-sans",
+});
+
 export default function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="en" className={`${geist.variable}`}>
-      <body>{children}</body>
+    <html
+      lang="en"
+      className={`${geist.variable} ${iceland.variable} ${jetbrainsMono.variable} ${publicSans.variable}`}
+    >
+      <body className="bg-[#15162c]">
+        <AppNavigation />
+        {children}
+      </body>
     </html>
   );
 }

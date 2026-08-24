@@ -4,4 +4,76 @@
   --font-sans:
     var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif,
     "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+
+  /* ---------------------------------------------------------------------
+   * Meridian design tokens
+   * Source of truth: Health Dashboard Desktop Mockups/design_handoff_day_view/README.md
+   * ------------------------------------------------------------------- */
+
+  /* Chrome / neutral ramp, deepest to brightest. */
+  --color-ink-950: #08060c; /* deepest: menu bar, day strip */
+  --color-ink-900: #0c0a11; /* page background */
+  --color-ink-850: #100d17; /* lane wells */
+  --color-ink-800: #15121c; /* card surface */
+  --color-ink-700: #1a1622; /* recessed block */
+  --color-ink-600: #1d1826; /* hairline / raised block */
+  --color-ink-500: #241d30; /* border */
+  --color-ink-400: #302842; /* border hover, flattened future bar */
+  --color-ink-300: #3e2e6e; /* awake stage, muted plan bar */
+  --color-ink-200: #5e5870; /* dim text */
+  --color-ink-100: #9a93ab; /* secondary text */
+  --color-ink-50: #c8c2d6; /* bright secondary text */
+  --color-ink-0: #efecf5; /* primary text */
+
+  /* Brand purple. */
+  --color-brand-950: #211640; /* wind-down fill */
+  --color-brand-500: #6b3fd4; /* primary action / planned */
+  --color-brand-400: #a97bff; /* accent, selection, movement */
+  --color-brand-text: #c9b4ff; /* wind-down text, bright */
+  --color-brand-text-dim: #8a73c4; /* wind-down text, dim */
+
+  /* Data hue: sleep. */
+  --color-sleep: #6e9cff;
+  --color-sleep-light: #4a78d6;
+  --color-sleep-deep: #2e4a8a;
+  --color-sleep-ground: #0d1226; /* sleep-window ground tone */
+  --color-sleep-fill: #182448; /* sleep block fill */
+  --color-sleep-text: #c6d6ff;
+  --color-sleep-text-dim: #7e93c9;
+
+  /* Data hue: recovery. */
+  --color-recovery: #4fc98a;
+
+  /* Data hue: strain. */
+  --color-strain: #f59a3e;
+  --color-strain-fill: #3a2610;
+  --color-strain-text: #f9c48a;
+  --color-strain-text-dim: #b57b3c;
+
+  /* Data hue: caution. */
+  --color-caution: #d9c13a;
+  --color-caution-fill: #2e2a12;
+  --color-caution-text: #e8dc93;
+  --color-caution-text-dim: #9a8f42;
+
+  /* Data hue: alert. */
+  --color-alert: #ff6b7a;
+
+  /* Data hue: low / cold. */
+  --color-cold: #3fc4d9;
+
+  /* HR intensity ramp, low to high (6 stops). Also exposed as a list below
+   * for consumers that need to iterate the ramp programmatically. */
+  --color-hr-1: #3fc4d9;
+  --color-hr-2: #6e9cff;
+  --color-hr-3: #4fc98a;
+  --color-hr-4: #d9c13a;
+  --color-hr-5: #f59a3e;
+  --color-hr-6: #ff6b7a;
+
+  /* Fonts. */
+  --font-display: var(--font-iceland), ui-sans-serif, system-ui, sans-serif;
+  --font-mono:
+    var(--font-jetbrains-mono), ui-monospace, "SFMono-Regular", Menlo, monospace;
+  --font-prose: var(--font-public-sans), ui-sans-serif, system-ui, sans-serif;
 }
