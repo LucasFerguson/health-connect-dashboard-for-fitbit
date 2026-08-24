@@ -4,7 +4,9 @@ A self-hosted dashboard for health metrics collected from phones and wearables. 
 
 ## Architecture and data flow
 
-The application uses a one-way flow with explicit boundaries:
+**The app currently has two data paths, mid-migration.** Most pages still use the original local-pipeline flow described below. The day view (`/day/[date]`) has moved to a different, simpler path: it calls a prepared analytics API exposed by the backend (HCGateway, a sibling project) and does no local computation of its own. The plan is to migrate the rest of the app to the same prepared-API approach so the TypeScript pipeline in this repo and the backend's own analytics implementation can't drift from each other; until that happens, both paths are real and in active use.
+
+### Legacy path (most pages today)
 
 ```text
 Health Connect API -> repository/DTO validation -> domain model
@@ -21,11 +23,21 @@ The server renders the initial snapshot, and the client refreshes it through `/a
 
 New data sources should implement `HealthRepository`. New metrics should first be added to `HealthSnapshot`, then mapped at the repository boundary, exposed through a selector, and finally rendered by a component. This keeps backend changes from spreading through the UI.
 
+`HEALTH_HOME_TIME_ZONE`, `SLEEP_TARGET_MINUTES`, and `HEALTH_BIRTH_DATE` (below) only affect this legacy path's own analytics pipeline. They have no effect on the day view.
+
 The non-destructive reconciliation of observations from multiple devices is documented in [Health data model](docs/health-data-model.md).
 
-The independently runnable analytics subsystem is documented in [Health analytics pipeline](pipeline/README.md).
+The independently runnable analytics subsystem behind this path is documented in [Health analytics pipeline](pipeline/README.md).
 
 The proposed separation of physical, non-activity physiological, and mental strain is documented in [Strain model](docs/strain-model.md).
+
+### New path (`/day/[date]` only, for now)
+
+The day view calls `GET /api/v2/analytics/day` on HCGateway and renders the response directly — no local aggregation, no local timezone/target-minute config. Every field on that response carries its own availability `status` (`available`, `partial`, `missing`, `insufficient_data`, `not_implemented`, `blocked`) and, where relevant, a human-readable `note`; the frontend renders exactly what the API says is true rather than inferring or defaulting missing data to zero.
+
+Backend configuration for this path — home time zone, sleep target, birth date, and personal heart-rate-zone thresholds — lives on the HCGateway server itself and is set via `PUT /api/v2/analytics/config` on that API, not through this repo's environment variables. See `/root/HCGateway/doc/frontend-data-model.md` on the backend host for the full contract.
+
+Client code for this path: `src/server/health/dayAnalyticsSchema.ts` (the Zod-validated response contract), `src/server/health/getDayAnalytics.ts` (the entrypoint, real API or fixture depending on configuration), `src/domain/dayViewPresentation.ts` (pure status-to-display logic), and `src/components/day-view/`.
 
 Roadmap:
 
@@ -40,6 +52,8 @@ Roadmap:
 - [x] Add versioned sleep-consistency analytics and persistence
 - [x] Add an experimental, auditable health-age and pace-of-aging model
 - [x] Add reusable year heatmaps for sleep quantity, debt, and consistency
+- [x] Add a redesigned day view backed by a prepared backend analytics API (`/day/[date]`)
+- [ ] Migrate the remaining pages off the local pipeline to the same prepared-API approach
 - [ ] Add persistence, scheduled imports, and historical aggregation
 
 Dashboard Screenshot:

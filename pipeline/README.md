@@ -2,6 +2,8 @@
 
 This subsystem is independent from React and turns immutable source observations into versioned frontend-ready analytics for sleep, steps, calories, resting heart rate, and weight.
 
+The day view (`/day/[date]`) does not use this pipeline — it consumes a prepared analytics API from the backend instead. See the main [README](../README.md#architecture-and-data-flow) for how the two paths currently coexist. This pipeline still runs for every other page.
+
 ```text
 source repository -> reconciliation -> aggregation -> comparisons -> analytics store
 ```
