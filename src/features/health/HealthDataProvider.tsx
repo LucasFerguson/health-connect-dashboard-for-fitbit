@@ -114,7 +114,10 @@ export function HealthDataProvider({
         const snapshot = (await response.json()) as HealthSnapshot;
         dispatch({ type: "snapshotReceived", snapshot });
       } catch (error) {
-        console.error("Unable to refresh health data", error);
+        console.error(
+          "Unable to refresh health data",
+          error instanceof Error ? error.message : String(error),
+        );
       }
     };
 
