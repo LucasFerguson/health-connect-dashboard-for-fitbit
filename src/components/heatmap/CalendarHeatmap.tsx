@@ -130,8 +130,7 @@ export function CalendarHeatmap({
                 }
               >
                 <title>
-                  {day.date}:{" "}
-                  {value === undefined ? "No reading" : formatValue(value)}
+                  {`${day.date}: ${value === undefined ? "No reading" : formatValue(value)}`}
                 </title>
               </rect>
             );
