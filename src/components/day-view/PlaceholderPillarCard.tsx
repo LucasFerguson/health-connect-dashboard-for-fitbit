@@ -1,9 +1,10 @@
 import { Card } from "~/components/ui/Card";
+import { SectionFooter } from "~/components/ui/SectionFooter";
+import { SectionHeader } from "~/components/ui/SectionHeader";
 import { Track } from "~/components/ui/Track";
 import { StatValue } from "~/components/ui/StatValue";
 import { absenceReason } from "~/domain/dayViewPresentation";
 import type { MetricStatus } from "~/server/health/dayAnalyticsSchema";
-import { PillarFooter, PillarHeader } from "./SleepPillarCard";
 
 /**
  * Shared shell for the RECOVERY and STRAIN pillar cards. Renders the
@@ -41,10 +42,11 @@ export function PlaceholderPillarCard({
   if (status === "available" && value !== null && value !== undefined) {
     return (
       <Card topAccent={hue}>
-        <PillarHeader
-          label={label}
-          hue={hue}
-          qualifier={qualifier ?? "ESTIMATE"}
+        <SectionHeader
+          title={label}
+          titleColor={hue}
+          right={qualifier ?? "ESTIMATE"}
+          size="md"
         />
         <StatValue value={value.toFixed(1)} className="my-[7px]" />
         <Track
@@ -52,7 +54,7 @@ export function PlaceholderPillarCard({
           fillColor={hue}
           heightPx={7}
         />
-        <PillarFooter
+        <SectionFooter
           items={footerLabels.map((item): [string, string] => [item, "—"])}
         />
       </Card>
@@ -61,14 +63,19 @@ export function PlaceholderPillarCard({
 
   return (
     <Card topAccent={hue}>
-      <PillarHeader label={label} hue={hue} qualifier="NOT AVAILABLE" />
+      <SectionHeader
+        title={label}
+        titleColor={hue}
+        right="NOT AVAILABLE"
+        size="md"
+      />
       <StatValue
         value="—"
         context={absenceReason(status, note)}
         className="my-[7px]"
       />
       <Track fillPercent={0} fillColor={hue} heightPx={7} />
-      <PillarFooter
+      <SectionFooter
         items={footerLabels.map((item): [string, string] => [item, "—"])}
       />
     </Card>

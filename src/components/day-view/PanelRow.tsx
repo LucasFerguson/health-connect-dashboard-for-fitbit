@@ -1,40 +1,12 @@
-import type { ReactNode } from "react";
 import { Card } from "~/components/ui/Card";
+import { EmptyState } from "~/components/ui/EmptyState";
+import { SectionFooter } from "~/components/ui/SectionFooter";
+import { SectionHeader } from "~/components/ui/SectionHeader";
 import {
   absenceReason,
   isDisplayableStatus,
 } from "~/domain/dayViewPresentation";
 import type { HealthDay } from "~/server/health/dayAnalyticsSchema";
-
-function PanelHeader({
-  title,
-  right,
-  rightColor,
-}: {
-  title: string;
-  right: string;
-  rightColor?: string;
-}) {
-  return (
-    <div className="mb-[9px] flex items-baseline gap-2.5">
-      <span className="font-display text-[15px] tracking-[.12em]">{title}</span>
-      <span
-        className="text-ink-200 ml-auto font-mono text-[8.5px]"
-        style={rightColor ? { color: rightColor } : undefined}
-      >
-        {right}
-      </span>
-    </div>
-  );
-}
-
-function PanelFooter({ children }: { children: ReactNode }) {
-  return (
-    <div className="border-ink-500 text-ink-200 mt-2 border-t pt-[7px] font-mono text-[8.5px]">
-      {children}
-    </div>
-  );
-}
 
 const ZONE_COLORS = [
   "var(--color-sleep)",
@@ -63,11 +35,11 @@ function TimeInZonePanel({ day }: { day: HealthDay }) {
   if (!zonesAvailable) {
     return (
       <Card className="flex flex-col">
-        <PanelHeader title="TIME IN ZONE" right="SO FAR TODAY" />
-        <div className="text-ink-200 flex flex-1 items-center justify-center px-2 text-center font-mono text-[9px] tracking-[.02em]">
-          {absenceReason(heartRateZones.status, heartRateZones.note)}
-        </div>
-        <PanelFooter>NO ZONE THRESHOLDS CONFIGURED</PanelFooter>
+        <SectionHeader title="TIME IN ZONE" right="SO FAR TODAY" />
+        <EmptyState
+          message={absenceReason(heartRateZones.status, heartRateZones.note)}
+        />
+        <SectionFooter bordered>NO ZONE THRESHOLDS CONFIGURED</SectionFooter>
       </Card>
     );
   }
@@ -88,7 +60,7 @@ function TimeInZonePanel({ day }: { day: HealthDay }) {
 
   return (
     <Card className="flex flex-col">
-      <PanelHeader title="TIME IN ZONE" right="SO FAR TODAY" />
+      <SectionHeader title="TIME IN ZONE" right="SO FAR TODAY" />
       <div className="flex flex-1 flex-col justify-center gap-[5px]">
         {zoneRows.map((zone) => (
           <div key={zone.label} className="flex items-center gap-2.5">
@@ -105,7 +77,7 @@ function TimeInZonePanel({ day }: { day: HealthDay }) {
           </div>
         ))}
       </div>
-      <PanelFooter>ZONE 3+ TODAY: {zone3PlusDisplay}</PanelFooter>
+      <SectionFooter bordered>ZONE 3+ TODAY: {zone3PlusDisplay}</SectionFooter>
     </Card>
   );
 }
@@ -117,18 +89,20 @@ function TimeInZonePanel({ day }: { day: HealthDay }) {
 function RestOfDayPanel({ day }: { day: HealthDay }) {
   return (
     <Card className="flex flex-col">
-      <PanelHeader
+      <SectionHeader
         title="REST OF DAY"
         right="PLANNED"
         rightColor="var(--color-brand-500)"
       />
-      <div className="text-ink-200 flex flex-1 items-center justify-center px-2 text-center font-mono text-[9px] tracking-[.02em]">
-        {absenceReason(
+      <EmptyState
+        message={absenceReason(
           day.timeline.schedule.status,
           day.timeline.schedule.note,
         )}
-      </div>
-      <PanelFooter>DRAG A BLOCK ON THE TIMELINE TO RESCHEDULE</PanelFooter>
+      />
+      <SectionFooter bordered>
+        DRAG A BLOCK ON THE TIMELINE TO RESCHEDULE
+      </SectionFooter>
     </Card>
   );
 }

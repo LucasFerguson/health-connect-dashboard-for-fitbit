@@ -4,7 +4,8 @@ import { useEffect, useMemo, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { clsx } from "clsx";
 import { Chip } from "~/components/ui/Chip";
-import { DropdownTrigger } from "~/components/ui/DropdownTrigger";
+import { IconButton } from "~/components/ui/IconButton";
+import { Menu } from "~/components/ui/Menu";
 import { Spinner } from "~/components/ui/Spinner";
 import type { DayState } from "~/server/health/dayAnalyticsSchema";
 
@@ -104,15 +105,13 @@ export function ContextBar({
           isPending && "opacity-50",
         )}
       >
-        <button
-          type="button"
+        <IconButton
           aria-label="Previous day"
           onClick={() => goTo(shiftDate(selectedDate, -1))}
           disabled={isPending}
-          className="border-ink-500 text-ink-100 hover:bg-ink-800 hover:text-ink-0 flex size-6 items-center justify-center border font-mono text-[11px] transition-colors duration-[120ms] ease-out disabled:pointer-events-none"
         >
           ‹
-        </button>
+        </IconButton>
         <div className="border-ink-500 bg-ink-800 flex h-6 items-center gap-[9px] border-y px-3">
           <span className="font-display text-ink-0 text-lg tracking-[.1em]">
             {weekday} {day} {month}
@@ -127,15 +126,13 @@ export function ContextBar({
           ) : null}
           {isPending ? <Spinner size={10} /> : null}
         </div>
-        <button
-          type="button"
+        <IconButton
           aria-label="Next day"
           onClick={() => goTo(shiftDate(selectedDate, 1))}
           disabled={isPending}
-          className="border-ink-500 text-ink-100 hover:bg-ink-800 hover:text-ink-0 flex size-6 items-center justify-center border font-mono text-[11px] transition-colors duration-[120ms] ease-out disabled:pointer-events-none"
         >
           ›
-        </button>
+        </IconButton>
       </div>
 
       <button type="button" onClick={goToToday} disabled={isPending}>
@@ -151,9 +148,14 @@ export function ContextBar({
 
       <div className="bg-ink-500 h-4 w-px" aria-hidden />
 
-      <DropdownTrigger title="Pivots the axis origin — not wired up yet">
-        DAY START 00:00 <span className="text-ink-200">▾</span>
-      </DropdownTrigger>
+      {/* Menu opens and lists real hour options, but selecting one is a
+          no-op — pivoting the timeline's axis origin isn't implemented yet.
+          Left genuinely inert rather than faking a working selection. */}
+      <Menu
+        trigger="DAY START 00:00"
+        triggerTitle="Pivots the axis origin — not wired up yet"
+        options={[{ label: "00:00" }, { label: "04:00" }, { label: "06:00" }]}
+      />
     </div>
   );
 }
