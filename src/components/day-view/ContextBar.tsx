@@ -5,11 +5,8 @@ import { useRouter } from "next/navigation";
 import { clsx } from "clsx";
 import { Chip } from "~/components/ui/Chip";
 import { DropdownTrigger } from "~/components/ui/DropdownTrigger";
-import { notchStyle } from "~/components/ui/notch";
 import { Spinner } from "~/components/ui/Spinner";
 import type { DayState } from "~/server/health/dayAnalyticsSchema";
-
-const RANGE_SEGMENTS = ["24H", "7D", "30D", "90D", "1Y", "CUSTOM…"];
 
 function shiftDate(date: string, days: number): string {
   const instant = Date.parse(`${date}T00:00:00Z`);
@@ -39,13 +36,12 @@ function dayOfYear(date: string): number {
 }
 
 /**
- * Band 2 — the 40px context bar: date stepper, TODAY chip, DAY START and
- * COMPARE dropdown triggers (visual only — see TODO below), and the
- * (disabled, per spec) range selector locked to DAY.
+ * Band 2 — the 40px context bar: date stepper, TODAY chip, and the DAY
+ * START dropdown trigger (visual only — see TODO below).
  *
- * `dayStartHour` and `compareDate` are accepted so the shell renders the
- * correct chrome, but wiring their menus up is out of scope here — noted
- * as a known gap rather than faked interactivity.
+ * `dayStartHour` is accepted so the shell renders the correct chrome, but
+ * wiring its menu up is out of scope here — noted as a known gap rather
+ * than faked interactivity.
  */
 export function ContextBar({
   selectedDate,
@@ -158,35 +154,6 @@ export function ContextBar({
       <DropdownTrigger title="Pivots the axis origin — not wired up yet">
         DAY START 00:00 <span className="text-ink-200">▾</span>
       </DropdownTrigger>
-      <DropdownTrigger title="Overlays another day as a ghost series — not wired up yet">
-        COMPARE <span className="text-ink-200">▾</span>
-      </DropdownTrigger>
-
-      <div className="ml-auto flex items-center gap-2.5">
-        <span className="text-ink-200 font-mono text-[9px] tracking-[.14em]">
-          RANGE
-        </span>
-        <div
-          className="border-ink-500 flex border opacity-55"
-          style={notchStyle(8)}
-        >
-          {RANGE_SEGMENTS.map((segment) => (
-            <span
-              key={segment}
-              className={clsx(
-                "flex h-6 items-center gap-1 px-[11px] font-mono text-[9.5px] tracking-[.06em]",
-                segment === "24H"
-                  ? "bg-brand-500 text-ink-0 font-medium"
-                  : "text-ink-200",
-              )}
-            >
-              {segment}
-              {segment === "24H" ? <span className="text-[8px]">▮</span> : null}
-            </span>
-          ))}
-        </div>
-        <span className="text-ink-200 font-mono text-[8px]">LOCKED ON DAY</span>
-      </div>
     </div>
   );
 }
