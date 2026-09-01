@@ -12,7 +12,7 @@ export function PillarRow({
   const { recovery, strain } = day.headlineScores;
 
   return (
-    <div className="grid shrink-0 grid-cols-3 gap-3">
+    <div className="grid shrink-0 grid-cols-1 gap-3 md:grid-cols-3">
       <SleepPillarCard
         sleepDuration={day.headlineScores.sleepDuration}
         sleepNeed={day.headlineScores.sleepNeed}

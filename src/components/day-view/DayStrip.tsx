@@ -47,7 +47,7 @@ export function DayStrip({ cells }: { cells: DayStripCellData[] }) {
           PLANNED
         </span>
       </div>
-      <div className="flex flex-1 gap-[3px] overflow-x-auto">
+      <div className="flex min-w-0 flex-1 gap-[3px] overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
         {cells.map((cell) => {
           const isCellPending = isPending && pendingDate === cell.date;
           return (

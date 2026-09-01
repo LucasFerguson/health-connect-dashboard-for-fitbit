@@ -98,10 +98,10 @@ export function ContextBar({
   }, [selectedDate]);
 
   return (
-    <div className="border-ink-600 bg-ink-900 flex h-10 shrink-0 items-center gap-3 border-b px-4">
+    <div className="border-ink-600 bg-ink-900 flex h-10 shrink-0 items-center gap-3 overflow-x-auto border-b px-4 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
       <div
         className={clsx(
-          "flex items-center gap-px transition-opacity duration-[120ms] ease-out",
+          "flex shrink-0 items-center gap-px transition-opacity duration-[120ms] ease-out",
           isPending && "opacity-50",
         )}
       >
@@ -135,7 +135,12 @@ export function ContextBar({
         </IconButton>
       </div>
 
-      <button type="button" onClick={goToToday} disabled={isPending}>
+      <button
+        type="button"
+        onClick={goToToday}
+        disabled={isPending}
+        className="shrink-0"
+      >
         <Chip
           className={clsx(
             "cursor-pointer transition-opacity duration-[120ms] ease-out",
@@ -146,16 +151,24 @@ export function ContextBar({
         </Chip>
       </button>
 
-      <div className="bg-ink-500 h-4 w-px" aria-hidden />
+      <div className="bg-ink-500 h-4 w-px shrink-0" aria-hidden />
 
       {/* Menu opens and lists real hour options, but selecting one is a
           no-op — pivoting the timeline's axis origin isn't implemented yet.
-          Left genuinely inert rather than faking a working selection. */}
-      <Menu
-        trigger="DAY START 00:00"
-        triggerTitle="Pivots the axis origin — not wired up yet"
-        options={[{ label: "00:00" }, { label: "04:00" }, { label: "06:00" }]}
-      />
+          Left genuinely inert rather than faking a working selection.
+          Hidden below sm: it's the lowest-priority control in this bar and
+          the date stepper needs the room on a phone-width screen. */}
+      <div className="hidden shrink-0 sm:block">
+        <Menu
+          trigger="DAY START 00:00"
+          triggerTitle="Pivots the axis origin — not wired up yet"
+          options={[
+            { label: "00:00" },
+            { label: "04:00" },
+            { label: "06:00" },
+          ]}
+        />
+      </div>
     </div>
   );
 }

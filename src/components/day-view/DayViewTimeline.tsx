@@ -45,16 +45,16 @@ export function DayViewTimeline({
     <Card
       notchSize={16}
       padding="px-5 pt-3.5 pb-3"
-      className="flex min-h-0 flex-1 flex-col"
+      className="flex min-h-[420px] flex-1 flex-col md:min-h-0"
     >
       <div className="mb-[11px] flex items-baseline gap-3.5">
         <span className="font-display text-[17px] tracking-[.12em]">
           24-HOUR TIMELINE
         </span>
-        <span className="text-ink-200 font-mono text-[9px] tracking-[.08em]">
+        <span className="text-ink-200 hidden font-mono text-[9px] tracking-[.08em] sm:inline">
           00:00 → 24:00 · HR CANDLES · SLEEP STAGES · MOVEMENT · PLAN
         </span>
-        <div className="text-ink-200 ml-auto flex items-center gap-2 font-mono text-[8.5px]">
+        <div className="text-ink-200 ml-auto hidden items-center gap-2 font-mono text-[8.5px] sm:flex">
           <span>40</span>
           <div className="flex h-[7px] w-[120px]">
             {HR_RAMP.map((color) => (
@@ -69,9 +69,20 @@ export function DayViewTimeline({
         </div>
       </div>
 
-      <div className="flex min-h-0 flex-1 gap-[9px]">
-        <TimelineGutter />
-        <div ref={plotRef} className="relative flex min-h-0 flex-1 flex-col">
+      {/* Below `sm`, the plot needs its full desktop width to stay legible
+          (candles/labels don't reflow), so it gets a min-width and scrolls
+          horizontally inside this wrapper instead of shrinking. The gutter
+          stays outside the scroll area and pinned via `sticky left-0` so
+          the HR/lane axis labels remain visible while lanes scroll under
+          them. */}
+      <div className="flex min-h-0 flex-1 gap-[9px] overflow-x-auto sm:overflow-x-visible">
+        <div className="bg-ink-800 sticky left-0 z-[9] flex shrink-0">
+          <TimelineGutter />
+        </div>
+        <div
+          ref={plotRef}
+          className="relative flex min-h-0 min-w-[640px] flex-1 flex-col sm:min-w-0"
+        >
           <HeartRateLane
             heartRate={day.timeline.heartRate}
             restingHeartRateBpm={restingHeartRateBpm}
