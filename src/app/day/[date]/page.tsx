@@ -1,9 +1,6 @@
 import { notFound } from "next/navigation";
 import { DayView } from "~/components/day-view/DayView";
-import {
-  getDayAnalytics,
-  getSyncStatus,
-} from "~/server/health/getDayAnalytics";
+import { getDayAnalytics } from "~/server/health/getDayAnalytics";
 
 /**
  * No `export const dynamic = "force-dynamic"` here (unlike the old
@@ -35,10 +32,5 @@ export default async function DayViewPage({
 
   const response = await getDayAnalytics(date, NEARBY_RADIUS);
 
-  // The sync-status heartbeat is small chrome, not core day data — fetch
-  // it independently so a slow/erroring sync endpoint never blocks the day
-  // itself from rendering.
-  const syncStatus = await getSyncStatus().catch(() => null);
-
-  return <DayView response={response} syncStatus={syncStatus} />;
+  return <DayView response={response} />;
 }

@@ -1,7 +1,4 @@
-import type {
-  HealthDayResponse,
-  SyncStatusResponse,
-} from "~/server/health/dayAnalyticsSchema";
+import type { HealthDayResponse } from "~/server/health/dayAnalyticsSchema";
 import {
   buildDayStripCells,
   isDisplayableStatus,
@@ -11,32 +8,25 @@ import { AutoRefresh } from "./AutoRefresh";
 import { ContextBar } from "./ContextBar";
 import { DayStrip } from "./DayStrip";
 import { DayViewTimeline } from "./DayViewTimeline";
-import { MenuBar } from "./MenuBar";
 import { PanelRow } from "./PanelRow";
 import { PillarRow } from "./PillarRow";
 
 const DAY_START_HOUR = 0;
 
 /**
- * The DAY view screen: composes the menu bar, context bar, day strip,
- * pillar row, 24-hour timeline, and panel row from the `health-day-v1`
- * contract (`HealthDayResponse`). Every metric renders according to its own
- * `status` — a `missing`/`not_implemented` value never becomes a displayed
- * zero (see `~/domain/dayViewPresentation`'s `isDisplayableStatus`) — and
- * every explanatory string for an unavailable metric comes from the API's
- * own `note`/`availabilityNotes`, never a hardcoded frontend string.
+ * The DAY view screen: composes the context bar, day strip, pillar row,
+ * 24-hour timeline, and panel row from the `health-day-v1` contract
+ * (`HealthDayResponse`). The top-level nav (with the sync indicator) is
+ * `AppNavigation` in the root layout, shared across every page — this used
+ * to carry its own second nav bar (`MenuBar`) but that duplicated the same
+ * links in a different taxonomy, so it was folded into the one app-wide
+ * nav instead. Every metric renders according to its own `status` — a
+ * `missing`/`not_implemented` value never becomes a displayed zero (see
+ * `~/domain/dayViewPresentation`'s `isDisplayableStatus`) — and every
+ * explanatory string for an unavailable metric comes from the API's own
+ * `note`/`availabilityNotes`, never a hardcoded frontend string.
  */
-export function DayView({
-  response,
-  syncStatus,
-}: {
-  response: HealthDayResponse;
-  /** Optional: the phone-ingestion heartbeat for the small sync indicator
-   * in the menu bar's right cluster. Fetched separately from the day
-   * analytics so a slow/erroring sync-status call never blocks the day
-   * itself from rendering. */
-  syncStatus: SyncStatusResponse | null;
-}) {
+export function DayView({ response }: { response: HealthDayResponse }) {
   const { day, nearbyDays } = response;
   const { date, timeZone, dayState } = day;
 
@@ -63,10 +53,9 @@ export function DayView({
   return (
     <div className="bg-ink-900 text-ink-0 flex h-screen min-h-[720px] flex-col overflow-hidden">
       <AutoRefresh active={isToday} />
-      <MenuBar syncStatus={syncStatus} />
       <ContextBar selectedDate={date} dayState={dayState} />
       <DayStrip cells={stripCells} />
-      <div className="flex min-h-0 flex-1 flex-col gap-3 p-4 pt-3.5">
+      <div className="flex min-h-0 flex-1 flex-col gap-3 overflow-y-auto p-4 pt-3.5 md:overflow-y-hidden">
         <PillarRow day={day} timeZone={timeZone} />
         <DayViewTimeline
           day={day}

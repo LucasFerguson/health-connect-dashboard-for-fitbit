@@ -41,7 +41,7 @@ export default function RootLayout({
       lang="en"
       className={`${geist.variable} ${iceland.variable} ${jetbrainsMono.variable} ${publicSans.variable}`}
     >
-      <body className="bg-[#15162c]">
+      <body className="bg-ink-900 text-ink-0">
         <AppNavigation />
         {children}
       </body>
