@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import ReactECharts from "echarts-for-react";
+import { LazyECharts as ReactECharts } from "./ui/LazyECharts";
 import type { SleepStageKind } from "~/domain/health";
 import { sleepMinutes } from "~/domain/sleep";
 import { useHealthData } from "~/features/health/HealthDataProvider";

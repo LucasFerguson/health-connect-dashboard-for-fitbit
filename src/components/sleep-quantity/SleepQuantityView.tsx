@@ -1,6 +1,6 @@
 "use client";
 
-import ReactECharts from "echarts-for-react";
+import { LazyECharts as ReactECharts } from "../ui/LazyECharts";
 import Link from "next/link";
 import type { DailySleepSummary } from "~/domain/analytics";
 import { formatDurationMinutes } from "~/features/health/metricFormatters";

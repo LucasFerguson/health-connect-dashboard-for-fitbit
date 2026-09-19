@@ -1,6 +1,6 @@
 "use client";
 
-import ReactECharts from "echarts-for-react";
+import { LazyECharts as ReactECharts } from "../ui/LazyECharts";
 import type { DailyHealthspanEstimate } from "~/domain/analytics";
 
 export function HealthspanTrendCharts({

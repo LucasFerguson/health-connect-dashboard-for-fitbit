@@ -1,6 +1,6 @@
 "use client";
 
-import ReactECharts from "echarts-for-react";
+import { LazyECharts as ReactECharts } from "../ui/LazyECharts";
 import type { MonthlyMetricSummary } from "~/domain/analytics";
 import type { MetricKind } from "~/features/health/metricPresentation";
 import { metricPresentation } from "~/features/health/metricPresentation";
