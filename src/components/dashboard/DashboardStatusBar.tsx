@@ -1,7 +1,7 @@
 import { Spinner } from "~/components/ui/Spinner";
 
 interface DashboardStatusBarProps {
-  state: "loading" | "ready";
+  state: "loading" | "ready" | "stale";
   generatedAt?: string;
 }
 
@@ -10,6 +10,7 @@ export function DashboardStatusBar({
   generatedAt,
 }: DashboardStatusBarProps) {
   const loading = state === "loading";
+  const stale = state === "stale";
 
   return (
     <section
@@ -23,18 +24,28 @@ export function DashboardStatusBar({
           <Spinner size={13} color="var(--color-brand-text)" />
         ) : (
           <span
-            className="bg-recovery block size-2 shadow-[0_0_10px_var(--color-recovery)]"
+            className={`block size-2 ${
+              stale
+                ? "bg-amber-400 shadow-[0_0_10px_theme(colors.amber.400)]"
+                : "bg-recovery shadow-[0_0_10px_var(--color-recovery)]"
+            }`}
             aria-hidden
           />
         )}
         <div>
           <p className="font-mono text-[10px] font-medium tracking-[.12em] text-white/90 uppercase">
-            {loading ? "Assembling your overview" : "Dashboard ready"}
+            {loading
+              ? "Assembling your overview"
+              : stale
+                ? "Showing last known data"
+                : "Dashboard ready"}
           </p>
           <p className="mt-0.5 text-xs text-white/50">
             {loading
               ? "The page frame is ready. Health data and charts are loading."
-              : "Health data and interactive charts are available."}
+              : stale
+                ? "The latest refresh failed. Retrying in the background."
+                : "Health data and interactive charts are available."}
           </p>
         </div>
       </div>

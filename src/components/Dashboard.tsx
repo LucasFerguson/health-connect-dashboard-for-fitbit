@@ -2,7 +2,7 @@ import type { HealthSnapshot } from "~/domain/health";
 import { HealthDataProvider } from "~/features/health/HealthDataProvider";
 import { DeviceSleepComparison } from "./DeviceSleepComparison";
 import { DailyHealthSummary } from "./daily-health/DailyHealthSummary";
-import { DashboardStatusBar } from "./dashboard/DashboardStatusBar";
+import { ConnectedStatusBar } from "./dashboard/ConnectedStatusBar";
 import { HealthSignalsSection } from "./health-signals/HealthSignalsSection";
 import { HealthspanCard } from "./healthspan/HealthspanCard";
 import { SleepCalendar } from "./SleepCalendar";
@@ -14,24 +14,26 @@ export function Dashboard({ snapshot }: { snapshot: HealthSnapshot }) {
   return (
     <main className="min-h-screen bg-gradient-to-b from-[#2e026d] to-[#15162c] px-4 py-6 text-white">
       <div className="mx-auto max-w-7xl">
-        <DashboardStatusBar state="ready" generatedAt={snapshot.generatedAt} />
-        <header className="mb-8">
-          <div className="flex flex-wrap items-end justify-between gap-3">
-            <div>
-              <h1 className="text-3xl font-extrabold tracking-tight sm:text-4xl">
-                Health <span className="text-violet-300">Dashboard</span>
-              </h1>
-              <p className="mt-1 text-sm text-white/70">
-                Your health data, under your control.
+        <HealthDataProvider initialSnapshot={snapshot}>
+          <ConnectedStatusBar />
+          <header className="mb-8">
+            <div className="flex flex-wrap items-end justify-between gap-3">
+              <div>
+                <h1 className="text-3xl font-extrabold tracking-tight sm:text-4xl">
+                  Health <span className="text-violet-300">Dashboard</span>
+                </h1>
+                <p className="mt-1 text-sm text-white/70">
+                  Your health data, under your control.
+                </p>
+              </div>
+              <p className="rounded-full bg-white/10 px-3 py-1 text-xs text-white/70">
+                Source:{" "}
+                {snapshot.source === "fixture"
+                  ? "demo data"
+                  : "Health Connect"}
               </p>
             </div>
-            <p className="rounded-full bg-white/10 px-3 py-1 text-xs text-white/70">
-              Source:{" "}
-              {snapshot.source === "fixture" ? "demo data" : "Health Connect"}
-            </p>
-          </div>
-        </header>
-        <HealthDataProvider initialSnapshot={snapshot}>
+          </header>
           <div className="flex flex-col gap-8">
             <DailyHealthSummary />
             <HealthspanCard />
@@ -41,7 +43,9 @@ export function Dashboard({ snapshot }: { snapshot: HealthSnapshot }) {
               </h2>
               <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
                 <article className="min-h-96 rounded-xl bg-white/10 p-4">
-                  <h3 className="mb-3 text-lg font-semibold">Sleep calendar</h3>
+                  <h3 className="mb-3 text-lg font-semibold">
+                    Sleep calendar
+                  </h3>
                   <SleepCalendar />
                 </article>
                 <article className="rounded-xl bg-white/10 p-4 lg:col-span-2">

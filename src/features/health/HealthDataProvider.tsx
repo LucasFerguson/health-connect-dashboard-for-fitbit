@@ -10,18 +10,21 @@ import {
   type ReactNode,
 } from "react";
 import type { DateKey, HealthSnapshot } from "~/domain/health";
+import { parseHealthSnapshot } from "~/server/health/healthSnapshotShape";
 import { selectDefaultSleepSession } from "./selectors";
 
 interface HealthDataState {
   snapshot: HealthSnapshot;
   selectedDate: DateKey | null;
   selectedSleepSessionId: string | null;
+  refreshFailed: boolean;
 }
 
 type HealthDataAction =
   | { type: "dateSelected"; date: DateKey | null }
   | { type: "sleepSessionSelected"; sessionId: string }
-  | { type: "snapshotReceived"; snapshot: HealthSnapshot };
+  | { type: "snapshotReceived"; snapshot: HealthSnapshot }
+  | { type: "refreshFailed" };
 
 interface HealthDataContextValue extends HealthDataState {
   selectDate: (date: DateKey | null) => void;
@@ -73,8 +76,11 @@ function reducer(
           ? state.selectedSleepSessionId
           : (selectDefaultSleepSession(action.snapshot, selectedDate)?.id ??
             null),
+        refreshFailed: false,
       };
     }
+    case "refreshFailed":
+      return { ...state, refreshFailed: true };
   }
 }
 
@@ -91,6 +97,7 @@ export function HealthDataProvider({
     selectedDate: initialDate,
     selectedSleepSessionId:
       selectDefaultSleepSession(initialSnapshot, initialDate)?.id ?? null,
+    refreshFailed: false,
   });
 
   const selectDate = useCallback((date: DateKey | null) => {
@@ -110,14 +117,16 @@ export function HealthDataProvider({
     const refresh = async () => {
       try {
         const response = await fetch("/api/health", { cache: "no-store" });
-        if (!response.ok) return;
-        const snapshot = (await response.json()) as HealthSnapshot;
+        if (!response.ok) throw new Error(`Refresh failed: ${response.status}`);
+        const body: unknown = await response.json();
+        const snapshot = parseHealthSnapshot(body);
         dispatch({ type: "snapshotReceived", snapshot });
       } catch (error) {
         console.error(
           "Unable to refresh health data",
           error instanceof Error ? error.message : String(error),
         );
+        dispatch({ type: "refreshFailed" });
       }
     };
 
