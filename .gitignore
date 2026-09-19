@@ -47,3 +47,7 @@ docker-compose.yml
 # idea files
 .idea
 docs/inspo/*
+
+# vendored agent skills — reproducible from skills-lock.json via
+# `npx skills add`, so the content itself isn't tracked
+.agents/
