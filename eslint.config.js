@@ -7,7 +7,10 @@ const compat = new FlatCompat({
 
 export default tseslint.config(
   {
-    ignores: [".next"],
+    // `src/types/__generated__` is GraphQL Code Generator output — regenerated
+    // by `npm run codegen`, never hand-edited, so project style rules don't
+    // apply to it.
+    ignores: [".next", "src/types/__generated__"],
   },
   ...compat.extends("next/core-web-vitals"),
   {

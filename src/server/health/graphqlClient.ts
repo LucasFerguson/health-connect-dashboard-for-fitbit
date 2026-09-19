@@ -106,6 +106,20 @@ export function isGraphQLConfigured(): boolean {
   return Boolean(env.API_URL && env.API_USERNAME && env.API_PASSWORD);
 }
 
+/**
+ * The GraphQL API runs as its own Compose service on port 6645, beside the
+ * Flask REST API on 6644 that `API_URL` points at. Derive the GraphQL origin
+ * by swapping the port unless `GRAPHQL_URL` overrides it outright.
+ *
+ * Without this the client posts to `<rest-host>:6644/graphql` and gets
+ * gunicorn's 404 HTML page.
+ */
+function graphqlEndpoint(baseUrl: string): string {
+  const override = process.env.GRAPHQL_URL;
+  if (override) return override;
+  return `${baseUrl.replace(/:\d+$/, ":6645")}/graphql`;
+}
+
 export const { getClient, query, PreloadQuery } = registerApolloClient(() => {
   const baseUrl = env.API_URL;
   const authLink = new SetContextLink(async (prevContext) => {
@@ -129,7 +143,9 @@ export const { getClient, query, PreloadQuery } = registerApolloClient(() => {
     // than silently pointing somewhere unintended when API_URL is unset.
     link: authLink.concat(
       new HttpLink({
-        uri: `${baseUrl ?? "http://api-url-not-configured"}/graphql`,
+        uri: baseUrl
+          ? graphqlEndpoint(baseUrl)
+          : "http://api-url-not-configured/graphql",
         // Next.js patches global `fetch` and caches it by default, which would
         // let the framework serve a stale GraphQL response for live health
         // data. Opt out at the transport so freshness doesn't depend on every
