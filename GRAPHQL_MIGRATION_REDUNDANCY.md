@@ -71,6 +71,13 @@ Apollo's cache, loading/error states, and polling replace essentially all of
 it. Local UI-only state (`selectedDate`, `selectedSleepSessionId`) would
 still need to live somewhere, but the snapshot-fetching half disappears.
 
+**Important**: this must be a _client_-side Apollo setup
+(`ApolloNextAppProvider`), not the RSC client in
+`src/server/health/graphqlClient.ts`. Polling needs reactivity, and per
+Apollo's Next.js guidance RSC queries don't update in the browser. The
+scaffolding committed so far covers only the RSC half — the client provider is
+still unbuilt.
+
 `src/features/health/selectors.ts` (77 lines) and `dailySelectors.ts` (61
 lines) split cleanly into two groups:
 

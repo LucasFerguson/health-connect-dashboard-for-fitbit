@@ -21,6 +21,36 @@
  * API_USERNAME/API_PASSWORD, then attach `Authorization: Bearer <token>` on
  * every request. HCGateway derives the user and database from that token
  * alone — never pass a user ID as a query argument.
+ *
+ * ---
+ *
+ * TODO once HCGateway publishes a real schema — these can't be decided
+ * without it, per the `apollo-client` skill's guidance:
+ *
+ * 1. **Client-component setup is missing.** This file is the RSC entrypoint
+ *    only. The dashboard's polling refresh (currently `HealthDataProvider`'s
+ *    60s `setInterval`) needs reactivity, so it belongs in a *client*
+ *    component behind `ApolloNextAppProvider` — RSC queries don't update in
+ *    the browser. Don't try to replace the polling provider with `getClient()`.
+ *    Also avoid overlapping the same query between RSC and SSR.
+ *
+ * 2. **`typePolicies` / `keyFields` are unconfigured.** HCGateway's prepared
+ *    metrics are `{status, value, unit, source, qualityFlags}` leaf objects
+ *    with no `id`. Per the skill, types like that want `keyFields: false` so
+ *    the cache groups them under their parent instead of trying to normalize
+ *    them. Needs the real type names to write.
+ *
+ * 3. **Set `errorPolicy: "all"` per operation, NOT globally.** HCGateway's
+ *    contract is partial-data-friendly (`partial`, `insufficient_data`,
+ *    `not_implemented`), so rendering partial results is desirable — but the
+ *    skill explicitly warns against a global error policy via
+ *    `defaultOptions` because it breaks hook return-type narrowing. Put it on
+ *    each query.
+ *
+ * 4. **Consider `RetryLink`** (`@apollo/client/link/retry`) for the transient
+ *    5xx/network retries `healthConnectClient.ts` currently hand-rolls, and
+ *    an `ErrorLink` that calls `invalidateGraphQLToken()` on a 401 so the
+ *    next request re-logs-in.
  */
 import { HttpLink } from "@apollo/client";
 import { SetContextLink } from "@apollo/client/link/context";
@@ -100,6 +130,18 @@ export const { getClient, query, PreloadQuery } = registerApolloClient(() => {
     link: authLink.concat(
       new HttpLink({
         uri: `${baseUrl ?? "http://api-url-not-configured"}/graphql`,
+        // Next.js patches global `fetch` and caches it by default, which would
+        // let the framework serve a stale GraphQL response for live health
+        // data. Opt out at the transport so freshness doesn't depend on every
+        // call site remembering to. Individual operations can still override
+        // this per-query via `context.fetchOptions` (e.g.
+        // `next: { revalidate: 60 }`) for genuinely static reads such as
+        // analytics config.
+        //
+        // Note: `fetchOptions` is ignored under
+        // `export const dynamic = "force-static"`. Every page that would use
+        // this is `force-dynamic`, so that limitation doesn't apply here.
+        fetchOptions: { cache: "no-store" },
       }),
     ),
   });
