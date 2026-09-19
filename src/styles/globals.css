@@ -77,3 +77,62 @@
     var(--font-jetbrains-mono), ui-monospace, "SFMono-Regular", Menlo, monospace;
   --font-prose: var(--font-public-sans), ui-sans-serif, system-ui, sans-serif;
 }
+
+@keyframes dashboard-shimmer {
+  0% {
+    transform: translateX(-120%);
+  }
+  55%,
+  100% {
+    transform: translateX(120%);
+  }
+}
+
+@keyframes dashboard-status-pulse {
+  0%,
+  100% {
+    opacity: 0.45;
+    box-shadow: 0 0 0 0 rgb(169 123 255 / 0%);
+  }
+  50% {
+    opacity: 1;
+    box-shadow: 0 0 0 4px rgb(169 123 255 / 12%);
+  }
+}
+
+.dashboard-skeleton {
+  position: relative;
+  overflow: hidden;
+  background: rgb(255 255 255 / 8%);
+}
+
+.dashboard-skeleton::after {
+  position: absolute;
+  inset: 0;
+  content: "";
+  background: linear-gradient(
+    100deg,
+    transparent 20%,
+    rgb(201 180 255 / 13%) 48%,
+    rgb(255 255 255 / 9%) 52%,
+    transparent 80%
+  );
+  transform: translateX(-120%);
+  animation: dashboard-shimmer 1.9s ease-in-out infinite;
+}
+
+.dashboard-status-pulse {
+  animation: dashboard-status-pulse 1.5s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .dashboard-skeleton::after,
+  .dashboard-status-pulse {
+    animation: none;
+  }
+
+  .dashboard-skeleton::after {
+    transform: none;
+    opacity: 0.45;
+  }
+}
