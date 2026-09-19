@@ -1,4 +1,6 @@
+import { MigratedPage } from "~/components/migration/MigratedPage";
 import { SleepConsistencyTrendView } from "~/components/sleep-consistency/SleepConsistencyTrendView";
+import { getSleepConsistencyAnalytics } from "~/server/health/getSleepConsistencyAnalytics";
 import { getHealthSnapshot } from "~/server/health/getHealthSnapshot";
 
 export const dynamic = "force-dynamic";
@@ -8,15 +10,24 @@ export default async function SleepConsistencyPage({
 }: {
   searchParams: Promise<{ date?: string }>;
 }) {
-  const [{ date }, snapshot] = await Promise.all([
+  const [{ date }, page] = await Promise.all([
     searchParams,
-    getHealthSnapshot(),
+    getSleepConsistencyAnalytics(),
   ]);
+
+  const analytics =
+    page?.data ?? (await getHealthSnapshot()).analytics.sleepConsistency;
+
   return (
-    <SleepConsistencyTrendView
-      analytics={snapshot.analytics.sleepConsistency}
-      selectedDate={validDate(date) ? date : undefined}
-    />
+    <MigratedPage
+      run={page?.run ?? null}
+      source="viewer.analytics.sleepConsistency"
+    >
+      <SleepConsistencyTrendView
+        analytics={analytics}
+        selectedDate={validDate(date) ? date : undefined}
+      />
+    </MigratedPage>
   );
 }
 

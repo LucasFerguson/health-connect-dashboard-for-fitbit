@@ -1,3 +1,4 @@
+import { MigrationNotice } from "~/components/migration/MigrationNotice";
 import { Suspense } from "react";
 import { Dashboard } from "~/components/Dashboard";
 import { DashboardLoadingShell } from "~/components/dashboard/DashboardLoadingShell";
@@ -13,9 +14,12 @@ export const dynamic = "force-dynamic";
  */
 export default function HomePage() {
   return (
-    <Suspense fallback={<DashboardLoadingShell />}>
-      <LoadedDashboard />
-    </Suspense>
+    <>
+      <MigrationNotice path="legacy-pipeline" />
+      <Suspense fallback={<DashboardLoadingShell />}>
+        <LoadedDashboard />
+      </Suspense>
+    </>
   );
 }
 

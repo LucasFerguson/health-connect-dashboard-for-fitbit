@@ -1,3 +1,4 @@
+import { MigrationNotice } from "~/components/migration/MigrationNotice";
 import { SleepQuantityView } from "~/components/sleep-quantity/SleepQuantityView";
 import { getHealthSnapshot } from "~/server/health/getHealthSnapshot";
 
@@ -13,11 +14,14 @@ export default async function SleepQuantityPage({
     getHealthSnapshot(),
   ]);
   return (
-    <SleepQuantityView
-      daily={snapshot.analytics.dailySleep}
-      targetMinutes={snapshot.analytics.sleepDebt.targetMinutes}
-      selectedDate={validDate(date) ? date : undefined}
-    />
+    <>
+      <MigrationNotice path="legacy-pipeline" />
+      <SleepQuantityView
+        daily={snapshot.analytics.dailySleep}
+        targetMinutes={snapshot.analytics.sleepDebt.targetMinutes}
+        selectedDate={validDate(date) ? date : undefined}
+      />
+    </>
   );
 }
 

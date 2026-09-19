@@ -1,4 +1,4 @@
-import { MigrationNotice } from "~/components/migration/MigrationNotice";
+import { MigratedPage } from "~/components/migration/MigratedPage";
 import { SleepDebtTrendView } from "~/components/sleep-debt/SleepDebtTrendView";
 import { getSleepDebtAnalytics } from "~/server/health/getSleepDebtAnalytics";
 import { getHealthSnapshot } from "~/server/health/getHealthSnapshot";
@@ -10,32 +10,23 @@ export default async function SleepDebtPage({
 }: {
   searchParams: Promise<{ date?: string }>;
 }) {
-  const [{ date }, graphqlData] = await Promise.all([
+  const [{ date }, page] = await Promise.all([
     searchParams,
     getSleepDebtAnalytics(),
   ]);
 
-  // Falls back to the legacy pipeline when the GraphQL API isn't configured
-  // (e.g. the fixture/demo dev container), so the page still renders and the
-  // notice reports which path actually served it.
+  // Falls back to the legacy pipeline when GraphQL can't serve the page, so it
+  // still renders and the notice reports which path actually served it.
   const analytics =
-    graphqlData?.analytics ?? (await getHealthSnapshot()).analytics.sleepDebt;
+    page?.data ?? (await getHealthSnapshot()).analytics.sleepDebt;
 
   return (
-    <>
-      <MigrationNotice
-        path={graphqlData ? "graphql" : "legacy-pipeline"}
-        note={
-          graphqlData
-            ? `Reads viewer.analytics.sleepDebt from HCGateway GraphQL · run ${graphqlData.run?.algorithmVersion ?? "unknown"}`
-            : "GraphQL API not configured here, so this fell back to the in-repo pipeline."
-        }
-      />
+    <MigratedPage run={page?.run ?? null} source="viewer.analytics.sleepDebt">
       <SleepDebtTrendView
         analytics={analytics}
         selectedDate={validDate(date) ? date : undefined}
       />
-    </>
+    </MigratedPage>
   );
 }
 
