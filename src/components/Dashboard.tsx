@@ -28,9 +28,7 @@ export function Dashboard({ snapshot }: { snapshot: HealthSnapshot }) {
               </div>
               <p className="rounded-full bg-white/10 px-3 py-1 text-xs text-white/70">
                 Source:{" "}
-                {snapshot.source === "fixture"
-                  ? "demo data"
-                  : "Health Connect"}
+                {snapshot.source === "fixture" ? "demo data" : "Health Connect"}
               </p>
             </div>
           </header>
@@ -43,9 +41,7 @@ export function Dashboard({ snapshot }: { snapshot: HealthSnapshot }) {
               </h2>
               <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
                 <article className="min-h-96 rounded-xl bg-white/10 p-4">
-                  <h3 className="mb-3 text-lg font-semibold">
-                    Sleep calendar
-                  </h3>
+                  <h3 className="mb-3 text-lg font-semibold">Sleep calendar</h3>
                   <SleepCalendar />
                 </article>
                 <article className="rounded-xl bg-white/10 p-4 lg:col-span-2">
