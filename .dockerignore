@@ -1,14 +1,44 @@
+# Keep the build context small and free of secrets. The Dockerfile only needs
+# source, package manifests, public assets, and config.
+
+# Dependencies and build output — reinstalled/rebuilt inside the image.
 node_modules
 .next
-.git
-.env.local
-.env
+out
+dist
 *.tsbuildinfo
-npm-debug.log*
+
+# Secrets. `.env*` is a catch-all so a new variant can't leak by being
+# forgotten here; `.env.example` is deliberately re-included since it holds no
+# real values.
+.env
+.env.*
+!.env.example
+
+# Version control and editor state.
+.git
+.gitignore
+.vscode
+.idea
+
+# Docker's own files aren't needed inside the image.
 Dockerfile
+.dockerignore
 docker-compose*.yml
-Health Dashboard Desktop Mockups
-docs/inspo
+
+# Vendored agent skill docs — reproducible from skills-lock.json.
+.agents
+
+# Logs and local scratch.
+npm-debug.log*
+yarn-error.log*
 audit-logs
+*.log
+
+# Docs and design assets: not served by the app, and large.
+docs/inspo
+Health Dashboard Desktop Mockups
 JOURNAL.md
 CLEAN_CODE_REPORT.md
+GRAPHQL_MIGRATION_REDUNDANCY.md
+README.md
