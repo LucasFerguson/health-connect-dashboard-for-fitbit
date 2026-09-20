@@ -109,12 +109,17 @@ export async function POST(request: Request) {
     }
 
     // Streamed straight through rather than `await upstream.json()` then
-    // re-serializing. The proxy has no reason to understand the body, and
-    // parsing it cost real time: the overview response is ~1 MB and the daily
-    // series ~80 KB, and round-tripping that through JSON.parse/stringify
-    // roughly doubled the upstream latency (measured ~0.30s upstream versus
-    // ~0.70s through the proxy). Apollo also sees the envelope byte-for-byte,
-    // `errors` and partial `data` included, instead of a re-encoded copy.
+    // re-serializing: the proxy has no reason to parse the body, and this way
+    // Apollo sees the GraphQL envelope byte-for-byte — `errors` and partial
+    // `data` included — instead of a re-encoded copy. It also avoids buffering
+    // the whole response in memory, which matters most for the ~1 MB overview
+    // query.
+    //
+    // Note this is not a large latency win, despite looking like one. Measured
+    // fixed overhead of this handler is ~7-14ms (a `runId`-only query), so the
+    // remaining per-request time is backend execution (~0.3s for the daily
+    // series) plus transfer of the payload itself. Shrinking a query's selection
+    // set is the lever that actually moves those numbers, not this handler.
     return new NextResponse(upstream.body, {
       status: upstream.status,
       headers: {
