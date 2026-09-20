@@ -19,7 +19,7 @@ Health Connect API -> repository/DTO validation -> domain model
 - `src/features/health` owns client state, user actions, and derived selectors.
 - `src/components` renders domain data and dispatches actions; it does not know the backend response format.
 
-The server renders the initial snapshot, and the client refreshes it through `/api/health` every 60 seconds. A refreshed snapshot follows the same reducer and selector path as the initial data, so widgets update without bespoke synchronization code.
+The server renders the initial snapshot, and the client refreshes it every 60 seconds with Apollo Client (`useQuery`'s `pollInterval`) through the same-origin `/api/graphql` proxy — the proxy attaches the HCGateway bearer token server-side, so the browser never holds a credential. A refreshed snapshot follows the same reducer and selector path as the initial data, so widgets update without bespoke synchronization code.
 
 New data sources should implement `HealthRepository`. New metrics should first be added to `HealthSnapshot`, then mapped at the repository boundary, exposed through a selector, and finally rendered by a component. This keeps backend changes from spreading through the UI.
 

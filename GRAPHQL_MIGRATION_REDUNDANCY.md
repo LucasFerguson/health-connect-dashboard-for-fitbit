@@ -57,10 +57,9 @@ cut — it does not need untangling from the `/day` code first.
   `healthConnectRepository.ts`, `getHealthSnapshot.ts` (~260 lines combined)
   — the raw-record-fetching + pipeline-invocation chain that
   `/api/health` and every legacy page currently call.
-- `src/server/health/healthSnapshotShape.ts` (21 lines, added this session)
-  — the shallow Zod guard on `/api/health`'s response. Only exists because
-  that endpoint's payload was never schema-generated. A GraphQL response
-  validated by generated types doesn't need a hand-written parallel guard.
+- ~~`src/server/health/healthSnapshotShape.ts`~~ — **deleted 2026-09-20**,
+  along with `src/app/api/health/route.ts`. Both lost their last caller when
+  client polling moved to Apollo through `/api/graphql`.
 
 ## Tier 2 — collapses once every page migrates (not yet safe to touch)
 
@@ -97,8 +96,8 @@ worth revisiting if HCGateway starts returning pre-formatted display strings.
 
 ## Tier 3 — REST plumbing retired once its consumers migrate
 
-- `src/app/api/health/route.ts` — this repo's own REST proxy endpoint that
-  `HealthDataProvider` polls. Gone once the client talks to GraphQL directly.
+- ~~`src/app/api/health/route.ts`~~ — **deleted 2026-09-20**. `HealthDataProvider`
+  now polls GraphQL through the `/api/graphql` proxy instead.
 - `src/server/health/healthConnectClient.ts`'s login/token-cache logic — not
   deleted, but duplicated (not shared) by `src/server/health/graphqlClient.ts`
   added this session. Once the REST day-analytics path
