@@ -115,16 +115,19 @@ worth revisiting if HCGateway starts returning pre-formatted display strings.
 `src/app/healthspan/page.tsx`, `src/app/data-sources/page.tsx` — all six
 originally called `getHealthSnapshot()` directly.
 
-**Migration status (2026-09-20).** Seven routes now read GraphQL:
-`/sleep-debt`, `/sleep-consistency`, `/healthspan`, and the four metric detail
-routes (`/steps`, `/calories`, `/resting-heart-rate`, `/weight`, which share
-`HealthMetricPage`). Still on the legacy pipeline: `/` (overview), `/sleep`,
-`/data-sources`. Each page states which path served it at the top — that banner
-is derived at request time, not hardcoded, so a GraphQL outage shows as a
+**Migration status (2026-09-20): all ten routes now read GraphQL.** `/`
+(overview), `/sleep`, `/sleep-debt`, `/sleep-consistency`, `/healthspan`,
+`/data-sources`, and the four metric detail routes (`/steps`, `/calories`,
+`/resting-heart-rate`, `/weight`). Each page states which path served it at the
+top — derived at request time, not hardcoded, so a GraphQL outage shows as a
 fallback rather than lying.
 
-Every migrated page keeps its `getHealthSnapshot()` fallback for now, so
-`pipeline/` cannot be deleted until the last three routes migrate. (`src/app/error.tsx` mentions
+Every page still keeps its `getHealthSnapshot()` fallback, so `pipeline/`
+remains reachable and cannot be deleted yet. Removing it is now a deliberate
+decision rather than a blocked one: delete the fallbacks first (accepting that
+a GraphQL outage becomes a hard error instead of a degraded page), then Tier 1
+follows. Worth keeping the fallbacks until the backend's `variables` bug and the
+`String!`-instead-of-enum items in GRAPHQL_BACKEND_REQUESTS.md are resolved. (`src/app/error.tsx` mentions
 it only in a comment; it is not a consumer.) Their component trees
 (`Dashboard.tsx` and friends) mostly consume already-shaped data through
 hooks/props, so the migration is swapping what feeds

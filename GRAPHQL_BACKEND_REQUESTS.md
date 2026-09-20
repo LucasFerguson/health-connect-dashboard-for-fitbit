@@ -1,17 +1,45 @@
 # Frontend requests for the GraphQL API
 
-Written after migrating seven pages end to end against the live API on `:6645`
-(`/sleep-debt`, `/sleep-consistency`, `/healthspan`, `/steps`, `/calories`,
-`/resting-heart-rate`, `/weight`). Everything below was verified against real
+Written after migrating **all ten pages** end to end against the live API on
+`:6645`. Everything below was verified against real
 responses, not inferred from the schema — counts and shapes are from actual
 queries on the primary account (run `health-analytics-v8.3`).
 
 Ordered by how much friction each one causes on the frontend.
 
-## 1. Closed value sets typed as `String!` instead of enums
+## 1. GraphQL variables are ignored (blocking)
 
-**This is now the biggest friction point**, ahead of the nullability issue
-below. Four fields have small, closed value sets but arrive as `String!`:
+**This is a functional bug, not schema polish, and it is the top priority.**
+
+Any operation that declares variables fails, even a trivial one:
+
+```bash
+curl -X POST .../graphql -H 'Content-Type: application/json' -d '{
+  "query": "query T($d: Date!) { viewer { analytics { day(date: $d) { date } } } }",
+  "variables": { "d": "2026-09-18" }
+}'
+# {"errors":[{"message":"Variable \"$d\" of required type \"Date!\" was not provided."}]}
+```
+
+The identical query with the argument inlined succeeds. Reproduced with both
+`day(date:)` and `sleepEvents(range:)`, so it is not specific to one field or
+input type — the server appears not to read the request body's `variables`
+field at all.
+
+**Impact:** the frontend has to interpolate arguments into query text. That
+works (and is safe here, since the only interpolated value is a validated
+`YYYY-MM-DD`), but it means those operations cannot be persisted/allowlisted
+queries later, and every caller re-parses a fresh document instead of reusing
+one. `src/server/health/getSleepStages.ts` carries the workaround and a comment
+pointing here.
+
+**Request:** pass the request's `variables` through to the GraphQL executor.
+Worth a regression test asserting a variable-bearing query returns data.
+
+## 2. Closed value sets typed as `String!` instead of enums
+
+The biggest _schema_ friction point (the variables bug above is a functional
+blocker). Four fields have small, closed value sets but arrive as `String!`:
 
 | Field                      | Actual values observed                                               |
 | -------------------------- | -------------------------------------------------------------------- |
@@ -67,7 +95,7 @@ That collapses three hand-written membership tables into the same total-`Record`
 lookup the already-enum'd pages use, and turns a schema change into a compile
 error instead of a silently missing card.
 
-## 2. Over-permissive nullability
+## 3. Over-permissive nullability
 
 Fields nullable in the schema but never null in live data. Measured on the
 primary account:
@@ -101,7 +129,7 @@ admits null and the UI renders "—" / "Calibrating":
 `HealthspanDay.healthAgeYears` (21/508), `ageDeltaYears` (10/508),
 `paceOfAging` (26/508).
 
-## 3. `breakdown30Day` is an untyped `JSON` scalar
+## 4. `breakdown30Day` is an untyped `JSON` scalar
 
 Both `SleepDebtSummary.breakdown30Day` and
 `SleepConsistencySummary.breakdown30Day` are `JSON`. The actual payload is
@@ -132,7 +160,7 @@ Same for the consistency variant (`scoredDays/optimal/sufficient/poor`).
 `CurrentRun.counts` and `AnalyticsJobStatus.{error,result}` are also `JSON`;
 lower priority since no page reads them yet, but the same argument applies.
 
-## 4. No `id` on the date-keyed analytics types
+## 5. No `id` on the date-keyed analytics types
 
 Only 15 of 83 object types expose `id` — raw records, `SleepEvent`,
 `StrainWorkout`, `ObservedDevice`. The date-keyed types (`Day`, `MetricDay`,
@@ -157,7 +185,7 @@ calls for. If you would rather not, tell us and we will configure
 `keyFields` client-side — but then please confirm `runId` is stable for the
 lifetime of one page's queries.
 
-## 5. `@defer` accepted but not streaming
+## 6. `@defer` accepted but not streaming
 
 Confirmed independently: a query with `... @defer` returns
 `Content-Type: application/json`, not `multipart/mixed` — the deferred fragment
@@ -176,7 +204,7 @@ graphql-js 17 (now released at 17.0.2). Nothing to fix today.
 2. keep the directives in the schema meanwhile, as you have — it means
    streaming lights up without a schema redesign.
 
-## 6. Known gaps, flagged as already understood
+## 7. Known gaps, flagged as already understood
 
 Listed for completeness; the honest empty responses are the right call and we
 are not asking for placeholder data.

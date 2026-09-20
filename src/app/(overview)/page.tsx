@@ -1,7 +1,8 @@
-import { MigrationNotice } from "~/components/migration/MigrationNotice";
 import { Suspense } from "react";
 import { Dashboard } from "~/components/Dashboard";
 import { DashboardLoadingShell } from "~/components/dashboard/DashboardLoadingShell";
+import { MigratedPage } from "~/components/migration/MigratedPage";
+import { getOverviewSnapshot } from "~/server/health/getOverviewSnapshot";
 import { getHealthSnapshot } from "~/server/health/getHealthSnapshot";
 
 export const dynamic = "force-dynamic";
@@ -14,16 +15,22 @@ export const dynamic = "force-dynamic";
  */
 export default function HomePage() {
   return (
-    <>
-      <MigrationNotice path="legacy-pipeline" />
-      <Suspense fallback={<DashboardLoadingShell />}>
-        <LoadedDashboard />
-      </Suspense>
-    </>
+    <Suspense fallback={<DashboardLoadingShell />}>
+      <LoadedDashboard />
+    </Suspense>
   );
 }
 
 async function LoadedDashboard() {
-  const snapshot = await getHealthSnapshot();
-  return <Dashboard snapshot={snapshot} />;
+  const page = await getOverviewSnapshot();
+
+  // Falls back to the legacy pipeline when GraphQL can't serve the page, so it
+  // still renders and the notice reports which path actually served it.
+  const snapshot = page?.data ?? (await getHealthSnapshot());
+
+  return (
+    <MigratedPage run={page?.run ?? null} source="viewer.analytics">
+      <Dashboard snapshot={snapshot} />
+    </MigratedPage>
+  );
 }

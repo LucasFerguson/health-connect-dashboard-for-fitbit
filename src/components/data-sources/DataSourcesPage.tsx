@@ -1,4 +1,3 @@
-import type { HealthAnalytics, MetricAnalytics } from "~/domain/analytics";
 import { DeviceIllustration } from "./DeviceIllustration";
 
 type FeedKey =
@@ -152,13 +151,17 @@ const devices = [
 ];
 
 export function DataSourcesPage({
-  analytics,
+  feedStatus: status,
   usingFixture,
 }: {
-  analytics: HealthAnalytics;
+  /**
+   * Which feeds have any data. Passed in rather than derived from a whole
+   * `HealthAnalytics` object: presence is all this page ever needed, and the
+   * GraphQL path answers it with counts instead of transferring the series.
+   */
+  feedStatus: Record<FeedKey, boolean>;
   usingFixture: boolean;
 }) {
-  const status = feedStatus(analytics);
   const recordedCount = Object.values(status).filter(Boolean).length;
 
   return (
@@ -416,17 +419,4 @@ function Key({ color, label }: { color: string; label: string }) {
   );
 }
 
-function feedStatus(analytics: HealthAnalytics): Record<FeedKey, boolean> {
-  return {
-    sleep: analytics.dailySleep.length > 0,
-    steps: hasData(analytics.steps),
-    activeCalories: hasData(analytics.activeCalories),
-    totalCalories: hasData(analytics.totalCalories),
-    restingHeartRate: hasData(analytics.restingHeartRate),
-    weight: hasData(analytics.weight),
-  };
-}
 
-function hasData(metric: MetricAnalytics) {
-  return metric.daily.length > 0;
-}

@@ -9,6 +9,7 @@ import {
 import { buildSleepStagesChartOption } from "./sleep-stages/sleepStagesChartOption";
 import { useHealthData } from "~/features/health/HealthDataProvider";
 import { selectSleepEventsForDate } from "~/features/health/selectors";
+import { useSleepStages } from "./sleep-stages/useSleepStages";
 
 export function SleepStagesGraph() {
   const [showCombined, setShowCombined] = useState(true);
@@ -28,6 +29,12 @@ export function SleepStagesGraph() {
   const combinedMode =
     showCombined && (selectedEvent?.recordings.length ?? 0) > 1;
 
+  // Stage timelines are not part of the page snapshot — fetching them for all
+  // history costs 5.5 MB versus 321 KB without — so they load per selected day.
+  // See server/health/graphql/overviewQuery.ts.
+  const { stagesByRecordingId, unavailable: stagesUnavailable } =
+    useSleepStages(selectedDate);
+
   useEffect(() => {
     setShowCombined(true);
   }, [selectedEvent?.id]);
@@ -38,8 +45,14 @@ export function SleepStagesGraph() {
       : selectedSession
         ? [selectedSession]
         : [];
-    return buildSleepStagesChartOption(displayedRecordings, combinedMode);
-  }, [combinedMode, selectedEvent, selectedSession]);
+    // Recordings arrive without stages; graft on the separately-fetched
+    // timelines so the chart builder keeps its existing input shape.
+    const withStages = displayedRecordings.map((recording) => ({
+      ...recording,
+      stages: stagesByRecordingId?.[recording.id] ?? recording.stages,
+    }));
+    return buildSleepStagesChartOption(withStages, combinedMode);
+  }, [combinedMode, selectedEvent, selectedSession, stagesByRecordingId]);
 
   if (!selectedDate)
     return <EmptyState message="Select a day to inspect its sleep stages." />;
@@ -71,12 +84,18 @@ export function SleepStagesGraph() {
           }}
         />
       ) : null}
-      <div className="overflow-hidden rounded-lg border border-white/20 bg-white">
-        <ReactECharts
-          option={chartOptions}
-          style={{ height: 360, width: "100%" }}
-        />
-      </div>
+      {stagesUnavailable ? (
+        <EmptyState message="Sleep stage detail is unavailable right now." />
+      ) : stagesByRecordingId === null ? (
+        <EmptyState message="Loading sleep stages\u2026" />
+      ) : (
+        <div className="overflow-hidden rounded-lg border border-white/20 bg-white">
+          <ReactECharts
+            option={chartOptions}
+            style={{ height: 360, width: "100%" }}
+          />
+        </div>
+      )}
     </div>
   );
 }

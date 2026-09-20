@@ -1,5 +1,7 @@
-import { MigrationNotice } from "~/components/migration/MigrationNotice";
+import { MigratedPage } from "~/components/migration/MigratedPage";
 import { SleepQuantityView } from "~/components/sleep-quantity/SleepQuantityView";
+import { getDailySleep } from "~/server/health/getDailySleep";
+import type { DailySleepPageData } from "~/server/health/getDailySleep";
 import { getHealthSnapshot } from "~/server/health/getHealthSnapshot";
 
 export const dynamic = "force-dynamic";
@@ -9,19 +11,32 @@ export default async function SleepQuantityPage({
 }: {
   searchParams: Promise<{ date?: string }>;
 }) {
-  const [{ date }, snapshot] = await Promise.all([
-    searchParams,
-    getHealthSnapshot(),
-  ]);
+  const [{ date }, page] = await Promise.all([searchParams, getDailySleep()]);
+
+  // Falls back to the legacy pipeline when GraphQL can't serve the page, so it
+  // still renders and the notice reports which path actually served it.
+  let data: DailySleepPageData;
+  if (page) {
+    data = page.data;
+  } else {
+    const { analytics } = await getHealthSnapshot();
+    data = {
+      daily: analytics.dailySleep,
+      targetMinutes: analytics.sleepDebt.targetMinutes,
+    };
+  }
+
   return (
-    <>
-      <MigrationNotice path="legacy-pipeline" />
+    <MigratedPage
+      run={page?.run ?? null}
+      source="viewer.analytics.days.headlineScores.sleepDuration"
+    >
       <SleepQuantityView
-        daily={snapshot.analytics.dailySleep}
-        targetMinutes={snapshot.analytics.sleepDebt.targetMinutes}
+        daily={data.daily}
+        targetMinutes={data.targetMinutes}
         selectedDate={validDate(date) ? date : undefined}
       />
-    </>
+    </MigratedPage>
   );
 }
 
