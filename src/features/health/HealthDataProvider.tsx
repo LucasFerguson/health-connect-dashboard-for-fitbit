@@ -1,5 +1,6 @@
 "use client";
 
+import { useQuery } from "@apollo/client/react";
 import {
   createContext,
   useCallback,
@@ -10,7 +11,8 @@ import {
   type ReactNode,
 } from "react";
 import type { DateKey, HealthSnapshot } from "~/domain/health";
-import { parseHealthSnapshot } from "~/server/health/healthSnapshotShape";
+import { adaptOverview } from "~/server/health/adapters/overviewAdapter";
+import { OVERVIEW_QUERY } from "~/server/health/graphql/overviewQuery";
 import { selectDefaultSleepSession } from "./selectors";
 
 interface HealthDataState {
@@ -113,26 +115,42 @@ export function HealthDataProvider({
     [state, selectDate, selectSleepSession],
   );
 
-  useEffect(() => {
-    const refresh = async () => {
-      try {
-        const response = await fetch("/api/health", { cache: "no-store" });
-        if (!response.ok) throw new Error(`Refresh failed: ${response.status}`);
-        const body: unknown = await response.json();
-        const snapshot = parseHealthSnapshot(body);
-        dispatch({ type: "snapshotReceived", snapshot });
-      } catch (error) {
-        console.error(
-          "Unable to refresh health data",
-          error instanceof Error ? error.message : String(error),
-        );
-        dispatch({ type: "refreshFailed" });
-      }
-    };
+  /**
+   * The 60s refresh, previously a `setInterval` around `fetch("/api/health")`.
+   * Apollo polls the same query the server already rendered from, through the
+   * same-origin `/api/graphql` proxy, so the browser never holds a credential.
+   *
+   * `errorPolicy: "all"` rather than the default: HCGateway's contract is
+   * partial-data-friendly, so a response carrying both `data` and `errors`
+   * should still render the data it did send. Set per-operation because a
+   * global `defaultOptions` breaks the hooks' return-type narrowing.
+   *
+   * No loading state is read, and that is the point: `initialSnapshot` is
+   * already the RSC render of this exact query, so the first paint uses it and
+   * a poll only ever replaces it. Reading `loading` here would introduce the
+   * client-side flash the server render exists to avoid.
+   */
+  const { data, error } = useQuery(OVERVIEW_QUERY, {
+    pollInterval: 60_000,
+    errorPolicy: "all",
+    // The RSC path already fetched this; going to the network on mount would
+    // duplicate that request for no new data. Polls are network requests
+    // regardless of this policy.
+    fetchPolicy: "cache-first",
+  });
 
-    const interval = window.setInterval(() => void refresh(), 60_000);
-    return () => window.clearInterval(interval);
-  }, []);
+  const analytics = data?.viewer.analytics;
+
+  useEffect(() => {
+    if (!analytics) return;
+    dispatch({ type: "snapshotReceived", snapshot: adaptOverview(analytics) });
+  }, [analytics]);
+
+  useEffect(() => {
+    if (!error) return;
+    console.error("Unable to refresh health data", error.message);
+    dispatch({ type: "refreshFailed" });
+  }, [error]);
 
   return (
     <HealthDataContext.Provider value={value}>

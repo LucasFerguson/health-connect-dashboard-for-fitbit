@@ -9,14 +9,34 @@
 import type { SleepStage, SleepStageKind } from "~/domain/health";
 import { isGraphQLConfigured, query } from "./graphqlClient";
 import { overviewSleepStagesQuery } from "./graphql/overviewQuery";
-import type { SleepStageKind as GraphQLSleepStageKind } from "~/types/__generated__/graphql";
 import { gql } from "@apollo/client";
 
 /**
- * Shape of the inlined stages query's result. Hand-written because the query
- * text is built at runtime (see `overviewSleepStagesQuery`), so codegen can't
- * type it; `kind` is kept as the generated enum so the mapping below stays
- * exhaustive.
+ * The schema's `SleepStageKind` values, declared here rather than imported from
+ * the generated module.
+ *
+ * Codegen only emits an enum when some `graphql()`-tagged operation selects it,
+ * and this query's text is built at runtime (see `overviewSleepStagesQuery`) to
+ * work around the server ignoring GraphQL variables — so codegen no longer sees
+ * a stages selection and stops emitting `SleepStageKind`. Importing it from
+ * there made `npm run codegen` delete a type this file depends on, breaking the
+ * build. Declaring it locally keeps the two independent.
+ *
+ * Kept as a union (not `string`) so `stageKindByEnum` below stays exhaustive: a
+ * new kind in the schema still has to be added here deliberately rather than
+ * silently arriving as an unmapped value.
+ */
+type GraphQLSleepStageKind =
+  | "AWAKE"
+  | "LIGHT"
+  | "DEEP"
+  | "REM"
+  | "ASLEEP"
+  | "UNKNOWN";
+
+/**
+ * Shape of the inlined stages query's result. Hand-written for the same reason:
+ * the query text is built at runtime, so codegen can't type it.
  */
 interface StagesResult {
   viewer: {
