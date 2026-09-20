@@ -1,34 +1,107 @@
 # Frontend requests for the GraphQL API
 
-Written after migrating `/sleep-debt` and `/sleep-consistency` end to end
-against the live API on `:6645`. Everything below was verified against real
+Written after migrating seven pages end to end against the live API on `:6645`
+(`/sleep-debt`, `/sleep-consistency`, `/healthspan`, `/steps`, `/calories`,
+`/resting-heart-rate`, `/weight`). Everything below was verified against real
 responses, not inferred from the schema — counts and shapes are from actual
 queries on the primary account (run `health-analytics-v8.3`).
 
 Ordered by how much friction each one causes on the frontend.
 
-## 1. Over-permissive nullability on `SleepConsistencyDay`
+## 1. Closed value sets typed as `String!` instead of enums
 
-`source`, `bedtimeAt`, `wakeAt`, `bedtimeMinutesLocal` and `wakeMinutesLocal`
-are all nullable in the schema. Measured over 492 real days:
+**This is now the biggest friction point**, ahead of the nullability issue
+below. Four fields have small, closed value sets but arrive as `String!`:
 
-| Field                 |    Nulls |
-| --------------------- | -------: |
-| `source`              | 0 (0.0%) |
-| `bedtimeAt`           | 0 (0.0%) |
-| `wakeAt`              | 0 (0.0%) |
-| `bedtimeMinutesLocal` | 0 (0.0%) |
+| Field                      | Actual values observed                                               |
+| -------------------------- | -------------------------------------------------------------------- |
+| `HealthspanSummary.status` | `ready` (domain also knows `calibrating`, `partial`)                 |
+| `HealthspanFactor.key`     | `sleep_duration`, `sleep_consistency`, `steps`, `resting_heart_rate` |
+| `HealthspanFactor.unit`    | `minutes`, `percent`, `steps`, `bpm`                                 |
+| `MetricSeries.unit`        | `steps`, `kcal`, `bpm`, `kg`                                         |
 
-They are never null in practice. Because the schema says they might be, the
-frontend has to write a guard that drops such days — code that can never run,
-and which would silently hide data if the backend ever did emit a null.
+Every one of these drives presentation, so the frontend _must_ narrow them to
+render at all: `status` gates the calibrating banner, `key` selects the label,
+and `unit` selects the number formatter. As `String!` they defeat codegen, so
+each adapter hand-maintains a membership table. Two concrete consequences:
 
-**Request:** make them non-null (`String!` / `DateTime!` / `Float!`) if a
-consistency day cannot exist without them. If a day genuinely can lack a
-bedtime window, say so explicitly and we will render it as a gap — but then
-the day should probably not appear in `daily` at all.
+- A server-side rename would **silently drop a healthspan factor card** rather
+  than failing the build, because an unrecognized `key` has to be skipped (the
+  alternative — rendering it under whatever label the component maps it to — is
+  worse).
+- `unit` mismatches are the difference between rendering `59` as bpm and as
+  minutes. The metric adapter now decides the unit client-side per series and
+  only _compares_ the wire value, logging an error on mismatch, because
+  trusting it would let a backend switch to `lb` mislabel real kilograms.
 
-## 2. `breakdown30Day` is an untyped `JSON` scalar
+**Request:** make them enums, using the SCREAMING_CASE convention
+`DebtCategory`/`ConsistencyCategory` already follow:
+
+```graphql
+enum HealthspanStatus {
+  CALIBRATING
+  PARTIAL
+  READY
+}
+enum HealthspanFactorKey {
+  SLEEP_DURATION
+  SLEEP_CONSISTENCY
+  STEPS
+  RESTING_HEART_RATE
+}
+enum HealthspanFactorUnit {
+  MINUTES
+  PERCENT
+  STEPS
+  BPM
+}
+enum MetricUnit {
+  STEPS
+  KCAL
+  BPM
+  KG
+}
+```
+
+That collapses three hand-written membership tables into the same total-`Record`
+lookup the already-enum'd pages use, and turns a schema change into a compile
+error instead of a silently missing card.
+
+## 2. Over-permissive nullability
+
+Fields nullable in the schema but never null in live data. Measured on the
+primary account:
+
+| Field                                     | Nulls          |
+| ----------------------------------------- | -------------- |
+| `SleepConsistencyDay.source`              | 0 / 492        |
+| `SleepConsistencyDay.bedtimeAt`           | 0 / 492        |
+| `SleepConsistencyDay.wakeAt`              | 0 / 492        |
+| `SleepConsistencyDay.bedtimeMinutesLocal` | 0 / 492        |
+| `MetricDay.source`                        | 0 / 1,033      |
+| `RollingPoint.value`                      | 0 / 400        |
+| `HealthspanFactor.referenceValue`         | 0 / 1,449      |
+| `HealthspanFactor.ageImpactYears`         | 0 / 1,449      |
+| `HealthspanFactor.coverageDays`           | 0 / 1,449      |
+| `HealthspanSummary.paceWindowDays`        | 0 (always 180) |
+
+Each one forces a guard that drops the row, because the domain types require
+them and there is no honest default — `MetricDay.source` labels the value in the
+UI ("633 steps from Fitbit"), so inventing an attribution is worse than omitting
+the day; a `0` in a steps or weight trend reads as a measured collapse. So the
+frontend now carries several drop-guards that **cannot currently fire**, and
+would silently hide real data if the backend ever did emit a null.
+
+**Request:** make them non-null where a row cannot meaningfully exist without
+them. Where a null is genuinely possible, document _when_ — then we will render
+an explicit gap deliberately rather than guessing.
+
+For contrast, these ARE legitimately null and need no change; the domain already
+admits null and the UI renders "—" / "Calibrating":
+`HealthspanDay.healthAgeYears` (21/508), `ageDeltaYears` (10/508),
+`paceOfAging` (26/508).
+
+## 3. `breakdown30Day` is an untyped `JSON` scalar
 
 Both `SleepDebtSummary.breakdown30Day` and
 `SleepConsistencySummary.breakdown30Day` are `JSON`. The actual payload is
@@ -59,7 +132,7 @@ Same for the consistency variant (`scoredDays/optimal/sufficient/poor`).
 `CurrentRun.counts` and `AnalyticsJobStatus.{error,result}` are also `JSON`;
 lower priority since no page reads them yet, but the same argument applies.
 
-## 3. No `id` on the date-keyed analytics types
+## 4. No `id` on the date-keyed analytics types
 
 Only 15 of 83 object types expose `id` — raw records, `SleepEvent`,
 `StrainWorkout`, `ObservedDevice`. The date-keyed types (`Day`, `MetricDay`,
@@ -73,14 +146,18 @@ Apollo's `InMemoryCache` normalizes by `__typename` + `id`. Without one:
 - if a new `runId` is published mid-session, days from the old and new run can
   coexist in the cache with nothing distinguishing them.
 
-**Request:** add `id: ID!` of the form `"<runId>:<date>"`. Server-side is
+`HealthspanFactor` has no `id` either, and it is a list nested inside the
+already-unidentified `HealthspanDay`.
+
+**Request:** add `id: ID!` of the form `"<runId>:<date>"` (and
+`"<runId>:<date>:<key>"` for factors). Server-side is
 better than a client-side `keyFields: ["date"]` because it makes `runId` part
 of the identity, which is exactly the run-mixing protection the read-API audit
 calls for. If you would rather not, tell us and we will configure
 `keyFields` client-side — but then please confirm `runId` is stable for the
 lifetime of one page's queries.
 
-## 4. `@defer` accepted but not streaming
+## 5. `@defer` accepted but not streaming
 
 Confirmed independently: a query with `... @defer` returns
 `Content-Type: application/json`, not `multipart/mixed` — the deferred fragment
@@ -99,7 +176,7 @@ graphql-js 17 (now released at 17.0.2). Nothing to fix today.
 2. keep the directives in the schema meanwhile, as you have — it means
    streaming lights up without a schema redesign.
 
-## 5. Known gaps, flagged as already understood
+## 6. Known gaps, flagged as already understood
 
 Listed for completeness; the honest empty responses are the right call and we
 are not asking for placeholder data.

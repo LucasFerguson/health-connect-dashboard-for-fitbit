@@ -113,7 +113,18 @@ worth revisiting if HCGateway starts returning pre-formatted display strings.
 `src/app/(overview)/page.tsx`, `src/app/sleep/page.tsx`,
 `src/app/sleep-debt/page.tsx`, `src/app/sleep-consistency/page.tsx`,
 `src/app/healthspan/page.tsx`, `src/app/data-sources/page.tsx` — all six
-verified to call `getHealthSnapshot()` directly. (`src/app/error.tsx` mentions
+originally called `getHealthSnapshot()` directly.
+
+**Migration status (2026-09-20).** Seven routes now read GraphQL:
+`/sleep-debt`, `/sleep-consistency`, `/healthspan`, and the four metric detail
+routes (`/steps`, `/calories`, `/resting-heart-rate`, `/weight`, which share
+`HealthMetricPage`). Still on the legacy pipeline: `/` (overview), `/sleep`,
+`/data-sources`. Each page states which path served it at the top — that banner
+is derived at request time, not hardcoded, so a GraphQL outage shows as a
+fallback rather than lying.
+
+Every migrated page keeps its `getHealthSnapshot()` fallback for now, so
+`pipeline/` cannot be deleted until the last three routes migrate. (`src/app/error.tsx` mentions
 it only in a comment; it is not a consumer.) Their component trees
 (`Dashboard.tsx` and friends) mostly consume already-shaped data through
 hooks/props, so the migration is swapping what feeds
