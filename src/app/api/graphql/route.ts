@@ -108,10 +108,23 @@ export async function POST(request: Request) {
       );
     }
 
-    // Returned as the upstream's own JSON so Apollo sees an unmodified GraphQL
-    // response envelope, `errors` and partial `data` included.
-    const payload: unknown = await upstream.json();
-    return NextResponse.json(payload, { status: upstream.status });
+    // Streamed straight through rather than `await upstream.json()` then
+    // re-serializing. The proxy has no reason to understand the body, and
+    // parsing it cost real time: the overview response is ~1 MB and the daily
+    // series ~80 KB, and round-tripping that through JSON.parse/stringify
+    // roughly doubled the upstream latency (measured ~0.30s upstream versus
+    // ~0.70s through the proxy). Apollo also sees the envelope byte-for-byte,
+    // `errors` and partial `data` included, instead of a re-encoded copy.
+    return new NextResponse(upstream.body, {
+      status: upstream.status,
+      headers: {
+        "Content-Type":
+          upstream.headers.get("Content-Type") ?? "application/json",
+        // The response is per-user and time-sensitive; never let a shared cache
+        // hold it.
+        "Cache-Control": "private, no-store",
+      },
+    });
   } catch (error) {
     // Only the message, never the request: the fetch options carry the token.
     console.error(
