@@ -3,7 +3,12 @@
 Written after migrating **all ten pages** end to end against the live API on
 `:6645`. Everything below was verified against real
 responses, not inferred from the schema — counts and shapes are from actual
-queries on the primary account (run `health-analytics-v8.3`).
+queries on the primary account.
+
+**Caveat on the numbers:** the counts below were captured against run
+`health-analytics-v8.3`. The live run is now `health-analytics-v8.4`, so
+re-measure before acting on a specific figure — the _shapes_ of the problems
+are unchanged, but the null rates and day counts may have moved.
 
 Ordered by how much friction each one causes on the frontend.
 
@@ -35,6 +40,23 @@ pointing here.
 
 **Request:** pass the request's `variables` through to the GraphQL executor.
 Worth a regression test asserting a variable-bearing query returns data.
+
+**Second-order cost worth knowing about.** The workaround leaked into the
+architecture, not just one file. Because the stages query has to be built as a
+string at runtime, it is invisible to codegen, which means:
+
+- `getSleepStages.ts` hand-writes its result type and its `SleepStageKind`
+  union instead of importing generated ones (importing the generated enum
+  actually broke the build once — codegen stopped emitting it when the last
+  `graphql()` anchor disappeared);
+- the browser fetches stages through a bespoke `/api/sleep-stages` route rather
+  than the general `/api/graphql` proxy, so there are two client→server shapes
+  where one would do. A reviewer reasonably flagged this as looking like an
+  un-migrated REST endpoint. It isn't — it queries GraphQL server-side — but
+  the inconsistency is real and it exists only because of this bug.
+
+When variables work, delete `/api/sleep-stages` and let the client query stages
+through the normal proxy with a proper `$range` variable.
 
 ## 2. Closed value sets typed as `String!` instead of enums
 

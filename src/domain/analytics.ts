@@ -2,8 +2,10 @@
  * LEGACY — part of the old plan where this repo computed its own health
  * analytics locally. That plan has changed: a separate backend (HCGateway)
  * now owns analytics computation, and this repo is moving toward being
- * frontend-only. This file still runs for pages that haven't been migrated
- * yet (see README.md's "Architecture and data flow" section).
+ * frontend-only. As of 2026-09-20 every page reads GraphQL, so this now runs
+ * ONLY as the fallback when the GraphQL API can't serve a request — see the
+ * `?? await getHealthSnapshot()` in each page. It is scheduled for deletion;
+ * see GRAPHQL_MIGRATION_REDUNDANCY.md for what goes with it.
  *
  * Do not extend this file with new metrics, new computations, or new
  * data-processing logic. If a page needs something this doesn't already

@@ -1,5 +1,35 @@
 # Clean Code Report
 
+> **STALE — assessed August 22, 2026. Read the status note before acting on
+> anything below.**
+>
+> Several findings here were fixed on 2026-09-19/21 and this document was not
+> rewritten, so treating it as a to-do list will send you to re-solve solved
+> problems. Fixed since the assessment:
+>
+> - **"The frontend request still runs the pipeline"** — all ten routes now read
+>   prepared analytics from HCGateway's GraphQL API. `pipeline/` survives only as
+>   a fallback and is queued for deletion (`GRAPHQL_MIGRATION_REDUNDANCY.md`).
+> - **"The browser refresh path casts JSON without validating it"** — the browser
+>   no longer fetches that payload at all; polling goes through Apollo Client and
+>   generated types. `/api/health` and its guard are deleted.
+> - **"Polling has no visible stale state or last-success indicator"** — a failed
+>   refresh now shows "Showing last known data", and every page shows which data
+>   path served it.
+> - **"ECharts makes the first-load bundle large"** — lazy-loaded via one shared
+>   wrapper across all 11 chart components.
+> - **"`SleepStagesGraph` owns too much"** — split into a chart-option builder,
+>   tab components, and a thin container.
+>
+> Still open and still worth reading: the persistence/duplication findings (§1,
+> §5), algorithmic test coverage (§3) and timezone semantics (§4) — though those
+> are now **HCGateway's** concerns, not this repo's, since analytics moved to the
+> backend. The scorecard as a whole predates the GraphQL migration and should not
+> be quoted as current.
+>
+> The frontend's own biggest gap is no longer listed here at all: the GraphQL
+> adapters added in September have **no test coverage**. See JOURNAL.md.
+
 **Assessment date:** August 22, 2026  
 **Score:** 73/100 — **C (promising, but not production-mature)**  
 **Confidence:** High for structure and static quality; medium for long-running persistence behavior.
@@ -8,17 +38,17 @@ The project has grown from a prototype into a genuinely modular application with
 
 ## Scorecard
 
-| Category | Score | Weight |
-| --- | ---: | ---: |
-| Correctness and verification | 13 | 20 |
-| Architecture and modularity | 13 | 15 |
-| Data models and state flow | 13 | 15 |
-| Maintainability and readability | 11 | 15 |
-| Types and contracts | 8 | 10 |
-| Performance and scalability | 6 | 10 |
-| Reliability and operability | 6 | 10 |
-| Security and privacy | 3 | 5 |
-| **Total** | **73** | **100** |
+| Category                        |  Score |  Weight |
+| ------------------------------- | -----: | ------: |
+| Correctness and verification    |     13 |      20 |
+| Architecture and modularity     |     13 |      15 |
+| Data models and state flow      |     13 |      15 |
+| Maintainability and readability |     11 |      15 |
+| Types and contracts             |      8 |      10 |
+| Performance and scalability     |      6 |      10 |
+| Reliability and operability     |      6 |      10 |
+| Security and privacy            |      3 |       5 |
+| **Total**                       | **73** | **100** |
 
 ## What is strong
 

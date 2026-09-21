@@ -2,6 +2,23 @@
 
 A self-hosted dashboard for health metrics collected from phones and wearables. It provides daily and long-term views of sleep, steps, calories, resting heart rate, and weight. When API credentials are absent, the app intentionally uses its bundled demo dataset.
 
+## Project documents
+
+Read these before making changes — they carry decisions and open issues that
+aren't visible in the code:
+
+- **[JOURNAL.md](JOURNAL.md)** — why the project exists and how it got here,
+  including the reasoning (and the mistakes) behind the GraphQL migration.
+  Start here if you are new to the repo.
+- **[GRAPHQL_BACKEND_REQUESTS.md](GRAPHQL_BACKEND_REQUESTS.md)** — open asks of
+  the HCGateway backend, each verified against live responses. The ignored
+  `variables` bug at the top blocks real cleanup here.
+- **[GRAPHQL_MIGRATION_REDUNDANCY.md](GRAPHQL_MIGRATION_REDUNDANCY.md)** — what
+  becomes deletable as the migration finishes, with verified dependency
+  directions and a sequencing warning.
+- **[CLEAN_CODE_REPORT.md](CLEAN_CODE_REPORT.md)** — an August 2026 assessment.
+  **Partly stale**; read its status banner first.
+
 ## Architecture and data flow
 
 **The app currently has two data paths, mid-migration.** Most pages still use the original local-pipeline flow described below. The day view (`/day/[date]`) has moved to a different, simpler path: it calls a prepared analytics API exposed by the backend (HCGateway, a sibling project) and does no local computation of its own. The plan is to migrate the rest of the app to the same prepared-API approach so the TypeScript pipeline in this repo and the backend's own analytics implementation can't drift from each other; until that happens, both paths are real and in active use.
