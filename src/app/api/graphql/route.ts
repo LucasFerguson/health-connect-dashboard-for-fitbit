@@ -78,27 +78,31 @@ export async function POST(request: Request) {
   }
 
   try {
-    const upstream = await fetch(graphqlEndpoint(baseUrl), {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${await fetchGraphQLToken(baseUrl)}`,
-      },
-      body: JSON.stringify({
-        query: body.query,
-        variables: body.variables ?? undefined,
-        operationName: body.operationName ?? undefined,
-      }),
-      cache: "no-store",
-      // The overview query is the widest one the dashboard issues (~321 KB over
-      // the wire); a minute is generous but the poll is only every 60s anyway.
-      signal: AbortSignal.timeout(60_000),
-    });
+    const send = async () =>
+      fetch(graphqlEndpoint(baseUrl), {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${await fetchGraphQLToken(baseUrl)}`,
+        },
+        body: JSON.stringify({
+          query: body.query,
+          variables: body.variables ?? undefined,
+          operationName: body.operationName ?? undefined,
+        }),
+        cache: "no-store",
+        // The overview query is the widest one the dashboard issues (~321 KB
+        // over the wire); a minute is generous but the poll is only every 60s.
+        signal: AbortSignal.timeout(60_000),
+      });
 
+    let upstream = await send();
     if (upstream.status === 401) {
-      // The cached token expired. Drop it so the next poll logs in again, the
-      // way `withAnalytics` does on a 401.
+      // HCGateway keeps one token per account and every login replaces it, so
+      // another client signing in as the same user revokes ours. Log in again
+      // and retry once, as `withViewer` does; a second 401 is passed on.
       invalidateGraphQLToken();
+      upstream = await send();
     }
 
     if (!upstream.ok) {

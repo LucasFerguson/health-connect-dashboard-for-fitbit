@@ -109,7 +109,20 @@ export async function withViewer<
     const options = { query: document, variables } as Parameters<
       typeof client.query<TResult, TVariables>
     >[0];
-    const { data } = await client.query<TResult, TVariables>(options);
+    const run = () => client.query<TResult, TVariables>(options);
+    let result: Awaited<ReturnType<typeof run>>;
+    try {
+      result = await run();
+    } catch (error) {
+      if (!(ServerError.is(error) && error.statusCode === 401)) throw error;
+      // HCGateway keeps one token per account and every login replaces it, so
+      // any other client signing in as the same user (the other dashboard
+      // container, a dev server, the phone app) revokes ours. Log in again
+      // and retry once; a second 401 is a real credential problem.
+      invalidateGraphQLToken();
+      result = await run();
+    }
+    const { data } = result;
     // Apollo types `data` as possibly undefined: a query can resolve carrying
     // only errors.
     if (!data) throw new EmptyResponseError();
@@ -119,8 +132,8 @@ export async function withViewer<
       throw new FrontendMappingError(error);
     }
   } catch (error) {
-    // A rejected token means the cached one expired; drop it so the next
-    // request logs in again instead of failing the same way forever.
+    // Still rejected after a fresh login; drop the token anyway so the next
+    // request doesn't reuse it.
     if (ServerError.is(error) && error.statusCode === 401) {
       invalidateGraphQLToken();
     }
