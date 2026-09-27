@@ -56,7 +56,6 @@ export function BackendErrorPanel({
 }) {
   const failed = failedStep(diagnostics);
   const { request, config } = diagnostics;
-  const transportLabel = request.transport === "graphql" ? "GraphQL" : "REST";
 
   return (
     <main className="min-h-screen bg-[#090d17] px-4 py-10 text-white">
@@ -126,7 +125,6 @@ export function BackendErrorPanel({
         <Section title="Request">
           <Facts
             rows={[
-              ["Transport", transportLabel],
               ["Loader", request.label],
               ["Operation", request.operation],
               [

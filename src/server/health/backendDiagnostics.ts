@@ -45,10 +45,9 @@ export type FailureKind =
   | "unknown";
 
 export interface RequestContext {
-  transport: "graphql" | "rest";
   /** Short loader name, e.g. "sleep-debt". */
   label: string;
-  /** GraphQL operation name, or REST method + path. */
+  /** GraphQL operation name. */
   operation: string;
   /** Top-level fields the operation selects, e.g. `viewer.analytics.sleepDebt`. */
   selections: string[];
@@ -102,9 +101,8 @@ export class BackendRequestError extends Error {
 }
 
 /**
- * Thrown by both login implementations (GraphQL's `graphqlAuth.ts` and the
- * REST `HealthConnectClient`), so a credential problem is never mistaken for
- * the data endpoint being down.
+ * Thrown by the login in `graphqlAuth.ts`, so a credential problem is never
+ * mistaken for the data endpoint being down.
  */
 export class LoginError extends Error {
   constructor(
@@ -147,20 +145,6 @@ export class FrontendMappingError extends Error {
       { cause },
     );
     this.name = "FrontendMappingError";
-  }
-}
-
-/** Thrown by the REST client for a non-2xx data response. */
-export class HttpStatusError extends Error {
-  constructor(
-    public readonly status: number,
-    message: string,
-    public readonly url: string | null = null,
-    public readonly contentType: string | null = null,
-    public readonly bodySnippet = "",
-  ) {
-    super(message);
-    this.name = "HttpStatusError";
   }
 }
 
@@ -307,9 +291,7 @@ export function diagnose(
   };
   const endpointHost = hostOf(context.endpoint);
   const graphqlServiceHint =
-    context.transport === "graphql"
-      ? "Is the `hcgateway_graphql_api` container running and healthy? (`docker ps`)"
-      : "Is the `hcgateway_api` container running and healthy? (`docker ps`)";
+    "Is the `hcgateway_graphql_api` container running and healthy? (`docker ps`)";
 
   if (error instanceof NotConfiguredError) {
     return {
@@ -334,7 +316,7 @@ export function diagnose(
         kind: "login-rejected",
         auth: "rejected",
         title: `Login rejected (${error.status}) for user "${config.username ?? "?"}"`,
-        explanation: `HCGateway's login endpoint answered but refused the credentials, so no data request was attempted. The ${context.transport === "graphql" ? "GraphQL" : "REST"} endpoint itself was never reached.`,
+        explanation: `HCGateway's login endpoint answered but refused the credentials, so no data request was attempted. The GraphQL endpoint itself was never reached.`,
         checks: [
           "Check API_USERNAME and API_PASSWORD in .env — the password is the HCGateway account password.",
           "Confirm the account works: POST {API_URL}/api/v2/login with the same JSON body.",
@@ -452,14 +434,10 @@ export function diagnose(
     };
   }
 
-  if (ServerError.is(error) || error instanceof HttpStatusError) {
-    const status = ServerError.is(error) ? error.statusCode : error.status;
-    const contentType = ServerError.is(error)
-      ? error.response.headers.get("content-type")
-      : error.contentType;
-    const bodySnippet = ServerError.is(error)
-      ? snippet(error.bodyText)
-      : error.bodySnippet;
+  if (ServerError.is(error)) {
+    const status = error.statusCode;
+    const contentType = error.response.headers.get("content-type");
+    const bodySnippet = snippet(error.bodyText);
     const http = { status, contentType, bodySnippet };
     if (status === 401 || status === 403) {
       return {
@@ -495,9 +473,7 @@ export function diagnose(
           ? [
               `Endpoint used: ${context.endpoint ?? "?"}. GraphQL should be on port 6645 at /graphql; set GRAPHQL_URL to override.`,
             ]
-          : [
-              `Check the ${context.transport === "graphql" ? "hcgateway_graphql_api" : "hcgateway_api"} container logs.`,
-            ],
+          : ["Check the `hcgateway_graphql_api` container logs."],
       http,
     };
   }
@@ -528,11 +504,11 @@ export function diagnose(
       ...base,
       kind: "contract-mismatch",
       auth: "succeeded",
-      title: `${context.operation} response doesn't match the expected contract`,
+      title: `${context.operation}: a backend response doesn't match the expected contract`,
       explanation:
-        "The backend answered successfully, but the payload failed this dashboard's Zod validation — the contract drifted on one side.",
+        "The backend answered successfully, but the payload failed this dashboard's Zod validation — the contract drifted on one side. The only Zod-validated response left is the login's `{ token }` body; GraphQL data is typed by codegen instead.",
       checks: [
-        "Compare the issues below with src/server/health/dayAnalyticsSchema.ts and a live response.",
+        "Compare the issues below with the login response parsed in src/server/health/graphqlAuth.ts.",
       ],
       validationIssues: zodError.issues.slice(0, 20).map((issue) => ({
         path: issue.path.join(".") || "(root)",
@@ -558,7 +534,7 @@ export function diagnose(
           : "Nothing accepted the connection at that address and port.",
       checks: [
         graphqlServiceHint,
-        `Endpoint used: ${context.endpoint ?? "?"}${config.graphqlUrlOverride ? " (from GRAPHQL_URL)" : context.transport === "graphql" ? " (derived from API_URL by swapping the port to 6645)" : ""}.`,
+        `Endpoint used: ${context.endpoint ?? "?"}${config.graphqlUrlOverride ? " (from GRAPHQL_URL)" : " (derived from API_URL by swapping the port to 6645)"}.`,
       ],
     };
   }

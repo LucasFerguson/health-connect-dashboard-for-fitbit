@@ -85,7 +85,6 @@ export async function withViewer<
 ): Promise<T> {
   const config = configSnapshot(env);
   const context: RequestContext = {
-    transport: "graphql",
     label,
     ...describeDocument(document),
     endpoint: config.apiUrl ? graphqlEndpoint(config.apiUrl) : null,
