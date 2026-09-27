@@ -6,10 +6,7 @@ export const SLEEP_CONSISTENCY_QUERY = graphql(`
     viewer {
       analytics {
         id
-        runId
-        algorithmVersion
         timeZone
-        processedAt
         sleepConsistency {
           baselineWindowDays
           minimumBaselineNights

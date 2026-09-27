@@ -40,8 +40,6 @@ const OVERVIEW_QUERY_SOURCE = graphql(`
     viewer {
       analytics {
         id
-        runId
-        algorithmVersion
         timeZone
         processedAt
         sleepEvents {

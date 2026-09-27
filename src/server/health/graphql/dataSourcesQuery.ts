@@ -17,10 +17,7 @@ export const DATA_SOURCES_QUERY = graphql(`
     viewer {
       analytics {
         id
-        runId
-        algorithmVersion
         timeZone
-        processedAt
         sleepDebt {
           latest {
             id

@@ -18,10 +18,7 @@ export const DAILY_SLEEP_QUERY = graphql(`
     viewer {
       analytics {
         id
-        runId
-        algorithmVersion
         timeZone
-        processedAt
         sleepDebt {
           targetMinutes
         }

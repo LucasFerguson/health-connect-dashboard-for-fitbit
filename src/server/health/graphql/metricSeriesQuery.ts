@@ -20,9 +20,6 @@ import { graphql } from "~/types/__generated__";
  * hook API, in a plain server-side mapping function. Repetition is the lesser
  * evil here.
  *
- * `runId`/`algorithmVersion`/`timeZone`/`processedAt` are required by
- * `withAnalytics` so the UI can report which prepared run produced the numbers.
- *
  * Written with the codegen `graphql()` function rather than `gql`, so the
  * returned document carries its own result and variable types.
  */
@@ -37,10 +34,7 @@ export const METRIC_SERIES_QUERY = graphql(`
     viewer {
       analytics {
         id
-        runId
-        algorithmVersion
         timeZone
-        processedAt
         steps @include(if: $steps) {
           unit
           daily {

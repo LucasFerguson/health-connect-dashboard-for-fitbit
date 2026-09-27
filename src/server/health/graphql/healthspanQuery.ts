@@ -3,9 +3,6 @@ import { graphql } from "~/types/__generated__";
 /**
  * Healthspan page query. One query per page, per Apollo's guidance.
  *
- * `runId` and friends are selected so the UI can show which prepared analytics
- * run the numbers came from, and so a run change is visible rather than silent.
- *
  * `factors` are selected on `latest` only, not on every `trend` day: the page
  * renders factor cards for the latest estimate and charts only age and pace
  * over the trend (`HealthspanTrendCharts`), so per-day factors were ~280 KB
@@ -24,10 +21,7 @@ export const HEALTHSPAN_QUERY = graphql(`
     viewer {
       analytics {
         id
-        runId
-        algorithmVersion
         timeZone
-        processedAt
         healthspan {
           modelVersion
           status
