@@ -85,6 +85,13 @@ const OVERVIEW_QUERY_SOURCE = graphql(`
           average7DayMinutes
           average30DayMinutes
           previous30DayAverageMinutes
+          breakdown30Day {
+            recordedDays
+            none
+            low
+            moderate
+            high
+          }
           daily {
             id
             date
@@ -105,6 +112,12 @@ const OVERVIEW_QUERY_SOURCE = graphql(`
           average7DayScore
           average30DayScore
           previous30DayAverageScore
+          breakdown30Day {
+            scoredDays
+            optimal
+            sufficient
+            poor
+          }
           daily {
             id
             date

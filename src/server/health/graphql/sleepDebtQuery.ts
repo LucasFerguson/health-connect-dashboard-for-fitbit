@@ -28,6 +28,13 @@ export const SLEEP_DEBT_QUERY = graphql(`
           average7DayMinutes
           average30DayMinutes
           previous30DayAverageMinutes
+          breakdown30Day {
+            recordedDays
+            none
+            low
+            moderate
+            high
+          }
           latest {
             id
             date
