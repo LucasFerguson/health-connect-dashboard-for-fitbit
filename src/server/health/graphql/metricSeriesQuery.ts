@@ -28,6 +28,7 @@ export const METRIC_SERIES_QUERY = graphql(`
   query MetricSeriesPage {
     viewer {
       analytics {
+        id
         runId
         algorithmVersion
         timeZone
@@ -35,6 +36,7 @@ export const METRIC_SERIES_QUERY = graphql(`
         steps {
           unit
           daily {
+            id
             date
             value
             source
@@ -48,6 +50,7 @@ export const METRIC_SERIES_QUERY = graphql(`
           }
           overview {
             latest {
+              id
               date
               value
               source
@@ -60,6 +63,7 @@ export const METRIC_SERIES_QUERY = graphql(`
               }
             }
             previous {
+              id
               date
               value
               source
@@ -77,11 +81,13 @@ export const METRIC_SERIES_QUERY = graphql(`
             sampleCount
           }
           rolling7Day {
+            id
             date
             value
             sampleCount
           }
           monthly {
+            id
             month
             value
             sampleCount
@@ -90,6 +96,7 @@ export const METRIC_SERIES_QUERY = graphql(`
         activeCalories {
           unit
           daily {
+            id
             date
             value
             source
@@ -103,6 +110,7 @@ export const METRIC_SERIES_QUERY = graphql(`
           }
           overview {
             latest {
+              id
               date
               value
               source
@@ -115,6 +123,7 @@ export const METRIC_SERIES_QUERY = graphql(`
               }
             }
             previous {
+              id
               date
               value
               source
@@ -132,11 +141,13 @@ export const METRIC_SERIES_QUERY = graphql(`
             sampleCount
           }
           rolling7Day {
+            id
             date
             value
             sampleCount
           }
           monthly {
+            id
             month
             value
             sampleCount
@@ -145,6 +156,7 @@ export const METRIC_SERIES_QUERY = graphql(`
         totalCalories {
           unit
           daily {
+            id
             date
             value
             source
@@ -158,6 +170,7 @@ export const METRIC_SERIES_QUERY = graphql(`
           }
           overview {
             latest {
+              id
               date
               value
               source
@@ -170,6 +183,7 @@ export const METRIC_SERIES_QUERY = graphql(`
               }
             }
             previous {
+              id
               date
               value
               source
@@ -187,11 +201,13 @@ export const METRIC_SERIES_QUERY = graphql(`
             sampleCount
           }
           rolling7Day {
+            id
             date
             value
             sampleCount
           }
           monthly {
+            id
             month
             value
             sampleCount
@@ -200,6 +216,7 @@ export const METRIC_SERIES_QUERY = graphql(`
         restingHeartRate {
           unit
           daily {
+            id
             date
             value
             source
@@ -213,6 +230,7 @@ export const METRIC_SERIES_QUERY = graphql(`
           }
           overview {
             latest {
+              id
               date
               value
               source
@@ -225,6 +243,7 @@ export const METRIC_SERIES_QUERY = graphql(`
               }
             }
             previous {
+              id
               date
               value
               source
@@ -242,11 +261,13 @@ export const METRIC_SERIES_QUERY = graphql(`
             sampleCount
           }
           rolling7Day {
+            id
             date
             value
             sampleCount
           }
           monthly {
+            id
             month
             value
             sampleCount
@@ -255,6 +276,7 @@ export const METRIC_SERIES_QUERY = graphql(`
         weight {
           unit
           daily {
+            id
             date
             value
             source
@@ -268,6 +290,7 @@ export const METRIC_SERIES_QUERY = graphql(`
           }
           overview {
             latest {
+              id
               date
               value
               source
@@ -280,6 +303,7 @@ export const METRIC_SERIES_QUERY = graphql(`
               }
             }
             previous {
+              id
               date
               value
               source
@@ -297,11 +321,13 @@ export const METRIC_SERIES_QUERY = graphql(`
             sampleCount
           }
           rolling7Day {
+            id
             date
             value
             sampleCount
           }
           monthly {
+            id
             month
             value
             sampleCount

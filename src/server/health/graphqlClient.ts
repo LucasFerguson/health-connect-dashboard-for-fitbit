@@ -16,12 +16,13 @@
  * endpoint derivation live in `graphqlAuth.ts` so the proxy route can reuse
  * them; this module is only importable under the `react-server` condition.
  *
- * Still open (see GRAPHQL_BACKEND_REQUESTS.md for why each is blocked):
+ * The cache normalizes by the backend's run-scoped `id`s, with the shared
+ * `typePolicies` from `graphql/typePolicies.ts`. The cache is per request, so
+ * this mostly matters when one request runs several queries (and for the
+ * browser client, which lives for the whole session).
  *
- * - `typePolicies`/`keyFields` are unconfigured. The date-keyed analytics types
- *   have no `id`, so the cache can't normalize them, and the metric leaves
- *   (`{status, value, unit, ...}`) want `keyFields: false` so they group under
- *   their parent. Needs the backend to add ids first.
+ * Still open:
+ *
  * - A `RetryLink` for transient 5xx, plus an `ErrorLink` calling
  *   `invalidateGraphQLToken()` on 401. The proxy route already does the 401
  *   half; this path still relies on the next request re-logging in.
@@ -35,6 +36,7 @@ import {
 } from "@apollo/client-integration-nextjs";
 import { env } from "~/env";
 import { fetchGraphQLToken, graphqlEndpoint } from "./graphqlAuth";
+import { typePolicies } from "./graphql/typePolicies";
 
 // Re-exported so existing importers (`graphql/fetchAnalytics.ts`) keep a single
 // entrypoint even though the credential handling moved to `graphqlAuth.ts`.
@@ -57,7 +59,8 @@ export const { getClient, query, PreloadQuery } = registerApolloClient(() => {
   });
 
   return new ApolloClient({
-    cache: new InMemoryCache(),
+    // Shared with the browser client; see `graphql/typePolicies.ts`.
+    cache: new InMemoryCache({ typePolicies }),
     // Absolute URL is required for SSR; relative URLs can't be resolved
     // server-side. Falls back to a placeholder that will fail loudly rather
     // than silently pointing somewhere unintended when API_URL is unset.

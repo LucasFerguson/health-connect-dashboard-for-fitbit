@@ -21,6 +21,7 @@ export const HEALTHSPAN_QUERY = graphql(`
   query HealthspanPage {
     viewer {
       analytics {
+        id
         runId
         algorithmVersion
         timeZone
@@ -34,6 +35,7 @@ export const HEALTHSPAN_QUERY = graphql(`
           paceOfAging
           paceWindowDays
           trend {
+            id
             date
             chronologicalAgeYears
             healthAgeYears
@@ -41,6 +43,7 @@ export const HEALTHSPAN_QUERY = graphql(`
             paceOfAging
             qualityFlags
             factors {
+              id
               key
               label
               value

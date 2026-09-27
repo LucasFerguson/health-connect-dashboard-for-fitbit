@@ -17,6 +17,7 @@ export const SLEEP_DEBT_QUERY = graphql(`
   query SleepDebtPage {
     viewer {
       analytics {
+        id
         runId
         algorithmVersion
         timeZone
@@ -28,10 +29,12 @@ export const SLEEP_DEBT_QUERY = graphql(`
           average30DayMinutes
           previous30DayAverageMinutes
           latest {
+            id
             date
             debtMinutes
           }
           daily {
+            id
             date
             sleepMinutes
             targetMinutes

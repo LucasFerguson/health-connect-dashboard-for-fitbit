@@ -35,6 +35,7 @@ const OVERVIEW_QUERY_SOURCE = graphql(`
   query OverviewPage {
     viewer {
       analytics {
+        id
         runId
         algorithmVersion
         timeZone
@@ -67,6 +68,7 @@ const OVERVIEW_QUERY_SOURCE = graphql(`
           averageDifferenceMinutes
         }
         days {
+          id
           date
           headlineScores {
             sleepDuration {
@@ -84,6 +86,7 @@ const OVERVIEW_QUERY_SOURCE = graphql(`
           average30DayMinutes
           previous30DayAverageMinutes
           daily {
+            id
             date
             sleepMinutes
             targetMinutes
@@ -103,6 +106,7 @@ const OVERVIEW_QUERY_SOURCE = graphql(`
           average30DayScore
           previous30DayAverageScore
           daily {
+            id
             date
             source
             bedtimeAt
@@ -130,6 +134,7 @@ const OVERVIEW_QUERY_SOURCE = graphql(`
           paceOfAging
           paceWindowDays
           trend {
+            id
             date
             chronologicalAgeYears
             healthAgeYears
@@ -137,6 +142,7 @@ const OVERVIEW_QUERY_SOURCE = graphql(`
             paceOfAging
             qualityFlags
             factors {
+              id
               key
               label
               value
@@ -155,12 +161,14 @@ const OVERVIEW_QUERY_SOURCE = graphql(`
             changeFromPrevious
             sampleCount
             latest {
+              id
               date
               value
               source
               qualityFlags
             }
             previous {
+              id
               date
               value
               source
@@ -168,6 +176,7 @@ const OVERVIEW_QUERY_SOURCE = graphql(`
             }
           }
           daily {
+            id
             date
             value
             source
@@ -182,12 +191,14 @@ const OVERVIEW_QUERY_SOURCE = graphql(`
             changeFromPrevious
             sampleCount
             latest {
+              id
               date
               value
               source
               qualityFlags
             }
             previous {
+              id
               date
               value
               source
@@ -195,6 +206,7 @@ const OVERVIEW_QUERY_SOURCE = graphql(`
             }
           }
           daily {
+            id
             date
             value
             source
@@ -209,12 +221,14 @@ const OVERVIEW_QUERY_SOURCE = graphql(`
             changeFromPrevious
             sampleCount
             latest {
+              id
               date
               value
               source
               qualityFlags
             }
             previous {
+              id
               date
               value
               source
@@ -222,6 +236,7 @@ const OVERVIEW_QUERY_SOURCE = graphql(`
             }
           }
           daily {
+            id
             date
             value
             source
@@ -236,12 +251,14 @@ const OVERVIEW_QUERY_SOURCE = graphql(`
             changeFromPrevious
             sampleCount
             latest {
+              id
               date
               value
               source
               qualityFlags
             }
             previous {
+              id
               date
               value
               source
@@ -249,6 +266,7 @@ const OVERVIEW_QUERY_SOURCE = graphql(`
             }
           }
           daily {
+            id
             date
             value
             source
@@ -263,12 +281,14 @@ const OVERVIEW_QUERY_SOURCE = graphql(`
             changeFromPrevious
             sampleCount
             latest {
+              id
               date
               value
               source
               qualityFlags
             }
             previous {
+              id
               date
               value
               source
@@ -276,6 +296,7 @@ const OVERVIEW_QUERY_SOURCE = graphql(`
             }
           }
           daily {
+            id
             date
             value
             source

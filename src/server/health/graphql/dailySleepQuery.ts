@@ -17,6 +17,7 @@ export const DAILY_SLEEP_QUERY = graphql(`
   query DailySleepPage {
     viewer {
       analytics {
+        id
         runId
         algorithmVersion
         timeZone
@@ -25,6 +26,7 @@ export const DAILY_SLEEP_QUERY = graphql(`
           targetMinutes
         }
         days {
+          id
           date
           headlineScores {
             sleepDuration {

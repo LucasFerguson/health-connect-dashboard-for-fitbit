@@ -16,10 +16,12 @@ import {
   ApolloNextAppProvider,
   InMemoryCache,
 } from "@apollo/client-integration-nextjs";
+import { typePolicies } from "~/server/health/graphql/typePolicies";
 
 function makeClient() {
   return new ApolloClient({
-    cache: new InMemoryCache(),
+    // Same policies as the RSC client; see `graphql/typePolicies.ts`.
+    cache: new InMemoryCache({ typePolicies }),
     link: new HttpLink({
       /**
        * Relative on purpose, and safe here. Apollo's guide calls for an

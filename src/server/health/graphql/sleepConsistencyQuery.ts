@@ -5,6 +5,7 @@ export const SLEEP_CONSISTENCY_QUERY = graphql(`
   query SleepConsistencyPage {
     viewer {
       analytics {
+        id
         runId
         algorithmVersion
         timeZone
@@ -17,6 +18,7 @@ export const SLEEP_CONSISTENCY_QUERY = graphql(`
           average30DayScore
           previous30DayAverageScore
           daily {
+            id
             date
             source
             bedtimeAt
