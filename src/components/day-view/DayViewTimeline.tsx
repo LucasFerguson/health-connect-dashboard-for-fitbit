@@ -46,7 +46,7 @@ export function DayViewTimeline({
     <Card
       notchSize={16}
       padding="px-5 pt-3.5 pb-3"
-      className="flex min-h-[420px] flex-1 flex-col md:min-h-0"
+      className="flex min-h-[500px] flex-1 flex-col md:min-h-0"
     >
       <div className="mb-[11px] flex items-baseline gap-3.5">
         <span className="font-display text-[17px] tracking-[.12em]">

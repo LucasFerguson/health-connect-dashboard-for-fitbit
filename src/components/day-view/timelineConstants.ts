@@ -26,15 +26,37 @@ export function bpmToLanePercent(bpm: number): number {
   return 100 - ((clamped - HR_SCALE_MIN) / (HR_SCALE_MAX - HR_SCALE_MIN)) * 100;
 }
 
-export const SLEEP_STAGE_GEOMETRY: Record<
-  "awake" | "rem" | "light" | "deep",
-  { topPx: number; heightPx: number; color: string }
+export type RenderedSleepStage = "awake" | "rem" | "light" | "deep";
+
+/** Sleep-stage lane geometry: one horizontal row per stage, top to bottom
+ * in `SLEEP_STAGE_ROWS` order, so depth reads downward like a hypnogram.
+ * The gutter uses the same numbers to line its row labels up. */
+export const SLEEP_STAGE_ROW_HEIGHT_PX = 24;
+/** Vertical inset of a stage bar inside its row, px (top and bottom). */
+export const SLEEP_STAGE_BAR_INSET_PX = 3;
+export const SLEEP_STAGE_ROWS: RenderedSleepStage[] = [
+  "awake",
+  "rem",
+  "light",
+  "deep",
+];
+export const SLEEP_LANE_HEIGHT_PX =
+  SLEEP_STAGE_ROW_HEIGHT_PX * SLEEP_STAGE_ROWS.length;
+
+export const SLEEP_STAGE_STYLE: Record<
+  RenderedSleepStage,
+  { label: string; color: string }
 > = {
-  awake: { topPx: 2, heightPx: 5, color: "var(--color-ink-300)" },
-  rem: { topPx: 8, heightPx: 8, color: "var(--color-sleep)" },
-  light: { topPx: 13, heightPx: 8, color: "var(--color-sleep-light)" },
-  deep: { topPx: 20, heightPx: 8, color: "var(--color-sleep-deep)" },
+  awake: { label: "AWAKE", color: "var(--color-ink-300)" },
+  rem: { label: "REM", color: "var(--color-sleep)" },
+  light: { label: "LIGHT", color: "var(--color-sleep-light)" },
+  deep: { label: "DEEP", color: "var(--color-sleep-deep)" },
 };
+
+/** Top offset (px) of `stage`'s row within the sleep lane. */
+export function sleepStageRowTopPx(stage: RenderedSleepStage): number {
+  return SLEEP_STAGE_ROWS.indexOf(stage) * SLEEP_STAGE_ROW_HEIGHT_PX;
+}
 
 /** Axis slots (hours from the axis start) that get an x-axis label: every
  * second hour, 0-22. The label text comes from `slotHourLabel`. */

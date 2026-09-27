@@ -4,32 +4,33 @@ import {
   minutesToPercentWidth,
   timeToPercent,
 } from "~/domain/dayViewTime";
-import { SLEEP_STAGE_GEOMETRY } from "./timelineConstants";
+import {
+  SLEEP_LANE_HEIGHT_PX,
+  SLEEP_STAGE_BAR_INSET_PX,
+  SLEEP_STAGE_ROWS,
+  SLEEP_STAGE_ROW_HEIGHT_PX,
+  SLEEP_STAGE_STYLE,
+  sleepStageRowTopPx,
+  type RenderedSleepStage,
+} from "./timelineConstants";
 
-const LEGEND_ORDER: Array<keyof typeof SLEEP_STAGE_GEOMETRY> = [
-  "deep",
-  "light",
-  "rem",
-  "awake",
-];
-const LEGEND_LABEL: Record<keyof typeof SLEEP_STAGE_GEOMETRY, string> = {
-  deep: "DEEP",
-  light: "LIGHT",
-  rem: "REM",
-  awake: "AWAKE",
-};
+const RENDERED_STAGE_KINDS = new Set<string>(SLEEP_STAGE_ROWS);
 
-const RENDERED_STAGE_KINDS = new Set(["awake", "rem", "light", "deep"]);
+/** Segments closer together than this are drawn as one continuous step. */
+const CONNECT_GAP_MS = 60_000;
 
 /**
- * Sleep-stage lane (30px) — a step chart of stage segments straight from
- * `timeline.sleepStages`, positioned by real start/end timestamps using
- * the shared time-axis math (per requirement #6: the API already shapes
- * the segments, the lane only needs to place them on the axis). Segments
- * from a session other than the primary one for this date (i.e. a nap)
- * would need session-comparison metadata this contract doesn't carry, so
- * every returned segment renders at full opacity — the API is the source
- * of truth for which segments belong to this date.
+ * Sleep-stage lane — a hypnogram-style step chart of stage segments straight
+ * from `timeline.sleepStages`, positioned by real start/end timestamps using
+ * the shared time-axis math (per requirement #6: the API already shapes the
+ * segments, the lane only needs to place them on the axis). Each stage gets
+ * its own row (awake at the top, deep at the bottom; see
+ * `SLEEP_STAGE_ROWS`), separated by hairlines and labelled in the gutter,
+ * with thin vertical risers joining back-to-back segments. Segments from a
+ * session other than the primary one for this date (i.e. a nap) would need
+ * session-comparison metadata this contract doesn't carry, so every
+ * returned segment renders at full opacity — the API is the source of truth
+ * for which segments belong to this date.
  */
 export function SleepStageLane({
   segments,
@@ -51,55 +52,89 @@ export function SleepStageLane({
       const segStart = Date.parse(segment.startAt);
       const segEnd = Date.parse(segment.endAt);
       if (segEnd <= start || segStart >= end) return [];
-      const clippedStartIso = new Date(Math.max(segStart, start)).toISOString();
+      const clippedStartMs = Math.max(segStart, start);
       const clippedEndMs = Math.min(segEnd, end);
       const leftPercent = timeToPercent(
-        clippedStartIso,
+        new Date(clippedStartMs).toISOString(),
         date,
         dayStartHour,
         timeZone,
       );
       const widthPercent = minutesToPercentWidth(
-        (clippedEndMs - Math.max(segStart, start)) / 60_000,
+        (clippedEndMs - clippedStartMs) / 60_000,
       );
       if (widthPercent <= 0) return [];
-      return [{ ...segment, leftPercent, widthPercent }];
+      return [
+        {
+          kind: segment.kind as RenderedSleepStage,
+          key: segment.startAt,
+          startMs: clippedStartMs,
+          endMs: clippedEndMs,
+          leftPercent,
+          widthPercent,
+        },
+      ];
     })
-    .sort((a, b) => a.leftPercent - b.leftPercent);
+    .sort((a, b) => a.startMs - b.startMs);
+
+  const risers = positioned.flatMap((segment, index) => {
+    const previous = positioned[index - 1];
+    if (!previous || previous.kind === segment.kind) return [];
+    if (segment.startMs - previous.endMs > CONNECT_GAP_MS) return [];
+    const centers = [previous.kind, segment.kind].map(
+      (kind) => sleepStageRowTopPx(kind) + SLEEP_STAGE_ROW_HEIGHT_PX / 2,
+    );
+    return [
+      {
+        key: `riser-${segment.key}-${index}`,
+        leftPercent: segment.leftPercent,
+        topPx: Math.min(...centers),
+        heightPx: Math.abs(centers[0]! - centers[1]!),
+      },
+    ];
+  });
 
   return (
-    <div className="border-ink-500 bg-ink-850 relative h-[30px] shrink-0 border-l">
-      {positioned.map((segment, index) => {
-        const geometry =
-          SLEEP_STAGE_GEOMETRY[
-            segment.kind as keyof typeof SLEEP_STAGE_GEOMETRY
-          ];
-        return (
-          <div
-            key={`${segment.startAt}-${index}`}
-            className="absolute"
-            style={{
-              left: `${segment.leftPercent}%`,
-              width: `${segment.widthPercent}%`,
-              top: geometry.topPx,
-              height: geometry.heightPx,
-              backgroundColor: geometry.color,
-            }}
-          />
-        );
-      })}
+    <div
+      className="border-ink-500 bg-ink-850 relative shrink-0 border-l"
+      style={{ height: SLEEP_LANE_HEIGHT_PX }}
+    >
+      {SLEEP_STAGE_ROWS.slice(1).map((kind) => (
+        <div
+          key={`row-${kind}`}
+          className="bg-ink-600 absolute inset-x-0 h-px"
+          style={{ top: sleepStageRowTopPx(kind) }}
+        />
+      ))}
+      {risers.map((riser) => (
+        <div
+          key={riser.key}
+          className="bg-ink-200 absolute w-px opacity-70"
+          style={{
+            left: `${riser.leftPercent}%`,
+            top: riser.topPx,
+            height: riser.heightPx,
+          }}
+        />
+      ))}
+      {positioned.map((segment, index) => (
+        <div
+          key={`${segment.key}-${index}`}
+          className="absolute"
+          style={{
+            left: `${segment.leftPercent}%`,
+            width: `${segment.widthPercent}%`,
+            top: sleepStageRowTopPx(segment.kind) + SLEEP_STAGE_BAR_INSET_PX,
+            height: SLEEP_STAGE_ROW_HEIGHT_PX - SLEEP_STAGE_BAR_INSET_PX * 2,
+            backgroundColor: SLEEP_STAGE_STYLE[segment.kind].color,
+          }}
+        />
+      ))}
       {positioned.length === 0 ? (
         <div className="text-ink-200 absolute inset-0 flex items-center justify-center font-mono text-[9px] tracking-[.04em]">
           No sleep recorded for this day
         </div>
       ) : null}
-      <div className="pointer-events-none absolute top-[11px] right-1.5 z-[6] flex gap-[9px] font-mono text-[7.5px] tracking-[.06em]">
-        {LEGEND_ORDER.map((kind) => (
-          <span key={kind} style={{ color: SLEEP_STAGE_GEOMETRY[kind].color }}>
-            {LEGEND_LABEL[kind]}
-          </span>
-        ))}
-      </div>
     </div>
   );
 }
