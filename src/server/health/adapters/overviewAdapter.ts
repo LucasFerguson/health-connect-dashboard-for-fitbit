@@ -17,7 +17,7 @@
  * `sleepEvents` arrive WITHOUT stage timelines (see `overviewQuery.ts` for the
  * 5.5 MB → 321 KB reasoning), so every `SleepSession` here has `stages: []`.
  * Only `SleepStagesGraph` reads stages, and only for the selected day; it gets
- * them from the sleep-stages route on demand. Anything new that renders stages
+ * them on demand through `SLEEP_STAGES_QUERY`. Anything new that renders stages
  * from this snapshot must fetch them the same way rather than assuming they are
  * present.
  */

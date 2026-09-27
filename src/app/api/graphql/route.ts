@@ -37,9 +37,10 @@ import {
 export const dynamic = "force-dynamic";
 
 /**
- * `variables` is passed through for forward-compatibility even though the
- * server currently ignores it (GRAPHQL_BACKEND_REQUESTS.md item 1) — dropping
- * it here would turn a backend fix into a frontend mystery.
+ * `variables` must be forwarded: browser operations such as the sleep-stage
+ * graph's `SleepStages($range: TimeRange!)` carry their arguments there rather
+ * than in the query text, so dropping it would fail them as "variable not
+ * provided".
  */
 const graphqlRequestShape = z.object({
   query: z.string().min(1),

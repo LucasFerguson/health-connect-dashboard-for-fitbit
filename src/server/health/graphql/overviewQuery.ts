@@ -12,8 +12,8 @@ import { OverviewPageDocument } from "~/types/__generated__/graphql";
  * calendar and every summary card actually need: only `SleepStagesGraph` reads
  * `.stages`, and only for the one selected day.
  *
- * `overviewSleepStagesQuery()` below fetches stages for a bounded date range
- * on demand, so navigating the calendar pulls one month (~128 KB) at a time.
+ * `SLEEP_STAGES_QUERY` (`sleepStagesQuery.ts`) fetches stages for the selected
+ * day on demand instead.
  *
  * The five metric series repeat their field selection instead of sharing a
  * fragment: `client-preset` masks fragment data behind `$fragmentRefs`, which
@@ -286,58 +286,6 @@ const OVERVIEW_QUERY_SOURCE = graphql(`
     }
   }
 `);
-
-/**
- * Stage timelines for a bounded range, fetched separately from the overview's
- * bulk sleep-event list (see above). One month is ~128 KB versus 5.5 MB for all
- * history, so the calendar can load stage detail as the user navigates.
- *
- * The range is interpolated into the query text rather than passed as a GraphQL
- * variable because **the server currently ignores the request's `variables`
- * field**: any operation declaring `$vars` fails with
- * `Variable "$x" of required type "T!" was not provided`, while the identical
- * query with inline arguments succeeds. Verified against a trivial
- * `day(date: $d)` query too, so it is not specific to this operation. See
- * GRAPHQL_BACKEND_REQUESTS.md — switch back to variables once it is fixed,
- * since interpolation means this operation can't be a persisted query.
- *
- * `start`/`endExclusive` are built from a validated `YYYY-MM-DD` date by the
- * only caller (`getSleepStages`), so no user input reaches the query text.
- */
-export function overviewSleepStagesQuery(
-  start: string,
-  endExclusive: string,
-): string {
-  return `
-    query OverviewSleepStages {
-      viewer {
-        analytics {
-          runId
-          sleepEvents(range: { start: "${start}", endExclusive: "${endExclusive}" }) {
-            id
-            date
-            primary {
-              id
-              stages {
-                startAt
-                endAt
-                kind
-              }
-            }
-            recordings {
-              id
-              stages {
-                startAt
-                endAt
-                kind
-              }
-            }
-          }
-        }
-      }
-    }
-  `;
-}
 
 /**
  * Re-exported from the generated module rather than using the `graphql()`
