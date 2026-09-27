@@ -96,7 +96,7 @@ export async function POST(request: Request) {
 
     if (upstream.status === 401) {
       // The cached token expired. Drop it so the next poll logs in again, the
-      // way `healthConnectClient.ts` does on a 401.
+      // way `withAnalytics` does on a 401.
       invalidateGraphQLToken();
     }
 

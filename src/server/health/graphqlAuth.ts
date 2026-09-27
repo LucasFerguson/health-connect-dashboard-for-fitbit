@@ -20,8 +20,7 @@ import { LoginError, readBodySnippet } from "./backendDiagnostics";
 /**
  * Cached across requests deliberately: the token is an account credential,
  * not per-request state, and re-logging-in on every page render would add a
- * network round trip to each one. Mirrors `healthConnectClient.ts`'s
- * module-level `tokenCache` for the same reason.
+ * network round trip to each one.
  */
 let cachedToken: string | null = null;
 
@@ -57,7 +56,7 @@ export async function fetchGraphQLToken(baseUrl: string): Promise<string> {
 }
 
 /** Clears the cached token so the next request logs in again. Call this when
- * a response comes back 401, the way `healthConnectClient.ts` does. */
+ * a response comes back 401. */
 export function invalidateGraphQLToken(): void {
   cachedToken = null;
 }

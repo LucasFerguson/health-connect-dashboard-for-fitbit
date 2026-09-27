@@ -10,7 +10,7 @@
  * Client components do NOT use this — RSC queries don't update in the browser.
  * They go through `src/app/ApolloWrapper.tsx` and the `/api/graphql` proxy.
  *
- * Auth mirrors `healthConnectClient.ts`: log in with API_USERNAME/API_PASSWORD,
+ * Auth: log in with API_USERNAME/API_PASSWORD against the REST login endpoint,
  * attach `Authorization: Bearer <token>`. HCGateway derives the user from the
  * token alone — never pass a user ID as a query argument. The token fetch and
  * endpoint derivation live in `graphqlAuth.ts` so the proxy route can reuse

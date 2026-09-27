@@ -5,7 +5,7 @@ import { useEffect } from "react";
 /**
  * Root error boundary. Catches render-time throws from every page below
  * `layout.tsx` — the GraphQL-backed pages, whose `withAnalytics` reads throw
- * rather than render empty, and the REST-backed `/day` pages — so an
+ * rather than render empty — so an
  * unreachable data source (e.g. the self-hosted API host going down or being
  * briefly unreachable) shows a readable in-app message instead of Next's
  * default crash page.

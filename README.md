@@ -21,8 +21,8 @@ aren't visible in the code:
   Start here if you are new to the repo.
 - **[GRAPHQL_BACKEND_REQUESTS.md](GRAPHQL_BACKEND_REQUESTS.md)**: open asks of
   the HCGateway backend, each verified against live responses. The ignored
-  `variables` bug at the top is why `/day` and `/api/sleep-stages` don't use
-  the normal GraphQL path.
+  `variables` bug at the top is why `/api/sleep-stages` doesn't use the
+  normal GraphQL path.
 - **[docs/health-data-model.md](docs/health-data-model.md)**: how overlapping
   recordings from several devices are grouped into sleep events without
   deleting any of them.
@@ -58,22 +58,31 @@ HCGateway GraphQL (:6645)
 - **`src/components`** renders domain data and does not know the wire format.
   `src/features/health` holds client state, selectors and formatters.
 
+### The day view and the sync heartbeat
+
+- **`/day/[date]`** runs the `DayPage` query (`day(date:)` plus
+  `days(range:)` for the ±7-day strip, both as GraphQL variables) through
+  `withAnalytics`, and `src/server/health/adapters/dayAdapter.ts` maps it onto
+  the view model in `src/domain/dayView.ts`. Every metric carries its own
+  availability `status` (`available`, `partial`, `missing`,
+  `insufficient_data`, `not_implemented`, `blocked`, plus GraphQL's
+  `unavailable` and `sample_time_only`) and the UI renders exactly that. The
+  status-to-display logic is in `src/domain/dayViewPresentation.ts`. The
+  adapter also fills gaps GraphQL leaves: it rebuilds `availabilityNotes`,
+  adds strip cells for dates `days(range:)` omits, and shows heart-rate zones
+  as unavailable because GraphQL doesn't expose the thresholds. `/day`
+  redirects to today in the account's home time zone.
+- **`/api/sync-status`** feeds the nav's sync indicator and the Docker
+  `HEALTHCHECK`. It reads `viewer.ingestion.phoneSync` through `withViewer`
+  (the non-analytics sibling of `withAnalytics`), keeps the JSON shape the old
+  REST endpoint had, and answers 502 with the diagnosis when GraphQL fails.
+
 ### Exceptions to the GraphQL path
 
-Both main exceptions exist because HCGateway's GraphQL server currently
-ignores `variables` (see [GRAPHQL_BACKEND_REQUESTS.md](GRAPHQL_BACKEND_REQUESTS.md)
-#1), so any query that needs an argument has to be assembled as a string.
+The remaining exception exists because HCGateway's GraphQL server used to
+ignore `variables` (see [GRAPHQL_BACKEND_REQUESTS.md](GRAPHQL_BACKEND_REQUESTS.md)
+#1), so a query that needed an argument had to be assembled as a string.
 
-- **`/day/[date]`** calls HCGateway's REST `GET /api/v2/analytics/day`
-  (`health-day-v1` contract), validated with Zod in
-  `src/server/health/dayAnalyticsSchema.ts`. Every field carries its own
-  availability `status` (`available`, `partial`, `missing`,
-  `insufficient_data`, `not_implemented`, `blocked`) and the UI renders exactly
-  that. The status-to-display logic is in `src/domain/dayViewPresentation.ts`.
-  `/api/sync-status`, which feeds the nav's sync indicator, uses the same REST
-  client (`GET /api/v2/sync/status`). That one takes no arguments, so it isn't
-  blocked by the bug; it simply hasn't been moved to GraphQL's `phoneSync`
-  field.
 - **`/api/sleep-stages?date=YYYY-MM-DD`** serves
   the overview's sleep-stage graph. Stage timelines are left out of the bulk
   overview query (selecting them for every sleep event made that payload
