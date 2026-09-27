@@ -103,6 +103,14 @@ export interface SleepStageSegment {
   kind: SleepStageKind;
 }
 
+/** A workout/exercise session on the timeline. */
+export interface WorkoutSpan {
+  startAt: ISODateTime;
+  endAt: ISODateTime;
+  /** Human-readable activity name, e.g. "Running". */
+  label: string;
+}
+
 export interface StepsHour {
   hour: number;
   count: number;
@@ -141,6 +149,10 @@ export interface HealthDay {
     heartRate: HeartRateTimeline;
     sleepStages: SleepStageSegment[];
     steps: StepsHour[];
+    /** Workouts overlapping this day. Optional because the GraphQL day
+     * query doesn't select `timeline.workouts` yet, so `dayAdapter.ts`
+     * doesn't fill it; absent means "unknown", not "no workouts". */
+    workouts?: WorkoutSpan[];
     schedule: StatusNote;
     targetWakeTime: StatusNote;
     targetBedTime: StatusNote;

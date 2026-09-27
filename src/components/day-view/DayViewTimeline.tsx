@@ -112,7 +112,11 @@ export function DayViewTimeline({
             <div className="pointer-events-none absolute inset-0 z-[4] bg-[rgba(12,10,17,.55)]" />
           )}
 
-          <HoverCrosshair plotRef={plotRef} dayStartHour={dayStartHour} />
+          <HoverCrosshair
+            plotRef={plotRef}
+            day={day}
+            dayStartHour={dayStartHour}
+          />
         </div>
       </div>
     </Card>
