@@ -100,6 +100,7 @@ export const REPLACED_LIST_FIELDS = {
   SleepSession: ["stages"],
   HealthspanDay: ["factors"],
   MetricDay: ["bySource"],
+  Habit: ["entries"],
 } as const;
 
 const replaceList: FieldPolicy<unknown[]> = {

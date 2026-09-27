@@ -20,6 +20,7 @@ const links = [
   { href: "/resting-heart-rate", label: "HEART" },
   { href: "/weight", label: "WEIGHT" },
   { href: "/healthspan", label: "HEALTHSPAN" },
+  { href: "/habits", label: "HABITS" },
   { href: "/explore", label: "EXPLORE" },
   { href: "/data-sources", label: "DATA SOURCES" },
 ];
