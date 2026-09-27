@@ -1,7 +1,9 @@
+import { BackendErrorPanel } from "~/components/BackendErrorPanel";
 import { notFound } from "next/navigation";
 import { DayView } from "~/components/day-view/DayView";
 import { isDateKey } from "~/domain/health";
 import { getDayAnalytics } from "~/server/health/getDayAnalytics";
+import { settle } from "~/server/health/backendDiagnostics";
 
 /**
  * No `export const dynamic = "force-dynamic"` here: the underlying
@@ -29,7 +31,8 @@ export default async function DayViewPage({
     notFound();
   }
 
-  const response = await getDayAnalytics(date, NEARBY_RADIUS);
+  const result = await settle(getDayAnalytics(date, NEARBY_RADIUS));
+  if (!result.ok) return <BackendErrorPanel diagnostics={result.diagnostics} />;
 
-  return <DayView response={response} />;
+  return <DayView response={result.data} />;
 }

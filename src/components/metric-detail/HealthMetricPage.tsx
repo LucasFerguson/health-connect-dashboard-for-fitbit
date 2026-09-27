@@ -1,3 +1,4 @@
+import { BackendErrorPanel } from "~/components/BackendErrorPanel";
 import { isDateKey } from "~/domain/health";
 import type { MetricKind } from "~/features/health/metricPresentation";
 import {
@@ -5,6 +6,7 @@ import {
   selectMetricSeries,
 } from "~/server/health/getMetricSeries";
 import { MetricDetailPage } from "./MetricDetailPage";
+import { settle } from "~/server/health/backendDiagnostics";
 
 /** Shared body of /steps, /calories, /resting-heart-rate and /weight. */
 export async function HealthMetricPage({
@@ -14,7 +16,9 @@ export async function HealthMetricPage({
   kind: MetricKind;
   selectedDate?: string;
 }) {
-  const series = await getMetricSeries();
+  const result = await settle(getMetricSeries());
+  if (!result.ok) return <BackendErrorPanel diagnostics={result.diagnostics} />;
+  const series = result.data;
 
   return (
     <MetricDetailPage

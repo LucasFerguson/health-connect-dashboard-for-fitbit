@@ -11,6 +11,11 @@ import {
   type HealthDayResponse,
   type SyncStatusResponse,
 } from "./dayAnalyticsSchema";
+import {
+  HttpStatusError,
+  LoginError,
+  readBodySnippet,
+} from "./backendDiagnostics";
 
 interface HealthConnectClientOptions {
   baseUrl: string;
@@ -29,23 +34,6 @@ const RETRY_DELAY_MS = 400;
  * token is reused across requests until the server rejects it.
  */
 const tokenCache = new Map<string, string>();
-
-/**
- * An HTTP response the server returned with a non-2xx status. Carries the
- * status code so `withRetry` can tell a transient failure (5xx, timeout)
- * apart from a request the server has definitively rejected (4xx) — retrying
- * the latter wastes time and can mask real bugs (bad date, bad payload,
- * schema drift), so it must fail fast instead.
- */
-export class HttpStatusError extends Error {
-  constructor(
-    public readonly status: number,
-    message: string,
-  ) {
-    super(message);
-    this.name = "HttpStatusError";
-  }
-}
 
 /** Thrown when a response body doesn't match its expected Zod schema. Never
  * retried — a validation failure means the contract drifted or the response
@@ -110,9 +98,15 @@ export class HealthConnectClient {
       });
       await this.handleUnauthorized(response);
       if (!response.ok) {
+        // `HttpStatusError` carries the status so `withRetry` can tell a
+        // transient 5xx apart from a definitive 4xx, plus the URL and a body
+        // snippet for the error screen.
         throw new HttpStatusError(
           response.status,
           `Health Connect ${path} returned ${response.status}`,
+          `${this.options.baseUrl}${path}`,
+          response.headers.get("content-type"),
+          await readBodySnippet(response),
         );
       }
       return (await response.json()) as unknown;
@@ -137,20 +131,27 @@ export class HealthConnectClient {
     const cached = tokenCache.get(cacheKey);
     if (cached && !forceRefresh) return cached;
 
-    const response = await fetch(`${this.options.baseUrl}/api/v2/login`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        username: this.options.username,
-        password: this.options.password,
-      }),
-      cache: "no-store",
-      signal: AbortSignal.timeout(10_000),
-    });
+    const loginUrl = `${this.options.baseUrl}/api/v2/login`;
+    let response: Response;
+    try {
+      response = await fetch(loginUrl, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          username: this.options.username,
+          password: this.options.password,
+        }),
+        cache: "no-store",
+        signal: AbortSignal.timeout(10_000),
+      });
+    } catch (cause) {
+      throw new LoginError(loginUrl, null, "", { cause });
+    }
     if (!response.ok) {
-      throw new HttpStatusError(
+      throw new LoginError(
+        loginUrl,
         response.status,
-        `Health Connect login returned ${response.status}`,
+        await readBodySnippet(response),
       );
     }
     const token = z
@@ -189,6 +190,11 @@ async function withRetry<T>(run: (attempt: number) => Promise<T>): Promise<T> {
 
 function isRetryable(error: unknown): boolean {
   if (error instanceof ResponseValidationError) return false;
+  // Wrong credentials don't become right on retry; only a login that never
+  // got an answer, or a 5xx from it, is worth another attempt.
+  if (error instanceof LoginError) {
+    return error.status === null || error.status >= 500;
+  }
   if (error instanceof HttpStatusError) {
     // 401 is retried (token refresh); other 4xx are permanent client errors.
     return error.status === 401 || error.status >= 500;

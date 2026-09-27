@@ -1,7 +1,9 @@
+import { BackendErrorPanel } from "~/components/BackendErrorPanel";
 import { Suspense } from "react";
 import { Dashboard } from "~/components/Dashboard";
 import { DashboardLoadingShell } from "~/components/dashboard/DashboardLoadingShell";
 import { getOverviewSnapshot } from "~/server/health/getOverviewSnapshot";
+import { settle } from "~/server/health/backendDiagnostics";
 
 export const dynamic = "force-dynamic";
 
@@ -20,5 +22,7 @@ export default function HomePage() {
 }
 
 async function LoadedDashboard() {
-  return <Dashboard snapshot={await getOverviewSnapshot()} />;
+  const result = await settle(getOverviewSnapshot());
+  if (!result.ok) return <BackendErrorPanel diagnostics={result.diagnostics} />;
+  return <Dashboard snapshot={result.data} />;
 }

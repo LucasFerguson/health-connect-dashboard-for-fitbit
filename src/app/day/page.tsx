@@ -1,6 +1,8 @@
+import { BackendErrorPanel } from "~/components/BackendErrorPanel";
 import { redirect } from "next/navigation";
 import { dateKeyOf } from "~/domain/dayViewTime";
 import { getDayAnalytics } from "~/server/health/getDayAnalytics";
+import { settle } from "~/server/health/backendDiagnostics";
 
 /** `/day` redirects to today's date so the date always lives in the URL,
  * per the design spec's requirement that a day be linkable and the back
@@ -33,7 +35,8 @@ function utcTodayGuess(): string {
 }
 
 export default async function DayIndexPage() {
-  const probe = await getDayAnalytics(utcTodayGuess(), 0);
-  const today = dateKeyOf(new Date().toISOString(), probe.day.timeZone);
+  const probe = await settle(getDayAnalytics(utcTodayGuess(), 0));
+  if (!probe.ok) return <BackendErrorPanel diagnostics={probe.diagnostics} />;
+  const today = dateKeyOf(new Date().toISOString(), probe.data.day.timeZone);
   redirect(`/day/${today}`);
 }

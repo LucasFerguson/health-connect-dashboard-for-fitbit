@@ -15,6 +15,7 @@
  */
 import { z } from "zod";
 import { env } from "~/env";
+import { LoginError, readBodySnippet } from "./backendDiagnostics";
 
 /**
  * Cached across requests deliberately: the token is an account credential,
@@ -26,18 +27,28 @@ let cachedToken: string | null = null;
 
 export async function fetchGraphQLToken(baseUrl: string): Promise<string> {
   if (cachedToken) return cachedToken;
-  const response = await fetch(`${baseUrl}/api/v2/login`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      username: env.API_USERNAME,
-      password: env.API_PASSWORD,
-    }),
-    cache: "no-store",
-    signal: AbortSignal.timeout(10_000),
-  });
+  const loginUrl = `${baseUrl}/api/v2/login`;
+  let response: Response;
+  try {
+    response = await fetch(loginUrl, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        username: env.API_USERNAME,
+        password: env.API_PASSWORD,
+      }),
+      cache: "no-store",
+      signal: AbortSignal.timeout(10_000),
+    });
+  } catch (cause) {
+    throw new LoginError(loginUrl, null, "", { cause });
+  }
   if (!response.ok) {
-    throw new Error(`HCGateway login returned ${response.status}`);
+    throw new LoginError(
+      loginUrl,
+      response.status,
+      await readBodySnippet(response),
+    );
   }
   cachedToken = z
     .object({ token: z.string() })
