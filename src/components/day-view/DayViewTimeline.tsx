@@ -2,7 +2,7 @@
 
 import { useRef } from "react";
 import { Card } from "~/components/ui/Card";
-import type { HealthDay } from "~/server/health/dayAnalyticsSchema";
+import type { HealthDay } from "~/domain/dayView";
 import { HeartRateLane } from "./HeartRateLane";
 import { HoverCrosshair } from "./HoverCrosshair";
 import { MovementLane } from "./MovementLane";
@@ -18,7 +18,7 @@ import { HR_RAMP } from "./timelineConstants";
  * candlesticks, sleep stages, movement, plan) share one time axis built
  * from `~/domain/dayViewTime`'s shared math, so a heart-rate bump can be
  * read straight down into "REM". Lane data comes straight from
- * `timeline.*` in the `health-day-v1` response — no local bucketing.
+ * `day.timeline.*` as the backend bucketed it — no local bucketing.
  */
 export function DayViewTimeline({
   day,

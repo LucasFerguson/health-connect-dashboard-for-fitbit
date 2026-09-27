@@ -4,7 +4,7 @@ import { SectionHeader } from "~/components/ui/SectionHeader";
 import { Track } from "~/components/ui/Track";
 import { StatValue } from "~/components/ui/StatValue";
 import { absenceReason } from "~/domain/dayViewPresentation";
-import type { MetricStatus } from "~/server/health/dayAnalyticsSchema";
+import type { MetricStatus } from "~/domain/dayView";
 
 /**
  * Shared shell for the RECOVERY and STRAIN pillar cards. Renders the

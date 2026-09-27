@@ -1,4 +1,4 @@
-import type { HealthDay } from "~/server/health/dayAnalyticsSchema";
+import type { HealthDay } from "~/domain/dayView";
 import { PlaceholderPillarCard } from "./PlaceholderPillarCard";
 import { SleepPillarCard } from "./SleepPillarCard";
 

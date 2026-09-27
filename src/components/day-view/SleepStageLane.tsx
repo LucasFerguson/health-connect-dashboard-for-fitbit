@@ -1,4 +1,4 @@
-import type { SleepStageSegment } from "~/server/health/dayAnalyticsSchema";
+import type { SleepStageSegment } from "~/domain/dayView";
 import {
   axisStartMs,
   minutesToPercentWidth,
@@ -76,7 +76,7 @@ export function SleepStageLane({
           ];
         return (
           <div
-            key={`${segment.sessionId}-${index}`}
+            key={`${segment.startAt}-${index}`}
             className="absolute"
             style={{
               left: `${segment.leftPercent}%`,

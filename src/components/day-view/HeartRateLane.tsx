@@ -5,7 +5,7 @@ import {
   buildHrCandles,
   hrRampColorForMean,
 } from "~/domain/dayViewPresentation";
-import type { HeartRateTimeline } from "~/server/health/dayAnalyticsSchema";
+import type { HeartRateTimeline } from "~/domain/dayView";
 import {
   HR_RAMP,
   HR_SCALE_MAX,

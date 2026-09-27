@@ -7,7 +7,7 @@ import { clsx } from "clsx";
 import { notchStyle } from "~/components/ui/notch";
 import { Spinner } from "~/components/ui/Spinner";
 import { describeSyncStatus } from "~/domain/dayViewPresentation";
-import type { SyncStatusResponse } from "~/server/health/dayAnalyticsSchema";
+import type { SyncStatus } from "~/domain/dayView";
 
 const links = [
   { href: "/day", label: "DAY" },
@@ -110,8 +110,8 @@ const SYNC_POLL_MS = 60_000;
  * scoped to that one route). Mirrors `HealthDataProvider`'s polling
  * pattern: skip a beat and keep the last good value on failure rather than
  * ever showing a stale value as fresh or throwing. */
-function useSyncStatus(): SyncStatusResponse | null {
-  const [status, setStatus] = useState<SyncStatusResponse | null>(null);
+function useSyncStatus(): SyncStatus | null {
+  const [status, setStatus] = useState<SyncStatus | null>(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -122,7 +122,7 @@ function useSyncStatus(): SyncStatusResponse | null {
           cache: "no-store",
         });
         if (!response.ok || cancelled) return;
-        const data = (await response.json()) as SyncStatusResponse;
+        const data = (await response.json()) as SyncStatus;
         if (!cancelled) setStatus(data);
       } catch (error) {
         console.error(

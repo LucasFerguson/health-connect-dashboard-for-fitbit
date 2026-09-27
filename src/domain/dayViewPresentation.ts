@@ -2,11 +2,12 @@ import type {
   HeartRateHour,
   MetricStatus,
   NearbyDay,
-  SyncStatusResponse,
-} from "~/server/health/dayAnalyticsSchema";
+  NumericMetricValue,
+  SyncStatus,
+} from "~/domain/dayView";
 
 /**
- * Pure presentation helpers for the `/day` view's `health-day-v1` contract.
+ * Pure presentation helpers for the `/day` view model (`~/domain/dayView`).
  * Kept dependency-free (no React, no fetching) so they're easy to unit test
  * and reuse across components — every function here maps API-shaped data to
  * a display-ready value without inventing any new copy: absence messaging
@@ -17,8 +18,9 @@ import type {
 /** True when a metric's status means "there is a real value to render".
  * `partial` still carries a real (if caveated) value — e.g. sleepNeed is
  * always `partial` by design — so it counts as displayable; everything else
- * (`missing`, `insufficient_data`, `not_implemented`, `blocked`) must never
- * be rendered as a numeric zero. */
+ * (`missing`, `insufficient_data`, `not_implemented`, `blocked`,
+ * `unavailable`, `sample_time_only`) must never be rendered as a numeric
+ * zero. */
 export function isDisplayableStatus(status: MetricStatus): boolean {
   return status === "available" || status === "partial";
 }
@@ -44,6 +46,7 @@ export function absenceReason(
     case "not_implemented":
       return "Not available.";
     case "blocked":
+    case "unavailable":
       return "Unavailable.";
     default:
       return "Not available.";
@@ -127,11 +130,18 @@ export interface DayStripCellData {
 const SLEEP_REFERENCE_MINUTES = 480;
 const STRAIN_SCALE_MAX = 21;
 
+/** A strip metric's value, or null when there's nothing honest to draw: no
+ * stored day at all, a non-displayable status, or a null value. */
+function displayableValue(metric: NumericMetricValue | null): number | null {
+  if (!metric || !isDisplayableStatus(metric.status)) return null;
+  return metric.value;
+}
+
 /**
  * Builds all 15 day-strip cells (radius=7: 7 before + selected + 7 after)
- * directly from the response's `nearbyDays` array plus the focused day,
- * rather than locally synthesizing a date range — `nearbyDays` is already
- * the authoritative 15-day window the API computed.
+ * directly from `nearbyDays`, which the adapter already filled out to the
+ * full window (including dates the backend has no stored day for), rather
+ * than synthesizing a date range here.
  */
 export function buildDayStripCells(
   nearbyDays: NearbyDay[],
@@ -140,16 +150,8 @@ export function buildDayStripCells(
   return [...nearbyDays]
     .sort((a, b) => a.date.localeCompare(b.date))
     .map((day) => {
-      const sleepValue =
-        typeof day.sleepDuration.value === "number" &&
-        isDisplayableStatus(day.sleepDuration.status)
-          ? day.sleepDuration.value
-          : null;
-      const strainValue =
-        typeof day.strain.value === "number" &&
-        isDisplayableStatus(day.strain.status)
-          ? day.strain.value
-          : null;
+      const sleepValue = displayableValue(day.sleepDuration);
+      const strainValue = displayableValue(day.strain);
       return {
         date: day.date,
         isFuture: day.dayState === "future",
@@ -195,14 +197,14 @@ export function formatRelativeTime(iso: string, now: Date): string {
   return `${days}d ago`;
 }
 
-/** Maps a `SyncStatusResponse` to the small mono chrome label + detail text
+/** Maps a `SyncStatus` to the small mono chrome label + detail text
  * shown in the menu bar. Labels are our own short chrome vocabulary (not
  * API `note` text) since requirement #4 only requires surfacing API notes
  * for *metric* unavailability explanations, not for this ambient status
  * indicator — but the underlying state enum and timestamp are always read
  * straight from the response. */
 export function describeSyncStatus(
-  status: SyncStatusResponse,
+  status: SyncStatus,
   now: Date,
 ): SyncStatusDisplay {
   const detail = status.lastUploadAt

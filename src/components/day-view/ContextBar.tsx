@@ -7,7 +7,7 @@ import { Chip } from "~/components/ui/Chip";
 import { IconButton } from "~/components/ui/IconButton";
 import { Menu } from "~/components/ui/Menu";
 import { Spinner } from "~/components/ui/Spinner";
-import type { DayState } from "~/server/health/dayAnalyticsSchema";
+import type { DayState } from "~/domain/dayView";
 
 function shiftDate(date: string, days: number): string {
   const instant = Date.parse(`${date}T00:00:00Z`);

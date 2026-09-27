@@ -1,4 +1,4 @@
-import type { HealthDayResponse } from "~/server/health/dayAnalyticsSchema";
+import type { DayViewData } from "~/domain/dayView";
 import {
   buildDayStripCells,
   isDisplayableStatus,
@@ -15,8 +15,8 @@ const DAY_START_HOUR = 0;
 
 /**
  * The DAY view screen: composes the context bar, day strip, pillar row,
- * 24-hour timeline, and panel row from the `health-day-v1` contract
- * (`HealthDayResponse`). The top-level nav (with the sync indicator) is
+ * 24-hour timeline, and panel row from the day view model (`DayViewData`,
+ * built from GraphQL by `server/health/adapters/dayAdapter.ts`). The top-level nav (with the sync indicator) is
  * `AppNavigation` in the root layout, shared across every page — this used
  * to carry its own second nav bar (`MenuBar`) but that duplicated the same
  * links in a different taxonomy, so it was folded into the one app-wide
@@ -26,8 +26,8 @@ const DAY_START_HOUR = 0;
  * explanatory string for an unavailable metric comes from the API's own
  * `note`/`availabilityNotes`, never a hardcoded frontend string.
  */
-export function DayView({ response }: { response: HealthDayResponse }) {
-  const { day, nearbyDays } = response;
+export function DayView({ data }: { data: DayViewData }) {
+  const { day, nearbyDays } = data;
   const { date, timeZone, dayState } = day;
 
   const isToday =
@@ -74,15 +74,15 @@ export function DayView({ response }: { response: HealthDayResponse }) {
 }
 
 /**
- * "Is this the open/current day" is derived from the response itself
- * (never recomputed from the browser/server clock, per requirement #2):
- * the newest date among the fetched days that isn't in the future is the
- * open day. This matches the server-side cache's own `isProbablyOpen`
- * high-water-mark heuristic in `dayAnalyticsCache.ts`, applied here purely
- * for display (e.g. whether to show the NOW line) rather than for caching.
+ * "Is this the open/current day" is derived from the strip's `dayState`s
+ * (never recomputed from the browser clock, per requirement #2): the newest
+ * date among the fetched days that isn't in the future is the open day.
+ * Those `dayState`s were fixed server-side against "today" in the account's
+ * home time zone (by the backend, or by `dayAdapter.ts` for dates the backend
+ * has no stored day for), so the browser's own zone never enters into it.
  */
 function newestRecordedDate(
-  nearbyDays: HealthDayResponse["nearbyDays"],
+  nearbyDays: DayViewData["nearbyDays"],
   focusedDate: string,
 ): string {
   let newest = focusedDate;

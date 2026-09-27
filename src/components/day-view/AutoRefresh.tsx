@@ -5,13 +5,12 @@ import { useRouter } from "next/navigation";
 
 /**
  * Refreshes the current route (re-running the server component, which
- * re-fetches through `getDayAnalytics()`) on an interval — but only while
+ * re-fetches through `getDayView()`) on an interval — but only while
  * `active` is true. The page passes `active={dayState !== "future"}` for
  * the day nearest "today" among the fetched days (see `DayView`'s
- * `newestRecordedDate`), matching step 1's own open/closed cache-tier
- * split (`dayAnalyticsCache.ts`'s `OPEN_DAY_TTL_MS` = 30s): a closed
- * historical day never mounts this poll, relying entirely on the
- * long-TTL server cache instead (requirement #13).
+ * `newestRecordedDate`): only the open day can gain new data as the phone
+ * uploads, so a closed historical day never mounts this poll
+ * (requirement #13).
  */
 export function AutoRefresh({
   active,

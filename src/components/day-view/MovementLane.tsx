@@ -1,4 +1,4 @@
-import type { StepsHour } from "~/server/health/dayAnalyticsSchema";
+import type { StepsHour } from "~/domain/dayView";
 import { formatSteps } from "~/features/health/metricFormatters";
 import { hourLabelForSlot } from "~/domain/dayViewTime";
 

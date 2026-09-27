@@ -6,7 +6,7 @@ import {
   absenceReason,
   isDisplayableStatus,
 } from "~/domain/dayViewPresentation";
-import type { HealthDay } from "~/server/health/dayAnalyticsSchema";
+import type { HealthDay } from "~/domain/dayView";
 
 const ZONE_COLORS = [
   "var(--color-sleep)",
@@ -24,39 +24,50 @@ const ZONE_COLORS = [
  * when calibrated and the one real minutes figure this account has, and
  * otherwise the placeholder/absent state using the API's own note
  * (requirement #10) — never the old hardcoded "Z5 175+"-style boundaries.
+ *
+ * Today the absent state is the only one GraphQL can reach: it reports
+ * whether zones are calibrated but not the thresholds themselves (see
+ * `ZONE_THRESHOLDS_NOT_EXPOSED_NOTE` in `dayAdapter.ts`). When they ARE
+ * calibrated the zone 3+ minutes are still real, so the footer keeps
+ * showing them rather than claiming nothing is configured.
  */
 function TimeInZonePanel({ day }: { day: HealthDay }) {
   const { heartRateZones, supportingMetrics } = day;
-  const zonesAvailable =
+  const thresholds =
     isDisplayableStatus(heartRateZones.status) &&
-    Array.isArray(heartRateZones.value) &&
-    heartRateZones.value.length > 0;
-
-  if (!zonesAvailable) {
-    return (
-      <Card className="flex flex-col">
-        <SectionHeader title="TIME IN ZONE" right="SO FAR TODAY" />
-        <EmptyState
-          message={absenceReason(heartRateZones.status, heartRateZones.note)}
-        />
-        <SectionFooter bordered>NO ZONE THRESHOLDS CONFIGURED</SectionFooter>
-      </Card>
-    );
-  }
-
-  const thresholds = heartRateZones.value!;
-  const zoneRows = thresholds
-    .map((threshold, index) => ({
-      label: `Z${index + 1} ${Math.round(threshold)}+`,
-      color: ZONE_COLORS[index % ZONE_COLORS.length]!,
-    }))
-    .reverse();
+    heartRateZones.thresholds !== null &&
+    heartRateZones.thresholds.length > 0
+      ? heartRateZones.thresholds
+      : null;
 
   const zone3Plus = supportingMetrics.zone3AndAbove;
   const zone3PlusDisplay =
     isDisplayableStatus(zone3Plus.status) && typeof zone3Plus.value === "number"
       ? `${Math.round(zone3Plus.value)} MIN`
       : "—";
+
+  if (!thresholds) {
+    return (
+      <Card className="flex flex-col">
+        <SectionHeader title="TIME IN ZONE" right="SO FAR TODAY" />
+        <EmptyState
+          message={absenceReason(heartRateZones.status, heartRateZones.note)}
+        />
+        <SectionFooter bordered>
+          {heartRateZones.calibrated
+            ? `ZONE 3+ TODAY: ${zone3PlusDisplay}`
+            : "NO ZONE THRESHOLDS CONFIGURED"}
+        </SectionFooter>
+      </Card>
+    );
+  }
+
+  const zoneRows = thresholds
+    .map((threshold, index) => ({
+      label: `Z${index + 1} ${Math.round(threshold)}+`,
+      color: ZONE_COLORS[index % ZONE_COLORS.length]!,
+    }))
+    .reverse();
 
   return (
     <Card className="flex flex-col">

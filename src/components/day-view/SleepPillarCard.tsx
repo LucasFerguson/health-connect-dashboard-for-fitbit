@@ -8,10 +8,7 @@ import {
   absenceReason,
   isDisplayableStatus,
 } from "~/domain/dayViewPresentation";
-import type {
-  SleepDurationMetric,
-  SleepNeedMetric,
-} from "~/server/health/dayAnalyticsSchema";
+import type { NumericMetric, SleepDurationMetric } from "~/domain/dayView";
 
 function formatHm(minutes: number): string {
   const sign = minutes < 0 ? "-" : "";
@@ -32,7 +29,7 @@ export function SleepPillarCard({
   timeZone,
 }: {
   sleepDuration: SleepDurationMetric;
-  sleepNeed: SleepNeedMetric;
+  sleepNeed: NumericMetric;
   timeZone: string;
 }) {
   if (

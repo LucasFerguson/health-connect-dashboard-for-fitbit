@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { BackendRequestError } from "~/server/health/backendDiagnostics";
-import { getSyncStatus } from "~/server/health/getDayAnalytics";
+import { getSyncStatus } from "~/server/health/getSyncStatus";
 
 export const dynamic = "force-dynamic";
 

@@ -1,10 +1,6 @@
 import assert from "node:assert/strict";
 import { describe, it } from "node:test";
-import type {
-  HeartRateHour,
-  NearbyDay,
-  SyncStatusResponse,
-} from "~/server/health/dayAnalyticsSchema";
+import type { HeartRateHour, NearbyDay, SyncStatus } from "~/domain/dayView";
 import {
   absenceReason,
   buildDayStripCells,
@@ -26,6 +22,8 @@ void describe("isDisplayableStatus", () => {
     assert.equal(isDisplayableStatus("insufficient_data"), false);
     assert.equal(isDisplayableStatus("not_implemented"), false);
     assert.equal(isDisplayableStatus("blocked"), false);
+    assert.equal(isDisplayableStatus("unavailable"), false);
+    assert.equal(isDisplayableStatus("sample_time_only"), false);
   });
 });
 
@@ -136,33 +134,13 @@ function nearbyDay(
   return {
     date,
     dayState: "recorded",
-    recovery: {
-      status: "not_implemented",
-      value: null,
-      unit: null,
-      source: null,
-      qualityFlags: [],
-    },
     sleepDuration: {
       status: "missing",
       value: null,
-      unit: "minutes",
-      source: null,
-      qualityFlags: [],
-    },
-    sleepNeed: {
-      status: "missing",
-      value: null,
-      unit: "percent",
-      source: null,
-      qualityFlags: [],
     },
     strain: {
       status: "missing",
       value: null,
-      unit: "score_0_21",
-      source: null,
-      qualityFlags: [],
     },
     ...overrides,
   };
@@ -196,16 +174,10 @@ void describe("buildDayStripCells", () => {
         sleepDuration: {
           status: "available",
           value: 240,
-          unit: "minutes",
-          source: "whoop",
-          qualityFlags: [],
         },
         strain: {
           status: "available",
           value: 10.5,
-          unit: "score_0_21",
-          source: "engine",
-          qualityFlags: [],
         },
       }),
       nearbyDay("2026-08-16", { dayState: "future" }),
@@ -225,22 +197,25 @@ void describe("buildDayStripCells", () => {
     assert.equal(future.strainFraction, null);
   });
 
+  void it("draws no bars for a date the backend has no stored day for", () => {
+    const cells = buildDayStripCells(
+      [nearbyDay("2026-08-14", { sleepDuration: null, strain: null })],
+      "2026-08-15",
+    );
+    assert.equal(cells[0]?.sleepFraction, null);
+    assert.equal(cells[0]?.strainFraction, null);
+  });
+
   void it("clamps fractions to a max of 1", () => {
     const days = [
       nearbyDay("2026-08-14", {
         sleepDuration: {
           status: "available",
           value: 900,
-          unit: "minutes",
-          source: "whoop",
-          qualityFlags: [],
         },
         strain: {
           status: "partial",
           value: 30,
-          unit: "score_0_21",
-          source: "engine",
-          qualityFlags: [],
         },
       }),
     ];
@@ -250,9 +225,7 @@ void describe("buildDayStripCells", () => {
   });
 });
 
-function syncStatus(
-  overrides: Partial<SyncStatusResponse>,
-): SyncStatusResponse {
+function syncStatus(overrides: Partial<SyncStatus>): SyncStatus {
   return {
     observedActive: false,
     state: "never_observed",

@@ -18,8 +18,8 @@ function dayLabelFor(date: string): string {
 
 /**
  * Band 3 — the ±7-day scrubbable strip (radius=7: 15 cells total). Built
- * directly from the response's `nearbyDays` array (via
- * `buildDayStripCells`) rather than synthesizing a local date range. Bars
+ * directly from the view model's `nearbyDays` (via `buildDayStripCells`),
+ * which the adapter already filled out to the full window. Bars
  * show real sleep-duration and strain fractions when the underlying
  * metric's status is displayable; recovery has no per-day strip bar since
  * that pillar has no numeric value to show (see the pillar cards' own

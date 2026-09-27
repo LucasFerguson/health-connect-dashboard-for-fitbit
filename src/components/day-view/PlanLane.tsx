@@ -1,5 +1,5 @@
 import { absenceReason } from "~/domain/dayViewPresentation";
-import type { StringMetric } from "~/server/health/dayAnalyticsSchema";
+import type { StatusNote } from "~/domain/dayView";
 
 /**
  * Plan lane (46px) — `timeline.schedule` has no schedule-block source
@@ -7,7 +7,7 @@ import type { StringMetric } from "~/server/health/dayAnalyticsSchema";
  * renders the honest empty lane using the API's own note (requirement #4)
  * rather than a hand-authored explanation.
  */
-export function PlanLane({ schedule }: { schedule: StringMetric }) {
+export function PlanLane({ schedule }: { schedule: StatusNote }) {
   return (
     <div className="border-ink-500 bg-ink-850 relative mt-2 flex h-[46px] shrink-0 items-center justify-center border-l">
       <span className="text-ink-200 px-4 text-center font-mono text-[9px] tracking-[.04em]">

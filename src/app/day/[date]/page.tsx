@@ -2,25 +2,17 @@ import { BackendErrorPanel } from "~/components/BackendErrorPanel";
 import { notFound } from "next/navigation";
 import { DayView } from "~/components/day-view/DayView";
 import { isDateKey } from "~/domain/health";
-import { getDayAnalytics } from "~/server/health/getDayAnalytics";
+import { getDayView } from "~/server/health/getDayView";
 import { settle } from "~/server/health/backendDiagnostics";
 
 /**
- * No `export const dynamic = "force-dynamic"` here: the underlying
- * `HealthConnectClient` requests are already `cache: "no-store"`, and
- * `getDayAnalytics()` layers its own two-tier in-memory cache on top
- * (`dayAnalyticsCache.ts`) — a short 30s TTL for an open/still-arriving
- * day, a long 6h TTL for a closed historical day. Forcing the whole route
- * dynamic would just duplicate that opt-out without changing behavior, so
- * this route is left to Next's default dynamic rendering for a param'd
- * segment with no `generateStaticParams`. The client-side `AutoRefresh`
+ * No `export const dynamic = "force-dynamic"` here: the RSC Apollo client's
+ * transport is `cache: "no-store"` (see `graphqlClient.ts`), which already
+ * makes this param'd route render per request, so forcing it would duplicate
+ * that opt-out without changing behavior. The client-side `AutoRefresh`
  * component picks up newly-synced data for the open day by re-running this
- * server component on an interval (requirement #13); closed days rely
- * purely on the server-side cache's long TTL.
+ * server component on an interval (requirement #13).
  */
-
-const NEARBY_RADIUS = 7;
-
 export default async function DayViewPage({
   params,
 }: {
@@ -31,8 +23,8 @@ export default async function DayViewPage({
     notFound();
   }
 
-  const result = await settle(getDayAnalytics(date, NEARBY_RADIUS));
+  const result = await settle(getDayView(date));
   if (!result.ok) return <BackendErrorPanel diagnostics={result.diagnostics} />;
 
-  return <DayView response={result.data} />;
+  return <DayView data={result.data} />;
 }
