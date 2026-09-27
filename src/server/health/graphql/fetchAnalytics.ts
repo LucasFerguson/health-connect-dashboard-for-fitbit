@@ -8,7 +8,7 @@
  * this to render an empty page; empty reads as "no health data", not
  * "backend down".
  *
- * This is the React-Server-Component path: it uses `query()` from
+ * This is the React-Server-Component path: it uses `getClient()` from
  * `registerApolloClient`, which scopes the client and its cache to one
  * request. Client components that need reactivity (polling, refetch) must go
  * through `ApolloNextAppProvider` and the `useQuery`/`useSuspenseQuery` hooks
@@ -30,7 +30,11 @@ import {
   type RequestContext,
 } from "../backendDiagnostics";
 import { graphqlEndpoint, invalidateGraphQLToken } from "../graphqlAuth";
-import { query } from "../graphqlClient";
+import { getClient } from "../graphqlClient";
+
+interface ViewerQueryResult {
+  viewer: unknown;
+}
 
 interface AnalyticsQueryResult {
   viewer: { analytics: unknown };
@@ -46,7 +50,7 @@ interface AnalyticsQueryResult {
  * @param label short loader name used in the report, e.g. "sleep-debt"
  * @param variables the operation's variables, when it declares any
  */
-export async function withAnalytics<
+export function withAnalytics<
   TResult extends AnalyticsQueryResult,
   T,
   TVariables extends Record<string, unknown> = Record<string, never>,
@@ -54,6 +58,29 @@ export async function withAnalytics<
   label: string,
   document: TypedDocumentNode<TResult, TVariables>,
   select: (analytics: TResult["viewer"]["analytics"]) => T,
+  variables?: TVariables,
+): Promise<T> {
+  return withViewer(
+    label,
+    document,
+    (viewer) => select(viewer.analytics),
+    variables,
+  );
+}
+
+/**
+ * `withAnalytics` for operations rooted elsewhere under `viewer` (e.g.
+ * `viewer.ingestion` for the sync heartbeat), with identical error handling.
+ * `withAnalytics` is a thin wrapper over this, so the two can't drift apart.
+ */
+export async function withViewer<
+  TResult extends ViewerQueryResult,
+  T,
+  TVariables extends Record<string, unknown> = Record<string, never>,
+>(
+  label: string,
+  document: TypedDocumentNode<TResult, TVariables>,
+  select: (viewer: TResult["viewer"]) => T,
   variables?: TVariables,
 ): Promise<T> {
   const config = configSnapshot(env);
@@ -74,15 +101,21 @@ export async function withAnalytics<
     // Apollo's `VariablesOption` makes `variables` required or forbidden
     // depending on the concrete operation, which a generic wrapper can't
     // prove. Callers are still checked: `variables` is typed `TVariables`.
+    //
+    // `getClient().query` rather than the `query` shortcut: the shortcut logs
+    // a warning on every call outside a React render, which is where
+    // `/api/sync-status` (a route handler) runs. Inside a render the two are
+    // the same request-scoped client.
+    const client = getClient();
     const options = { query: document, variables } as Parameters<
-      typeof query<TResult, TVariables>
+      typeof client.query<TResult, TVariables>
     >[0];
-    const { data } = await query<TResult, TVariables>(options);
+    const { data } = await client.query<TResult, TVariables>(options);
     // Apollo types `data` as possibly undefined: a query can resolve carrying
     // only errors.
     if (!data) throw new EmptyResponseError();
     try {
-      return select(data.viewer.analytics);
+      return select(data.viewer);
     } catch (error) {
       throw new FrontendMappingError(error);
     }
