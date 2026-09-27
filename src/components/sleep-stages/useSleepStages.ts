@@ -1,10 +1,17 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import type { SleepStage } from "~/domain/health";
+import { useEffect, useMemo } from "react";
+import { skipToken, useQuery } from "@apollo/client/react";
+import { isDateKey, type SleepStage } from "~/domain/health";
+import {
+  adaptSleepStages,
+  sleepStagesRange,
+} from "~/server/health/adapters/sleepStagesAdapter";
+import { SLEEP_STAGES_QUERY } from "~/server/health/graphql/sleepStagesQuery";
 
 /**
- * Loads stage timelines for one date from `/api/sleep-stages`.
+ * Loads stage timelines for one date through the client Apollo Client, which
+ * posts to the same-origin `/api/graphql` proxy with `$range` as a variable.
  *
  * The overview's snapshot omits stages because fetching them for all history
  * costs 5.5 MB versus 321 KB without (see `server/health/graphql/overviewQuery.ts`),
@@ -13,73 +20,51 @@ import type { SleepStage } from "~/domain/health";
  * `stagesByRecordingId` is `null` until a response arrives, which the caller
  * uses to tell "still loading" apart from "this day has no stages" — the
  * distinction that keeps an unavailable fetch from rendering as real absence.
+ * A failed request sets `unavailable` and leaves the map `null`; it never
+ * becomes `{}`, which would draw an empty chart that reads as "no stages".
  */
 export function useSleepStages(date: string | null): {
   stagesByRecordingId: Record<string, SleepStage[]> | null;
   unavailable: boolean;
 } {
-  const [state, setState] = useState<{
-    date: string | null;
-    stages: Record<string, SleepStage[]> | null;
-    unavailable: boolean;
-  }>({ date: null, stages: null, unavailable: false });
+  // A date that isn't `YYYY-MM-DD` can't form a valid range. It can only come
+  // from a malformed snapshot, so report it as unavailable rather than asking
+  // the backend for a range it would reject.
+  const validDate = isDateKey(date) ? date : null;
+
+  const { data, error } = useQuery(
+    SLEEP_STAGES_QUERY,
+    validDate
+      ? {
+          variables: { range: sleepStagesRange(validDate) },
+          // Bypasses the normalized cache entirely, for two reasons. Today's
+          // stages grow as the phone syncs, so a cached day would go stale
+          // with no poll to refresh it. And this result shares the unkeyed
+          // `viewer` root with the overview poll's much larger entry; keeping
+          // it out of the cache means a stage fetch can never replace or
+          // invalidate that entry and trigger a 321 KB refetch.
+          fetchPolicy: "no-cache",
+        }
+      : skipToken,
+  );
 
   useEffect(() => {
-    if (!date) {
-      setState({ date: null, stages: {}, unavailable: false });
-      return;
-    }
+    if (!error) return;
+    console.error("Unable to load sleep stages", error.message);
+  }, [error]);
 
-    // Guards against a slower earlier request overwriting a newer date's
-    // result when the user clicks through the calendar quickly.
-    const controller = new AbortController();
-    let active = true;
+  // Apollo drops `data` when the variables change, so a slow response for an
+  // earlier date can't overwrite a newer one, and the graph shows its loading
+  // state rather than the previous day's chart while the new date loads.
+  const stagesByRecordingId = useMemo(
+    () => (data ? adaptSleepStages(data) : null),
+    [data],
+  );
 
-    const load = async () => {
-      try {
-        const response = await fetch(
-          `/api/sleep-stages?date=${encodeURIComponent(date)}`,
-          { cache: "no-store", signal: controller.signal },
-        );
-        if (!response.ok) throw new Error(`Status ${response.status}`);
-        const body = (await response.json()) as {
-          events?: {
-            recordings: { id: string; stages: SleepStage[] }[];
-          }[];
-        };
-        if (!active) return;
-        const stages: Record<string, SleepStage[]> = {};
-        for (const event of body.events ?? []) {
-          for (const recording of event.recordings) {
-            stages[recording.id] = recording.stages;
-          }
-        }
-        setState({ date, stages, unavailable: false });
-      } catch (error) {
-        if (!active || controller.signal.aborted) return;
-        console.error(
-          "Unable to load sleep stages",
-          error instanceof Error ? error.message : String(error),
-        );
-        setState({ date, stages: null, unavailable: true });
-      }
-    };
-
-    setState((previous) =>
-      previous.date === date
-        ? previous
-        : { date: null, stages: null, unavailable: false },
-    );
-    void load();
-
-    return () => {
-      active = false;
-      controller.abort();
-    };
-  }, [date]);
-
+  if (date === null) return { stagesByRecordingId: {}, unavailable: false };
+  if (!validDate) return { stagesByRecordingId: null, unavailable: true };
   return {
-    stagesByRecordingId: state.date === date ? state.stages : null,
-    unavailable: state.date === date && state.unavailable,
+    stagesByRecordingId: error ? null : stagesByRecordingId,
+    unavailable: Boolean(error),
   };
 }
