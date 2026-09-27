@@ -36,7 +36,7 @@ USER node
 EXPOSE 3000
 
 # Next has no dedicated health endpoint; `/api/sync-status` is the cheapest
-# real route (small JSON, no pipeline run) that proves the server is serving.
+# real route (small JSON) that proves the server is serving.
 HEALTHCHECK --interval=30s --timeout=5s --start-period=20s --retries=3 \
   CMD node -e "fetch('http://127.0.0.1:3000/api/sync-status').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"
 

@@ -22,7 +22,12 @@ cd "$(dirname "$0")/.."
 IMAGE=health-connect-dashboard
 PROD_CONTAINER=health-connect-dashboard
 DEV_CONTAINER=health-connect-dashboard-dev
+# Compose reads port overrides from `.env`; read the same ones so the health
+# checks probe the port that was actually published.
+env_value() { [[ -f .env ]] && sed -n "s/^$1=[\"']\{0,1\}\([^\"']*\).*/\1/p" .env | tail -1; }
+PROD_PORT=${PROD_PORT:-$(env_value PROD_PORT)}
 PROD_PORT=${PROD_PORT:-3000}
+DEV_PORT=${DEV_PORT:-$(env_value DEV_PORT)}
 DEV_PORT=${DEV_PORT:-3001}
 # The dev server's first request compiles routes cold (~20-30s), plus `npm ci`
 # on a fresh volume, so it gets a longer budget than prod.
@@ -70,7 +75,7 @@ wait_dev() {
   log "waiting for dev server on :$DEV_PORT (timeout ${DEV_TIMEOUT}s; first compile is slow)"
   local deadline=$((SECONDS + DEV_TIMEOUT))
   while ((SECONDS < deadline)); do
-    if curl -fsS -o /dev/null --max-time 60 "http://localhost:$DEV_PORT/api/sync-status"; then
+    if curl -fs -o /dev/null --max-time 60 "http://localhost:$DEV_PORT/api/sync-status"; then
       log "dev ready on http://localhost:$DEV_PORT"
       return 0
     fi

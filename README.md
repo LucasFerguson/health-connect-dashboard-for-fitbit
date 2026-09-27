@@ -1,140 +1,189 @@
 # Health Dashboard
 
-A self-hosted dashboard for health metrics collected from phones and wearables. It provides daily and long-term views of sleep, steps, calories, resting heart rate, and weight. When API credentials are absent, the app intentionally uses its bundled demo dataset.
+A self-hosted dashboard for health metrics collected from phones and wearables:
+daily and long-term views of sleep, sleep debt and consistency, steps,
+calories, resting heart rate, weight, and an experimental healthspan model.
+
+The dashboard computes nothing itself. All analytics are prepared by
+HCGateway, a sibling self-hosted project that stores Health Connect data and
+serves analytics over REST and GraphQL, and this app renders them. It needs a reachable HCGateway and valid
+credentials to show anything; there is no demo or offline mode. If the backend
+is missing or down, pages render the root error boundary ("Couldn't load
+health data").
 
 ## Project documents
 
-Read these before making changes — they carry decisions and open issues that
+Read these before making changes. They carry decisions and open issues that
 aren't visible in the code:
 
-- **[JOURNAL.md](JOURNAL.md)** — why the project exists and how it got here,
+- **[JOURNAL.md](JOURNAL.md)**: why the project exists and how it got here,
   including the reasoning (and the mistakes) behind the GraphQL migration.
   Start here if you are new to the repo.
-- **[GRAPHQL_BACKEND_REQUESTS.md](GRAPHQL_BACKEND_REQUESTS.md)** — open asks of
+- **[GRAPHQL_BACKEND_REQUESTS.md](GRAPHQL_BACKEND_REQUESTS.md)**: open asks of
   the HCGateway backend, each verified against live responses. The ignored
-  `variables` bug at the top blocks real cleanup here.
-- **[GRAPHQL_MIGRATION_REDUNDANCY.md](GRAPHQL_MIGRATION_REDUNDANCY.md)** — what
-  becomes deletable as the migration finishes, with verified dependency
-  directions and a sequencing warning.
-- **[CLEAN_CODE_REPORT.md](CLEAN_CODE_REPORT.md)** — an August 2026 assessment.
-  **Partly stale**; read its status banner first.
+  `variables` bug at the top is why `/day` and `/api/sleep-stages` don't use
+  the normal GraphQL path.
+- **[docs/health-data-model.md](docs/health-data-model.md)**: how overlapping
+  recordings from several devices are grouped into sleep events without
+  deleting any of them.
+- **[docs/strain-model.md](docs/strain-model.md)**: the proposed separation of
+  physical, non-activity physiological, and mental strain. The day view's
+  strain card is a placeholder until the backend implements it.
+- **[Health Dashboard Desktop Mockups/](Health%20Dashboard%20Desktop%20Mockups/design_handoff_day_view/README.md)**:
+  the design handoff the day view was built from.
 
-## Architecture and data flow
-
-**The app currently has two data paths, mid-migration.** Most pages still use the original local-pipeline flow described below. The day view (`/day/[date]`) has moved to a different, simpler path: it calls a prepared analytics API exposed by the backend (HCGateway, a sibling project) and does no local computation of its own. The plan is to migrate the rest of the app to the same prepared-API approach so the TypeScript pipeline in this repo and the backend's own analytics implementation can't drift from each other; until that happens, both paths are real and in active use.
-
-### Legacy path (most pages today)
+## Architecture
 
 ```text
-Health Connect API -> repository/DTO validation -> domain model
-    -> server snapshot -> client provider -> selectors -> UI widgets
-                       <- user actions ---------|
+HCGateway GraphQL (:6645)
+  -> withAnalytics(query)            server-side Apollo query, bearer token attached
+  -> adapter / select function       GraphQL result -> domain types, drops rows it can't trust
+  -> React Server Component page     renders the initial data
+  -> client components               poll through /api/graphql for updates
 ```
 
-- `src/domain` contains provider-independent health models and calculations.
-- `src/server/health` owns external I/O. Repositories translate and validate external payloads with Zod.
-- `src/features/health` owns client state, user actions, and derived selectors.
-- `src/components` renders domain data and dispatches actions; it does not know the backend response format.
+- **Pages are Server Components.** Each route calls a `get*` function in
+  `src/server/health/`, which runs its query through `withAnalytics`
+  (`src/server/health/graphql/fetchAnalytics.ts`) and maps the result onto the
+  domain types in `src/domain/`. The larger mappings live in
+  `src/server/health/adapters/`. Adapters never invent a value: a row missing a
+  required field is dropped rather than rendered as `0`.
+- **The browser never holds a credential.** Client components that refresh
+  (the overview polls every 60 seconds with Apollo `useQuery`'s
+  `pollInterval`, see `src/features/health/HealthDataProvider.tsx`) talk to the
+  same-origin `/api/graphql` route. That route runs server-side, exchanges
+  `API_USERNAME`/`API_PASSWORD` for a bearer token at
+  `POST $API_URL/api/v2/login`, and forwards only `query`, `variables` and
+  `operationName` upstream.
+- **`src/components`** renders domain data and does not know the wire format.
+  `src/features/health` holds client state, selectors and formatters.
 
-The server renders the initial snapshot, and the client refreshes it every 60 seconds with Apollo Client (`useQuery`'s `pollInterval`) through the same-origin `/api/graphql` proxy — the proxy attaches the HCGateway bearer token server-side, so the browser never holds a credential. A refreshed snapshot follows the same reducer and selector path as the initial data, so widgets update without bespoke synchronization code.
+### Exceptions to the GraphQL path
 
-New data sources should implement `HealthRepository`. New metrics should first be added to `HealthSnapshot`, then mapped at the repository boundary, exposed through a selector, and finally rendered by a component. This keeps backend changes from spreading through the UI.
+Both main exceptions exist because HCGateway's GraphQL server currently
+ignores `variables` (see [GRAPHQL_BACKEND_REQUESTS.md](GRAPHQL_BACKEND_REQUESTS.md)
+#1), so any query that needs an argument has to be assembled as a string.
 
-`HEALTH_HOME_TIME_ZONE`, `SLEEP_TARGET_MINUTES`, and `HEALTH_BIRTH_DATE` (below) only affect this legacy path's own analytics pipeline. They have no effect on the day view.
+- **`/day/[date]`** calls HCGateway's REST `GET /api/v2/analytics/day`
+  (`health-day-v1` contract), validated with Zod in
+  `src/server/health/dayAnalyticsSchema.ts`. Every field carries its own
+  availability `status` (`available`, `partial`, `missing`,
+  `insufficient_data`, `not_implemented`, `blocked`) and the UI renders exactly
+  that. The status-to-display logic is in `src/domain/dayViewPresentation.ts`.
+  `/api/sync-status`, which feeds the nav's sync indicator, uses the same REST
+  client (`GET /api/v2/sync/status`). That one takes no arguments, so it isn't
+  blocked by the bug; it simply hasn't been moved to GraphQL's `phoneSync`
+  field.
+- **`/api/sleep-stages?date=YYYY-MM-DD`** serves
+  the overview's sleep-stage graph. Stage timelines are left out of the bulk
+  overview query (selecting them for every sleep event made that payload
+  5.5 MB instead of 321 KB), so the graph fetches one day at a time. The route
+  does query GraphQL, server-side, with the date interpolated into the query
+  text; because that query is a runtime string, codegen can't see it and
+  `getSleepStages.ts` hand-writes its result type. Once `variables` work, this
+  route can be replaced by a normal `useQuery` through `/api/graphql`.
 
-The non-destructive reconciliation of observations from multiple devices is documented in [Health data model](docs/health-data-model.md).
+### Configuration that lives in HCGateway
 
-The independently runnable analytics subsystem behind this path is documented in [Health analytics pipeline](pipeline/README.md).
+Home time zone, sleep target, birth date, and heart-rate-zone thresholds are
+not set in this repo. They are part of HCGateway's analytics config
+(`PUT /api/v2/analytics/config` on the REST API) and apply to every page.
 
-The proposed separation of physical, non-activity physiological, and mental strain is documented in [Strain model](docs/strain-model.md).
+## GraphQL types (codegen)
 
-### New path (`/day/[date]` only, for now)
+Queries are written inline with the generated `graphql()` function and typed by
+[GraphQL Code Generator](https://the-guild.dev/graphql/codegen). The schema is
+read from the checked-in `graphql-introspection.json`, and the output in
+`src/types/__generated__/` is committed, so builds need no network access or
+running backend.
 
-The day view calls `GET /api/v2/analytics/day` on HCGateway and renders the response directly — no local aggregation, no local timezone/target-minute config. Every field on that response carries its own availability `status` (`available`, `partial`, `missing`, `insufficient_data`, `not_implemented`, `blocked`) and, where relevant, a human-readable `note`; the frontend renders exactly what the API says is true rather than inferring or defaulting missing data to zero.
-
-Backend configuration for this path — home time zone, sleep target, birth date, and personal heart-rate-zone thresholds — lives on the HCGateway server itself and is set via `PUT /api/v2/analytics/config` on that API, not through this repo's environment variables. See `/root/HCGateway/doc/frontend-data-model.md` on the backend host for the full contract.
-
-Client code for this path: `src/server/health/dayAnalyticsSchema.ts` (the Zod-validated response contract), `src/server/health/getDayAnalytics.ts` (the entrypoint, real API or fixture depending on configuration), `src/domain/dayViewPresentation.ts` (pure status-to-display logic), and `src/components/day-view/`.
-
-Roadmap:
-
-- [x] Implement a calendar view for sleep data - 2025-05-07
-- [x] Docker support for easy deployment - 2025-06-28
-- [x] Allow users to click on a day in the calendar to view detailed sleep data
-- [x] Represent multiple daily sleep sessions and allow switching between them
-- [x] Add activity, calorie, resting-heart-rate, and weight analytics
-- [x] Add daily health summaries and reusable metric detail pages
-- [x] Add year heatmaps, rolling trends, and monthly views
-- [x] Add configurable rolling sleep-debt analytics and persistence
-- [x] Add versioned sleep-consistency analytics and persistence
-- [x] Add an experimental, auditable health-age and pace-of-aging model
-- [x] Add reusable year heatmaps for sleep quantity, debt, and consistency
-- [x] Add a redesigned day view backed by a prepared backend analytics API (`/day/[date]`)
-- [ ] Migrate the remaining pages off the local pipeline to the same prepared-API approach
-- [ ] Add persistence, scheduled imports, and historical aggregation
-
-Dashboard Screenshot:
-![alt text](dash-2025-09-13.png)
-
-## Tech Stack
-
-The following technologies are used in this project:
-
-- Create T3 App
-  - [Next.js](https://nextjs.org)
-  - [Tailwind CSS](https://tailwindcss.com)
-
-# Deployment
-
-## Environment Variables
-
-Use docker compose to set environment variables with the following example:
-
-```yaml
-services:
-  dashboard:
-    image: lucaslad5275/hc-dashboard:1.0
-    container_name: health-connect-dashboard
-    ports:
-      - "3000:3000"
-    environment:
-      - API_USERNAME=EDIT_ME
-      - API_PASSWORD=EDIT_ME
-      - API_URL=http://192.168.8.EDIT_ME:6644
-    restart: unless-stopped
-```
-
-### OR
-
-Create a `.env` file in the root directory of the project with the following content. If these values are omitted, demo data is used.
-
-```
-API_USERNAME=your_username
-API_PASSWORD=your_password
-API_URL=http://your-health-connect-api:6644
-HEALTH_HOME_TIME_ZONE=America/Chicago
-SLEEP_TARGET_MINUTES=480
-HEALTH_BIRTH_DATE=1990-01-31
-```
-
-## Building and Running the Dashboard
-
-_Make sure you have Docker installed on your machine._
-
-Run the following command to build the Docker image for the dashboard:
+When the backend schema changes:
 
 ```bash
-docker build -t lucaslad5275/hc-dashboard:1.0 .
+npm run codegen:schema   # refresh graphql-introspection.json (reads API_* from .env.local)
+npm run codegen          # regenerate src/types/__generated__
 ```
 
-Run the following command to start the Docker container:
+Check the diff of `src/types/__generated__/` before committing. Codegen only
+emits types that some `graphql()` document references, so removing the last
+use of a type can silently delete something the build still depends on.
+
+## Development
 
 ```bash
-docker run -p 3000:3000 lucaslad5275/hc-dashboard:1.0
+npm ci
+cp .env.example .env.local   # fill in the HCGateway values
+npm run dev                  # http://localhost:3000
+npm run test                 # unit tests
+npm run check                # lint + typecheck
 ```
 
-### OR
+## Environment variables
+
+| Variable              | Required | Purpose                                                                             |
+| --------------------- | -------- | ----------------------------------------------------------------------------------- |
+| `API_URL`             | yes      | HCGateway REST origin, e.g. `http://192.168.8.239:6644`                             |
+| `API_USERNAME`        | yes      | HCGateway account, exchanged for a bearer token at login                            |
+| `API_PASSWORD`        | yes      |                                                                                     |
+| `GRAPHQL_URL`         | no       | GraphQL endpoint. Defaults to `API_URL` with the port swapped to `6645`             |
+| `DEV_ALLOWED_ORIGINS` | no       | Extra origins allowed to reach the dev server over the LAN                          |
+| `PROD_PORT`           | no       | Host port for the prod container (default `3000`); also read by `scripts/deploy.sh` |
+| `DEV_PORT`            | no       | Host port for the dev container (default `3001`); also read by `scripts/deploy.sh`  |
+
+`.env.example` lists them all. Copy it to `.env` for Docker Compose and/or
+`.env.local` for `npm run dev` on the host. Both are gitignored.
+
+## Deployment
+
+`docker-compose.yml` defines two services, each behind a Compose profile so a
+bare `docker compose up` starts nothing:
+
+- **`prod`** (`dashboard`, port 3000): the multi-stage `Dockerfile` builds a
+  Next.js standalone server, tagged `health-connect-dashboard:local`. It
+  refuses to start unless `API_URL`, `API_USERNAME` and `API_PASSWORD` are set.
+- **`dev`** (`dashboard-dev`, port 3001): `next dev` with Turbopack and hot
+  reload in a `node:20-alpine` container, with the repo bind-mounted.
+  `node_modules` and `.next` live in named volumes so a host-side
+  `npm run build` can't break it.
+
+Use `scripts/deploy.sh` rather than calling Compose directly:
 
 ```bash
-docker-compose up -d
+scripts/deploy.sh up [prod|dev|all]   # rebuild + (re)start, wait until healthy
+scripts/deploy.sh status              # containers, health, and an HTTP check
+scripts/deploy.sh logs [prod|dev] [N] # follow logs
+scripts/deploy.sh versions            # prod images available for rollback
+scripts/deploy.sh rollback <tag>      # redeploy an earlier prod build
+scripts/deploy.sh down [prod|dev|all] # stop and remove containers
 ```
+
+Every prod build is also tagged with the git SHA (plus `-dirty` for an
+uncommitted tree), which is what `rollback` uses. `up` exits non-zero if the
+container never becomes healthy.
+
+## Roadmap
+
+- [x] Calendar view for sleep data (2025-05-07)
+- [x] Docker support (2025-06-28)
+- [x] Daily sleep detail, multiple sleep sessions per day, and per-device
+      recordings
+- [x] Activity, calorie, resting-heart-rate, and weight pages
+- [x] Year heatmaps, rolling trends, and monthly views
+- [x] Sleep-debt and sleep-consistency analytics
+- [x] Experimental health-age and pace-of-aging model
+- [x] Redesigned day view backed by a prepared analytics API (`/day/[date]`)
+- [x] All pages read prepared analytics from HCGateway; the in-repo analytics
+      pipeline is deleted (2026-09)
+- [ ] Tests for the GraphQL adapters
+- [ ] Move `/day` and `/api/sleep-stages` onto GraphQL once the backend honours
+      `variables`
+- [ ] Recovery and strain, once HCGateway computes them
+
+Dashboard screenshot (September 2025, before the redesign; out of date):
+
+![Dashboard screenshot from September 2025](dash-2025-09-13.png)
+
+## Tech stack
+
+Next.js (App Router, created with Create T3 App), React 19, Tailwind CSS,
+Apollo Client, ECharts, Zod.

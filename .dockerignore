@@ -36,9 +36,9 @@ audit-logs
 *.log
 
 # Docs and design assets: not served by the app, and large.
-docs/inspo
+docs
 Health Dashboard Desktop Mockups
+dash-2025-09-13.png
 JOURNAL.md
-CLEAN_CODE_REPORT.md
-GRAPHQL_MIGRATION_REDUNDANCY.md
+GRAPHQL_BACKEND_REQUESTS.md
 README.md

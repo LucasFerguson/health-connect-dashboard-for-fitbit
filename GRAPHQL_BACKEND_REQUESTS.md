@@ -236,8 +236,9 @@ are not asking for placeholder data.
 - `HeartRateData.series(resolution:)` bucketing dropped — no aggregation to
   read.
 
-When these land, the pages that would use them are still on the legacy
-pipeline, so there is no migration blocked on them today.
+No page renders per-workout strain or bucketed heart rate yet (the day view's
+strain card is a placeholder), so nothing on the frontend is blocked on them
+today.
 
 ## Not a request: range bounds
 

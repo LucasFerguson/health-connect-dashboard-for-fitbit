@@ -1,4 +1,7 @@
-# Two ways to run the dashboard, selected by Compose profile:
+# Two ways to run the dashboard, selected by Compose profile. Prefer
+# `scripts/deploy.sh` (up / status / logs / versions / rollback / down), which
+# wraps these commands, tags each prod build for rollback, and waits for the
+# container to come up healthy. The raw Compose equivalents:
 #
 #   Production (port 3000) — standalone Next.js build, the default:
 #     docker compose --profile prod up -d --build
@@ -30,11 +33,6 @@ services:
       API_URL: ${API_URL:?set API_URL in .env}
       API_USERNAME: ${API_USERNAME:?set API_USERNAME in .env}
       API_PASSWORD: ${API_PASSWORD:?set API_PASSWORD in .env}
-      # Only affects the legacy in-repo pipeline. Migrated (GraphQL) pages
-      # take timezone/sleep-target/birth-date from HCGateway's analytics
-      # config instead — see GRAPHQL_MIGRATION_REDUNDANCY.md.
-      HEALTH_HOME_TIME_ZONE: ${HEALTH_HOME_TIME_ZONE:-UTC}
-      HEALTH_BIRTH_DATE: ${HEALTH_BIRTH_DATE:-}
       # Optional: point at the GraphQL API explicitly. Defaults to API_URL
       # with the port swapped to 6645.
       GRAPHQL_URL: ${GRAPHQL_URL:-}
@@ -61,11 +59,11 @@ services:
       API_URL: ${API_URL:-}
       API_USERNAME: ${API_USERNAME:-}
       API_PASSWORD: ${API_PASSWORD:-}
-      HEALTH_HOME_TIME_ZONE: ${HEALTH_HOME_TIME_ZONE:-UTC}
-      HEALTH_BIRTH_DATE: ${HEALTH_BIRTH_DATE:-}
       GRAPHQL_URL: ${GRAPHQL_URL:-}
-      # Dev mode tolerates missing credentials: with none set, the app falls
-      # back to the bundled fixture dataset so the UI is still explorable.
+      # Unlike prod, a missing credential doesn't stop the container from
+      # starting, so the dev server can come up to work on code. There is no
+      # fixture fallback, though: every page renders the "Couldn't load health
+      # data" error until API_URL/API_USERNAME/API_PASSWORD are set.
     restart: unless-stopped
 
 volumes:

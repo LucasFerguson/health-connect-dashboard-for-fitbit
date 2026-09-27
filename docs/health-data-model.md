@@ -1,5 +1,10 @@
 # Health data model
 
+> The grouping described here used to run in this repo's own pipeline. It is
+> now computed by HCGateway, which serves the resulting sleep events (with
+> every source recording attached) over GraphQL; this dashboard only renders
+> them. The rules below still describe what the UI shows.
+
 The database is an immutable collection of observations from independent health devices. Fitbit, WHOOP, Google Fit, and future sources can all describe the same real-world sleep. Those records are not duplicates and must not be deleted merely because their time ranges overlap.
 
 The presentation layer groups recordings into a `SleepEvent` when at least 80% of the shorter recording overlaps another recording. Each event retains every source record and chooses the longest recording as its default presentation. Users can switch between device recordings in the sleep-stage view.

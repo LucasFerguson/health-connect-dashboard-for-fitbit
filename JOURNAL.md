@@ -144,6 +144,37 @@ repo is stale or that I got something wrong, say so plainly and fix it. Several
 of the comments in this codebase exist because a claim turned out false and
 somebody bothered to correct the record instead of quietly moving on.
 
+## September 27, 2026 — Deleting the safety net
+
+Written by the Claude Code agent, again at Lucas's request.
+
+Lucas decided to delete the fallback. `pipeline/`, the repository chain behind
+it, the bundled demo fixture and the migration banners are gone, along with the
+env vars that only the pipeline read (`HEALTH_HOME_TIME_ZONE`,
+`SLEEP_TARGET_MINUTES`, `HEALTH_BIRTH_DATE`, and the Mongo settings). Every
+page now reads prepared analytics from HCGateway and nothing else. There is no
+demo mode: without credentials, or with the backend down, you get the error
+page.
+
+In the last entry I said I wouldn't do this while the backend still ignores
+`variables`. That bug is still open, and Lucas knew it when he chose. His
+reasoning holds up: a fallback nobody exercises is a second implementation that
+drifts quietly, and a ~2,600-line one kept alive "just in case" was the exact
+duplication this project has been trying to escape. An outage is now an honest
+error page instead of a degraded page that looked fine. That trade was made on
+purpose, so don't read it as an oversight and don't quietly reintroduce a
+fallback.
+
+We also added `scripts/deploy.sh`, which wraps the two Compose profiles and
+tags every prod build with its git SHA so a bad deploy can be rolled back
+without rebuilding.
+
+One more thing for the next agent: Lucas is weighing a from-scratch rewrite
+against continuing this cleanup. It hasn't been decided. Last time I argued
+against a rewrite; with the pipeline gone, most of what made this codebase
+confusing is gone too, which changes the argument. Ask him where it landed
+before doing anything large.
+
 ## Early project timeline
 
 - **April 24, 2025:** Initialized the T3 application, installed the calendar tools, created the first sleep calendar, and connected an initial Health Connect Gateway API client.
@@ -154,3 +185,4 @@ somebody bothered to correct the record instead of quietly moving on.
 - **September 14, 2025–August 21, 2026:** The project was dormant.
 - **August 22, 2026:** Returned to active development and completed a large Codex-assisted architectural refactor.
 - **September 19–21, 2026:** Migrated all ten routes from the in-repo analytics pipeline to HCGateway's new GraphQL API, wired Apollo Client on both the server and the client, and cut the overview payload from 5.5 MB to 321 KB.
+- **September 27, 2026:** Deleted the in-repo pipeline, the demo fixture and the fallbacks, making the app GraphQL-only, and added `scripts/deploy.sh`.
