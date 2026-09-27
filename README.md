@@ -20,9 +20,7 @@ aren't visible in the code:
   including the reasoning (and the mistakes) behind the GraphQL migration.
   Start here if you are new to the repo.
 - **[GRAPHQL_BACKEND_REQUESTS.md](GRAPHQL_BACKEND_REQUESTS.md)**: open asks of
-  the HCGateway backend, each verified against live responses. The ignored
-  `variables` bug at the top is why `/day` and `/api/sleep-stages` don't use
-  the normal GraphQL path.
+  the HCGateway backend, each verified against live responses.
 - **[docs/health-data-model.md](docs/health-data-model.md)**: how overlapping
   recordings from several devices are grouped into sleep events without
   deleting any of them.
@@ -55,14 +53,16 @@ HCGateway GraphQL (:6645)
   `API_USERNAME`/`API_PASSWORD` for a bearer token at
   `POST $API_URL/api/v2/login`, and forwards only `query`, `variables` and
   `operationName` upstream.
+- **Sleep-stage timelines load on demand.** They are left out of the bulk
+  overview query (selecting them for every sleep event made that payload
+  5.5 MB instead of 321 KB), so `SleepStagesGraph` fetches the selected day's
+  stages in the browser with `useQuery(SLEEP_STAGES_QUERY)` and a `$range`
+  variable, through the same `/api/graphql` proxy
+  (`src/components/sleep-stages/useSleepStages.ts`).
 - **`src/components`** renders domain data and does not know the wire format.
   `src/features/health` holds client state, selectors and formatters.
 
 ### Exceptions to the GraphQL path
-
-Both main exceptions exist because HCGateway's GraphQL server currently
-ignores `variables` (see [GRAPHQL_BACKEND_REQUESTS.md](GRAPHQL_BACKEND_REQUESTS.md)
-#1), so any query that needs an argument has to be assembled as a string.
 
 - **`/day/[date]`** calls HCGateway's REST `GET /api/v2/analytics/day`
   (`health-day-v1` contract), validated with Zod in
@@ -71,17 +71,9 @@ ignores `variables` (see [GRAPHQL_BACKEND_REQUESTS.md](GRAPHQL_BACKEND_REQUESTS.
   `insufficient_data`, `not_implemented`, `blocked`) and the UI renders exactly
   that. The status-to-display logic is in `src/domain/dayViewPresentation.ts`.
   `/api/sync-status`, which feeds the nav's sync indicator, uses the same REST
-  client (`GET /api/v2/sync/status`). That one takes no arguments, so it isn't
-  blocked by the bug; it simply hasn't been moved to GraphQL's `phoneSync`
-  field.
-- **`/api/sleep-stages?date=YYYY-MM-DD`** serves
-  the overview's sleep-stage graph. Stage timelines are left out of the bulk
-  overview query (selecting them for every sleep event made that payload
-  5.5 MB instead of 321 KB), so the graph fetches one day at a time. The route
-  does query GraphQL, server-side, with the date interpolated into the query
-  text; because that query is a runtime string, codegen can't see it and
-  `getSleepStages.ts` hand-writes its result type. Once `variables` work, this
-  route can be replaced by a normal `useQuery` through `/api/graphql`.
+  client (`GET /api/v2/sync/status`). Neither has been moved to GraphQL yet
+  (`day(date:)` and `phoneSync` respectively); `/day` stayed on REST while the
+  backend ignored GraphQL `variables`, which it now honours.
 
 ### Configuration that lives in HCGateway
 
@@ -175,8 +167,8 @@ container never becomes healthy.
 - [x] All pages read prepared analytics from HCGateway; the in-repo analytics
       pipeline is deleted (2026-09)
 - [ ] Tests for the GraphQL adapters
-- [ ] Move `/day` and `/api/sleep-stages` onto GraphQL once the backend honours
-      `variables`
+- [x] Sleep-stage graph queries GraphQL with variables through `/api/graphql`
+- [ ] Move `/day` onto GraphQL
 - [ ] Recovery and strain, once HCGateway computes them
 
 Dashboard screenshot (September 2025, before the redesign; out of date):
