@@ -3,6 +3,7 @@
 import { useRef } from "react";
 import { Card } from "~/components/ui/Card";
 import type { HealthDay } from "~/domain/dayView";
+import { slotHourLabel } from "~/domain/dayViewTime";
 import { HeartRateLane } from "./HeartRateLane";
 import { HoverCrosshair } from "./HoverCrosshair";
 import { MovementLane } from "./MovementLane";
@@ -52,7 +53,8 @@ export function DayViewTimeline({
           24-HOUR TIMELINE
         </span>
         <span className="text-ink-200 hidden font-mono text-[9px] tracking-[.08em] sm:inline">
-          00:00 → 24:00 · HR CANDLES · SLEEP STAGES · MOVEMENT · PLAN
+          {slotHourLabel(0, dayStartHour)} → {slotHourLabel(24, dayStartHour)} ·
+          HR CANDLES · SLEEP STAGES · MOVEMENT · PLAN
         </span>
         <div className="text-ink-200 ml-auto hidden items-center gap-2 font-mono text-[8.5px] sm:flex">
           <span>40</span>
@@ -87,7 +89,7 @@ export function DayViewTimeline({
             heartRate={day.timeline.heartRate}
             restingHeartRateBpm={restingHeartRateBpm}
           />
-          <TimeAxisLabels />
+          <TimeAxisLabels dayStartHour={dayStartHour} />
           <SleepStageLane
             segments={day.timeline.sleepStages}
             date={day.date}

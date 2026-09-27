@@ -36,17 +36,9 @@ export const SLEEP_STAGE_GEOMETRY: Record<
   deep: { topPx: 20, heightPx: 8, color: "var(--color-sleep-deep)" },
 };
 
-export const X_AXIS_HOUR_LABELS = [
-  "00",
-  "02",
-  "04",
-  "06",
-  "08",
-  "10",
-  "12",
-  "14",
-  "16",
-  "18",
-  "20",
-  "22",
-];
+/** Axis slots (hours from the axis start) that get an x-axis label: every
+ * second hour, 0-22. The label text comes from `slotHourLabel`. */
+export const X_AXIS_LABEL_SLOTS = Array.from(
+  { length: 12 },
+  (_, index) => index * 2,
+);

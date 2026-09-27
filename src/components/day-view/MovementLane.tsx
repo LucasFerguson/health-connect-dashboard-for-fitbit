@@ -1,6 +1,6 @@
 import type { StepsHour } from "~/domain/dayView";
 import { formatSteps } from "~/features/health/metricFormatters";
-import { hourLabelForSlot } from "~/domain/dayViewTime";
+import { formatHourLabel, slotHourLabel } from "~/domain/dayViewTime";
 
 /**
  * Movement lane (22px) — hourly step bars straight from `timeline.steps`
@@ -45,18 +45,15 @@ export function MovementLane({
               height: `${Math.max(heightPercent, bucket.count > 0 ? 2 : 0)}%`,
               opacity,
             }}
-            title={`${hourLabelForSlot(index, dayStartHour).toString().padStart(2, "0")}:00 · ${formatSteps(bucket.count)} steps`}
+            title={`${slotHourLabel(index, dayStartHour)} · ${formatSteps(bucket.count)} steps`}
           />
         );
       })}
       <div className="text-ink-200 pointer-events-none absolute top-[3px] right-1.5 z-[6] font-mono text-[7.5px] tracking-[.06em]">
         {hasAnyData && peakHourEntry
-          ? `STEPS/H · PEAK ${formatSteps(peak)} AT ${hourLabelForSlot(
+          ? `STEPS/H · PEAK ${formatSteps(peak)} AT ${formatHourLabel(
               peakHourEntry.hour,
-              dayStartHour,
-            )
-              .toString()
-              .padStart(2, "0")}:00`
+            )}`
           : "STEPS/H · NO DATA"}
       </div>
     </div>

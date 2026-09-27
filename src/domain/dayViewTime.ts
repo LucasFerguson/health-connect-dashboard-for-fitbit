@@ -120,23 +120,33 @@ export function minutesToPercentWidth(minutes: number): number {
   return (minutes / MINUTES_PER_DAY) * 100;
 }
 
-/** Inverse of `timeToPercent`: the `HH:MM` clock label for a position along
- * the axis (0-100), pivoted at `dayStartHour`. Used for the hover
- * crosshair, where the cursor position is already axis-relative rather
- * than an absolute instant, so this skips the timezone round trip that
- * `timeToPercent`/`formatClock` need for real timestamps. */
+/** Inverse of `timeToPercent`: the clock label (e.g. `3:07 AM`) for a
+ * position along the axis (0-100), pivoted at `dayStartHour`. This is pure
+ * axis arithmetic (no time zone), so it assumes a 24-hour local day; for a
+ * real instant use `percentToInstantMs` + `formatClock`, which also stay
+ * right on DST-change days. */
 export function percentToClockLabel(
   percent: number,
   dayStartHour: number,
 ): string {
   const clamped = Math.min(100, Math.max(0, percent));
   const totalMinutes = Math.round((clamped / 100) * MINUTES_PER_DAY);
-  const minutesOfDay = (dayStartHour * 60 + totalMinutes) % MINUTES_PER_DAY;
-  const hours = Math.floor(minutesOfDay / 60)
-    .toString()
-    .padStart(2, "0");
-  const minutes = (minutesOfDay % 60).toString().padStart(2, "0");
-  return `${hours}:${minutes}`;
+  return formatClockMinutes(dayStartHour * 60 + totalMinutes);
+}
+
+/** Inverse of `timeToPercent` as a real instant: the epoch ms at `percent`
+ * (0-100, clamped) along `date`'s axis. */
+export function percentToInstantMs(
+  percent: number,
+  date: DateKey,
+  dayStartHour: number,
+  timeZone: string,
+): number {
+  const clamped = Math.min(100, Math.max(0, percent));
+  return (
+    axisStartMs(date, dayStartHour, timeZone) +
+    Math.round((clamped / 100) * MINUTES_PER_DAY) * 60_000
+  );
 }
 
 /** The 24 hourly slot boundaries (as ISO instants) for `date`, pivoted at
@@ -160,12 +170,46 @@ export function hourLabelForSlot(
   return (dayStartHour + slotIndex) % 24;
 }
 
-/** Formats an ISO instant as a local `HH:MM` string in `timeZone`. */
-export function formatClock(iso: ISODateTime, timeZone: string): string {
-  const parts = clockFormatterFor(timeZone).formatToParts(new Date(iso));
-  const value = (type: "hour" | "minute") =>
-    (parts.find((part) => part.type === type)?.value ?? "00").padStart(2, "0");
-  return `${value("hour")}:${value("minute")}`;
+/**
+ * The one 12-hour clock formatter for the day view: minutes since local
+ * midnight to `12 AM`, `6:30 AM`, `12 PM`, `11:59 PM`. Whole hours drop the
+ * `:00` so axis labels stay short (`10 PM`, `2 AM`). Values outside
+ * 0..1439 wrap around the day, so a pivoted axis can pass `start + offset`
+ * straight in.
+ */
+export function formatClockMinutes(minutesOfDay: number): string {
+  const wrapped =
+    ((Math.round(minutesOfDay) % MINUTES_PER_DAY) + MINUTES_PER_DAY) %
+    MINUTES_PER_DAY;
+  const hour24 = Math.floor(wrapped / 60);
+  const minute = wrapped % 60;
+  const period = hour24 < 12 ? "AM" : "PM";
+  const hour12 = hour24 % 12 === 0 ? 12 : hour24 % 12;
+  return minute === 0
+    ? `${hour12} ${period}`
+    : `${hour12}:${minute.toString().padStart(2, "0")} ${period}`;
+}
+
+/** A clock hour (0-23) as a 12-hour label, e.g. `22` -> `10 PM`. */
+export function formatHourLabel(hour: number): string {
+  return formatClockMinutes(hour * 60);
+}
+
+/** The clock label for hourly slot `slotIndex` of an axis pivoted at
+ * `dayStartHour`, e.g. slot 2 of a midnight axis -> `2 AM`. */
+export function slotHourLabel(slotIndex: number, dayStartHour: number): string {
+  return formatHourLabel(hourLabelForSlot(slotIndex, dayStartHour));
+}
+
+/** Formats an instant (ISO string or epoch ms) as a local 12-hour clock
+ * time in `timeZone`, e.g. `4:41 AM`, via `formatClockMinutes`. */
+export function formatClock(
+  instant: ISODateTime | number,
+  timeZone: string,
+): string {
+  const iso =
+    typeof instant === "number" ? new Date(instant).toISOString() : instant;
+  return formatClockMinutes(localMinuteOfDay(iso, timeZone));
 }
 
 /** True when `iso` falls within [axisStart, axisStart + 24h) for `date`. */

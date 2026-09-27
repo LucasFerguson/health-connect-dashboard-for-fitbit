@@ -8,6 +8,7 @@ import { IconButton } from "~/components/ui/IconButton";
 import { Menu } from "~/components/ui/Menu";
 import { Spinner } from "~/components/ui/Spinner";
 import type { DayState } from "~/domain/dayView";
+import { formatHourLabel } from "~/domain/dayViewTime";
 
 function shiftDate(date: string, days: number): string {
   const instant = Date.parse(`${date}T00:00:00Z`);
@@ -160,12 +161,12 @@ export function ContextBar({
           the date stepper needs the room on a phone-width screen. */}
       <div className="hidden shrink-0 sm:block">
         <Menu
-          trigger="DAY START 00:00"
+          trigger={`DAY START ${formatHourLabel(0)}`}
           triggerTitle="Pivots the axis origin — not wired up yet"
           options={[
-            { label: "00:00" },
-            { label: "04:00" },
-            { label: "06:00" },
+            { label: formatHourLabel(0) },
+            { label: formatHourLabel(4) },
+            { label: formatHourLabel(6) },
           ]}
         />
       </div>
