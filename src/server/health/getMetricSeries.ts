@@ -20,10 +20,10 @@ import { withAnalytics } from "./graphql/fetchAnalytics";
 import { METRIC_SERIES_QUERY } from "./graphql/metricSeriesQuery";
 
 type Analytics = MetricSeriesPageQuery["viewer"]["analytics"];
-type GraphQLMetricSeries = Analytics["steps"];
+type GraphQLMetricSeries = NonNullable<Analytics["steps"]>;
 type GraphQLMetricDay = GraphQLMetricSeries["daily"][number];
 
-/** The five series this query fetches, keyed as `HealthAnalytics` names them. */
+/** The five series the query can fetch, keyed as `HealthAnalytics` names them. */
 type SeriesName =
   | "steps"
   | "activeCalories"
@@ -31,12 +31,10 @@ type SeriesName =
   | "restingHeartRate"
   | "weight";
 
-export interface MetricSeriesSet {
-  steps: MetricAnalytics;
-  activeCalories: MetricAnalytics;
-  totalCalories: MetricAnalytics;
-  restingHeartRate: MetricAnalytics;
-  weight: MetricAnalytics;
+/** What a metric page renders: its primary series, plus calories' overlay. */
+export interface MetricPageSeries {
+  primary: MetricAnalytics;
+  secondary?: MetricAnalytics;
 }
 
 /**
@@ -54,49 +52,53 @@ const expectedUnit: Record<SeriesName, [MetricUnit, GraphQLMetricUnit]> = {
   weight: ["kg", "KG"],
 };
 
-/** Which series backs each page's primary chart. */
-const primarySeries: Record<MetricKind, SeriesName> = {
-  steps: "steps",
-  calories: "activeCalories",
-  "heart-rate": "restingHeartRate",
-  weight: "weight",
+/**
+ * The series each page renders: `MetricDetailPage` draws its primary series,
+ * and only /calories overlays a second (total against active energy).
+ */
+const pageSeries: Record<
+  MetricKind,
+  { primary: SeriesName; secondary?: SeriesName }
+> = {
+  steps: { primary: "steps" },
+  calories: { primary: "activeCalories", secondary: "totalCalories" },
+  "heart-rate": { primary: "restingHeartRate" },
+  weight: { primary: "weight" },
 };
 
-/** Throws when GraphQL can't serve these pages; see `withAnalytics`. */
-export function getMetricSeries() {
-  return withAnalytics("metric-series", METRIC_SERIES_QUERY, (analytics) => {
-    const series: MetricSeriesSet = {
-      steps: toMetricAnalytics("steps", analytics.steps),
-      activeCalories: toMetricAnalytics(
-        "activeCalories",
-        analytics.activeCalories,
-      ),
-      totalCalories: toMetricAnalytics(
-        "totalCalories",
-        analytics.totalCalories,
-      ),
-      restingHeartRate: toMetricAnalytics(
-        "restingHeartRate",
-        analytics.restingHeartRate,
-      ),
-      weight: toMetricAnalytics("weight", analytics.weight),
-    };
-    return series;
-  });
-}
-
-/** The series a `MetricKind` page charts as its primary metric. */
-export function selectMetricSeries(
-  kind: MetricKind,
-  series: MetricSeriesSet,
-): MetricAnalytics {
-  return series[primarySeries[kind]];
+/**
+ * Fetches only the series `kind`'s page renders, via the query's `@include`
+ * variables. Throws when GraphQL can't serve the page; see `withAnalytics`.
+ */
+export function getMetricSeries(kind: MetricKind) {
+  const { primary, secondary } = pageSeries[kind];
+  const wanted = (name: SeriesName) => name === primary || name === secondary;
+  return withAnalytics(
+    "metric-series",
+    METRIC_SERIES_QUERY,
+    (analytics): MetricPageSeries => ({
+      primary: toMetricAnalytics(primary, analytics[primary]),
+      secondary: secondary
+        ? toMetricAnalytics(secondary, analytics[secondary])
+        : undefined,
+    }),
+    {
+      steps: wanted("steps"),
+      activeCalories: wanted("activeCalories"),
+      totalCalories: wanted("totalCalories"),
+      restingHeartRate: wanted("restingHeartRate"),
+      weight: wanted("weight"),
+    },
+  );
 }
 
 function toMetricAnalytics(
   name: SeriesName,
-  series: GraphQLMetricSeries,
+  series: GraphQLMetricSeries | undefined,
 ): MetricAnalytics {
+  // Only reachable if the variables and `pageSeries` disagree; failing here
+  // surfaces as a FrontendMappingError instead of a page of empty charts.
+  if (!series) throw new Error(`metric series ${name} was not fetched`);
   return {
     unit: resolveUnit(name, series.unit),
     daily: series.daily.map(toDailySummary),

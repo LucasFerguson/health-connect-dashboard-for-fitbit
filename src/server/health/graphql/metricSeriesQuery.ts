@@ -6,11 +6,13 @@ import { graphql } from "~/types/__generated__";
  * so they share one query rather than four near-identical ones — the selection
  * set is the same shape for every series.
  *
- * All five series are fetched even though a page renders one (two for
- * calories, which charts active against total). That is cheaper than it looks:
- * these are pre-aggregated daily summaries and no `Day.timeline` is selected,
- * so the whole response is tens of KB, and splitting it per page would mean
- * five documents to keep in sync for no measurable gain.
+ * Each series is behind an `@include(if: $<series>)` variable, and
+ * `getMetricSeries(kind)` turns on only the ones that page renders: one, or
+ * two for calories (active against total). One document still serves all
+ * four pages, but a page no longer downloads the other series. With entity ids
+ * selected, all five came to ~790 KB; /steps now fetches ~90 KB. Within a
+ * series nothing is trimmed: the history chart, year heatmap and monthly chart
+ * all span the full history, and `?date=` can select any day's `bySource`.
  *
  * The per-series selection is repeated inline rather than factored into a
  * fragment on purpose. `client-preset` masks fragments behind `$fragmentRefs`,
@@ -25,7 +27,13 @@ import { graphql } from "~/types/__generated__";
  * returned document carries its own result and variable types.
  */
 export const METRIC_SERIES_QUERY = graphql(`
-  query MetricSeriesPage {
+  query MetricSeriesPage(
+    $steps: Boolean!
+    $activeCalories: Boolean!
+    $totalCalories: Boolean!
+    $restingHeartRate: Boolean!
+    $weight: Boolean!
+  ) {
     viewer {
       analytics {
         id
@@ -33,7 +41,7 @@ export const METRIC_SERIES_QUERY = graphql(`
         algorithmVersion
         timeZone
         processedAt
-        steps {
+        steps @include(if: $steps) {
           unit
           daily {
             id
@@ -93,7 +101,7 @@ export const METRIC_SERIES_QUERY = graphql(`
             sampleCount
           }
         }
-        activeCalories {
+        activeCalories @include(if: $activeCalories) {
           unit
           daily {
             id
@@ -153,7 +161,7 @@ export const METRIC_SERIES_QUERY = graphql(`
             sampleCount
           }
         }
-        totalCalories {
+        totalCalories @include(if: $totalCalories) {
           unit
           daily {
             id
@@ -213,7 +221,7 @@ export const METRIC_SERIES_QUERY = graphql(`
             sampleCount
           }
         }
-        restingHeartRate {
+        restingHeartRate @include(if: $restingHeartRate) {
           unit
           daily {
             id
@@ -273,7 +281,7 @@ export const METRIC_SERIES_QUERY = graphql(`
             sampleCount
           }
         }
-        weight {
+        weight @include(if: $weight) {
           unit
           daily {
             id
