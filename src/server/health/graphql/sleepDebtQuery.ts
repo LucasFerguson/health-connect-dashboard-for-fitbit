@@ -35,11 +35,6 @@ export const SLEEP_DEBT_QUERY = graphql(`
             moderate
             high
           }
-          latest {
-            id
-            date
-            debtMinutes
-          }
           daily {
             id
             date

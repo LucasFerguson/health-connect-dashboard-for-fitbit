@@ -6,13 +6,15 @@ import { graphql } from "~/types/__generated__";
  * `runId` and friends are selected so the UI can show which prepared analytics
  * run the numbers came from, and so a run change is visible rather than silent.
  *
- * `latest` is deliberately NOT selected: it is the last entry of `trend`, and
- * the adapter derives it from there. Selecting both would double the factor
- * payload for the busiest day and let the two drift apart in the cache (neither
- * `HealthspanDay` nor its factors carry an `id`, so Apollo cannot merge them).
+ * `factors` are selected on `latest` only, not on every `trend` day: the page
+ * renders factor cards for the latest estimate and charts only age and pace
+ * over the trend (`HealthspanTrendCharts`), so per-day factors were ~280 KB
+ * of the response that nothing drew. `latest` is the same `HealthspanDay` as
+ * the last trend entry (same `id`), so the cache merges them into one entity
+ * rather than letting two copies drift apart.
  *
  * `trend` takes an optional `range`, left unset: the page charts the full
- * history and the whole series is only ~500 days.
+ * history.
  *
  * Written with the codegen `graphql()` function rather than `gql`, so the
  * returned document carries its own result and variable types.
@@ -34,7 +36,7 @@ export const HEALTHSPAN_QUERY = graphql(`
           calibrationReasons
           paceOfAging
           paceWindowDays
-          trend {
+          latest {
             id
             date
             chronologicalAgeYears
@@ -52,6 +54,15 @@ export const HEALTHSPAN_QUERY = graphql(`
               ageImpactYears
               coverageDays
             }
+          }
+          trend {
+            id
+            date
+            chronologicalAgeYears
+            healthAgeYears
+            ageDeltaYears
+            paceOfAging
+            qualityFlags
           }
         }
       }
