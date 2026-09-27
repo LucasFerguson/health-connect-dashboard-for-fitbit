@@ -44,11 +44,17 @@ interface AnalyticsQueryResult {
  * page renders with `settle()` + `BackendErrorPanel`.
  *
  * @param label short loader name used in the report, e.g. "sleep-debt"
+ * @param variables the operation's variables, when it declares any
  */
-export async function withAnalytics<TResult extends AnalyticsQueryResult, T>(
+export async function withAnalytics<
+  TResult extends AnalyticsQueryResult,
+  T,
+  TVariables extends Record<string, unknown> = Record<string, never>,
+>(
   label: string,
-  document: TypedDocumentNode<TResult, Record<string, never>>,
+  document: TypedDocumentNode<TResult, TVariables>,
   select: (analytics: TResult["viewer"]["analytics"]) => T,
+  variables?: TVariables,
 ): Promise<T> {
   const config = configSnapshot(env);
   const context: RequestContext = {
@@ -65,7 +71,13 @@ export async function withAnalytics<TResult extends AnalyticsQueryResult, T>(
     const missing = missingConfig(config);
     if (missing.length > 0) throw new NotConfiguredError(missing);
 
-    const { data } = await query({ query: document });
+    // Apollo's `VariablesOption` makes `variables` required or forbidden
+    // depending on the concrete operation, which a generic wrapper can't
+    // prove. Callers are still checked: `variables` is typed `TVariables`.
+    const options = { query: document, variables } as Parameters<
+      typeof query<TResult, TVariables>
+    >[0];
+    const { data } = await query<TResult, TVariables>(options);
     // Apollo types `data` as possibly undefined: a query can resolve carrying
     // only errors.
     if (!data) throw new EmptyResponseError();
