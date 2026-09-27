@@ -12,6 +12,10 @@ import {
   spearman,
   summarizePairs,
   type DailyValue,
+  compareGroups,
+  crossTabulate,
+  quantile,
+  type Pair,
 } from "./correlation";
 
 const series = (entries: Record<string, number>): DailyValue[] =>
@@ -263,5 +267,69 @@ void describe("summarizePairs", () => {
     const summary = summarizePairs([]);
     assert.equal(summary.n, 0);
     assert.equal(summary.xExtent, null);
+  });
+});
+
+void describe("binary axes", () => {
+  const pair = (date: string, x: number, y: number): Pair => ({
+    date,
+    yDate: date,
+    x,
+    y,
+  });
+
+  void it("quantile interpolates like a spreadsheet", () => {
+    assert.equal(quantile([1, 2, 3, 4], 0.5), 2.5);
+    assert.equal(quantile([1, 2, 3, 4], 0.25), 1.75);
+    assert.equal(quantile([7], 0.75), 7);
+    assert.ok(Number.isNaN(quantile([], 0.5)));
+  });
+
+  void it("compares the other metric on yes days vs no days", () => {
+    // Habit on x (caffeine), sleep minutes on y.
+    const comparison = compareGroups(
+      [
+        pair("2026-01-01", 1, 400),
+        pair("2026-01-02", 1, 420),
+        pair("2026-01-03", 0, 450),
+        pair("2026-01-04", 0, 470),
+        pair("2026-01-05", 0, 490),
+      ],
+      "x",
+    );
+    assert.equal(comparison.yes?.n, 2);
+    assert.equal(comparison.yes?.mean, 410);
+    assert.equal(comparison.no?.n, 3);
+    assert.equal(comparison.no?.median, 470);
+    assert.equal(comparison.meanDifference, -60);
+    assert.equal(comparison.medianDifference, -60);
+  });
+
+  void it("reads the habit from y when it is on the y axis", () => {
+    const comparison = compareGroups(
+      [pair("2026-01-01", 8000, 1), pair("2026-01-02", 4000, 0)],
+      "y",
+    );
+    assert.equal(comparison.yes?.mean, 8000);
+    assert.equal(comparison.no?.mean, 4000);
+  });
+
+  void it("has no difference when a group is empty", () => {
+    const comparison = compareGroups([pair("2026-01-01", 1, 400)], "x");
+    assert.equal(comparison.no, null);
+    assert.equal(comparison.meanDifference, null);
+  });
+
+  void it("cross-tabulates two habits", () => {
+    assert.deepEqual(
+      crossTabulate([
+        pair("a", 1, 1),
+        pair("b", 1, 0),
+        pair("c", 1, 0),
+        pair("d", 0, 1),
+        pair("e", 0, 0),
+      ]),
+      { yesYes: 1, yesNo: 2, noYes: 1, noNo: 1, n: 5 },
+    );
   });
 });

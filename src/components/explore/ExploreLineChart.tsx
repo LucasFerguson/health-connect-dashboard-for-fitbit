@@ -32,6 +32,11 @@ function dateSpan(from: DateKey, to: DateKey): DateKey[] {
  * lag, Y is drawn shifted: the Y point above date d is Y's reading from
  * d + lag, so the two lines line up exactly as the scatter pairs them.
  * Missing days are gaps, not zeros.
+ *
+ * A habit (binary) series is drawn as markers, not a line: a filled dot on
+ * "Yes", a hollow ring on "No", on its own two-row axis. A line through
+ * 0/1 answers would draw slopes between days that don't exist and imply
+ * in-between values.
  */
 export function ExploreLineChart({
   x,
@@ -71,6 +76,74 @@ export function ExploreLineChart({
       lag === 0 ? "" : ` · ${lag > 0 ? "+" : "−"}${Math.abs(lag)}d`
     } →`;
 
+    const axisFor = (metric: MetricDefinition, data: (number | null)[]) =>
+      // A category axis centres "No" and "Yes" in two rows; the scatter's
+      // 0/1 values are the category indexes.
+      metric.kind === "binary"
+        ? { type: "category", data: ["No", "Yes"], boundaryGap: true }
+        : minuteAxisBounds(metric, data);
+    const seriesFor = (
+      metric: MetricDefinition,
+      name: string,
+      yAxisIndex: number,
+      data: (number | null)[],
+      color: string,
+    ) =>
+      metric.kind === "binary"
+        ? {
+            type: "scatter",
+            name,
+            yAxisIndex,
+            symbolSize: 9,
+            data: data.map((value) =>
+              value === null
+                ? "-"
+                : {
+                    value,
+                    itemStyle:
+                      value === 1
+                        ? { color, borderColor: "#15121c", borderWidth: 1 }
+                        : {
+                            color: "transparent",
+                            borderColor: color,
+                            borderWidth: 1.5,
+                          },
+                  },
+            ),
+            itemStyle: { color },
+          }
+        : {
+            type: "line",
+            name,
+            yAxisIndex,
+            data,
+            connectNulls: false,
+            showSymbol: true,
+            symbolSize: 4,
+            itemStyle: { color },
+            lineStyle: { color, width: 2 },
+          };
+
+    // Journal answers cover a short stretch (Jan 9 – Apr 8, 2026 live), so
+    // over a long range their markers would be a sliver. Open the zoom on
+    // the habit's answers, with a week either side; the slider still
+    // reaches the rest of the range.
+    const spans = [x, y]
+      .map((metric) => metric.answerSpan)
+      .filter((span) => span !== null && span !== undefined);
+    const focusFrom = spans.map((span) => shiftDate(span.from, -7)).sort()[0];
+    const focusTo = spans
+      .map((span) => shiftDate(span.to, 7))
+      .sort()
+      .at(-1);
+    const focus =
+      focusFrom && focusTo && dates.length > 0
+        ? {
+            startValue: focusFrom < dates[0]! ? dates[0] : focusFrom,
+            endValue: focusTo > dates.at(-1)! ? dates.at(-1) : focusTo,
+          }
+        : {};
+
     return {
       animation: false,
       textStyle: { fontFamily: CHART_FONT },
@@ -108,7 +181,7 @@ export function ExploreLineChart({
           ) =>
             `<div><span style="display:inline-block;width:8px;height:8px;border-radius:2px;margin-right:6px;background:${color}"></span>` +
             `<span style="${dim}">${escapeHtml(metric.label)}:</span> ` +
-            `${value === null ? `<span style="${dim}">no data</span>` : escapeHtml(formatMetricValue(metric, value))}` +
+            `${value === null ? `<span style="${dim}">${metric.kind === "binary" ? "no answer" : "no data"}</span>` : escapeHtml(formatMetricValue(metric, value))}` +
             `${note ? ` <span style="${dim}">(${escapeHtml(note)})</span>` : ""}</div>`;
           return [
             `<div style="margin-bottom:4px">${escapeHtml(formatDateKey(date))}</div>`,
@@ -123,9 +196,10 @@ export function ExploreLineChart({
         },
       },
       dataZoom: [
-        { type: "inside" },
+        { type: "inside", ...focus },
         {
           type: "slider",
+          ...focus,
           height: 18,
           bottom: 8,
           borderColor: EXPLORE_COLORS.axisLine,
@@ -155,12 +229,13 @@ export function ExploreLineChart({
           scale: true,
           position: "left",
           ...axisStyle(EXPLORE_COLORS.x),
-          ...minuteAxisBounds(x, xData),
+          ...axisFor(x, xData),
           axisLine: { show: true, lineStyle: { color: EXPLORE_COLORS.x } },
           axisLabel: {
             ...axisStyle().axisLabel,
             color: EXPLORE_COLORS.x,
-            formatter: (value: number) => formatMetricAxis(x, value),
+            formatter: (value: number | string) =>
+              typeof value === "string" ? value : formatMetricAxis(x, value),
           },
         },
         {
@@ -168,39 +243,20 @@ export function ExploreLineChart({
           scale: true,
           position: "right",
           ...axisStyle(EXPLORE_COLORS.y),
-          ...minuteAxisBounds(y, yData),
+          ...axisFor(y, yData),
           splitLine: { show: false },
           axisLine: { show: true, lineStyle: { color: EXPLORE_COLORS.y } },
           axisLabel: {
             ...axisStyle().axisLabel,
             color: EXPLORE_COLORS.y,
-            formatter: (value: number) => formatMetricAxis(y, value),
+            formatter: (value: number | string) =>
+              typeof value === "string" ? value : formatMetricAxis(y, value),
           },
         },
       ],
       series: [
-        {
-          type: "line",
-          name: xName,
-          yAxisIndex: 0,
-          data: xData,
-          connectNulls: false,
-          showSymbol: true,
-          symbolSize: 4,
-          itemStyle: { color: EXPLORE_COLORS.x },
-          lineStyle: { color: EXPLORE_COLORS.x, width: 2 },
-        },
-        {
-          type: "line",
-          name: yName,
-          yAxisIndex: 1,
-          data: yData,
-          connectNulls: false,
-          showSymbol: true,
-          symbolSize: 4,
-          itemStyle: { color: EXPLORE_COLORS.y },
-          lineStyle: { color: EXPLORE_COLORS.y, width: 2 },
-        },
+        seriesFor(x, xName, 0, xData, EXPLORE_COLORS.x),
+        seriesFor(y, yName, 1, yData, EXPLORE_COLORS.y),
       ],
     };
   }, [x, y, xSeries, ySeries, lag, window]);

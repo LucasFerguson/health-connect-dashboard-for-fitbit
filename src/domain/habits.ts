@@ -91,14 +91,19 @@ export function answersByDay(
 
 /**
  * A habit as an `/explore` series: yes = 1, no = 0, and a day with no
- * answer is simply not in the list. See `answersByDay` for dates with two
- * cycles.
+ * answer is simply not in the list. A date with two cycles follows the
+ * `answersByDay` rule (any yes makes it a yes day).
  */
 export function habitSeries(
-  entries: readonly HabitEntry[],
+  entries: readonly { date: DateKey; answeredYes: boolean }[],
 ): { date: DateKey; value: number }[] {
-  return [...answersByDay(entries).values()]
-    .map((day) => ({ date: day.date, value: day.answer === "yes" ? 1 : 0 }))
+  const byDate = new Map<DateKey, number>();
+  for (const entry of entries) {
+    const value = entry.answeredYes ? 1 : 0;
+    byDate.set(entry.date, Math.max(byDate.get(entry.date) ?? 0, value));
+  }
+  return [...byDate]
+    .map(([date, value]) => ({ date, value }))
     .sort((a, b) => (a.date < b.date ? -1 : a.date > b.date ? 1 : 0));
 }
 

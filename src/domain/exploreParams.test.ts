@@ -5,14 +5,17 @@ import {
   exploreSearch,
   parseExploreParams,
   rangeDays,
+  resolveSelection,
 } from "./exploreParams";
 import {
   METRICS,
+  describeDifference,
   formatClock,
   formatMetricAxis,
   formatMetricDelta,
   formatMetricValue,
   formatSlopeStep,
+  habitMetric,
 } from "./exploreMetrics";
 
 void describe("parseExploreParams", () => {
@@ -93,5 +96,47 @@ void describe("explore metric formatting", () => {
     assert.equal(formatSlopeStep(METRICS.bedtime), "1h");
     assert.equal(formatSlopeStep(METRICS.strain), "1 point");
     assert.equal(formatSlopeStep(METRICS.recovery), "10 points");
+  });
+});
+
+void describe("habit axes in the URL", () => {
+  void it("accepts habit ids syntactically and resolves unknown ones", () => {
+    const parsed = parseExploreParams({
+      x: "habit:whoop:abc",
+      y: "habit:whoop:gone",
+    });
+    assert.equal(parsed.x, "habit:whoop:abc");
+    assert.equal(parseExploreParams({ x: "habit:" }).x, DEFAULT_SELECTION.x);
+    const resolved = resolveSelection(parsed, (id) => id === "habit:whoop:abc");
+    assert.equal(resolved.x, "habit:whoop:abc");
+    assert.equal(resolved.y, DEFAULT_SELECTION.y);
+  });
+
+  void it("formats binary values and group differences", () => {
+    const habit = habitMetric({
+      id: "whoop:abc",
+      question: "Consumed caffeine?",
+      firstSeenDate: "2026-01-09",
+      lastSeenDate: "2026-04-08",
+      entryCount: 19,
+    });
+    assert.equal(habit.id, "habit:whoop:abc");
+    assert.equal(habit.kind, "binary");
+    assert.match(habit.note, /Jan 9 – Apr 8, 2026/);
+    assert.equal(formatMetricValue(habit, 1), "Yes");
+    assert.equal(formatMetricValue(habit, 0), "No");
+    assert.deepEqual(describeDifference(METRICS.sleepDuration, -38), {
+      amount: "38m",
+      word: "shorter",
+    });
+    assert.deepEqual(describeDifference(METRICS.bedtime, 45), {
+      amount: "45m",
+      word: "later",
+    });
+    assert.deepEqual(describeDifference(METRICS.restingHeartRate, 1.25), {
+      amount: "1.3 bpm",
+      word: "higher",
+    });
+    assert.equal(describeDifference(METRICS.steps, 0).word, null);
   });
 });

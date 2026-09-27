@@ -88,7 +88,7 @@ export function minuteAxisBounds(
   metric: MetricDefinition,
   values: readonly (number | null)[],
 ): { min?: number; max?: number; interval?: number } {
-  if (metric.kind === "number") return {};
+  if (metric.kind !== "duration" && metric.kind !== "clock") return {};
   let min = Infinity;
   let max = -Infinity;
   for (const value of values) {

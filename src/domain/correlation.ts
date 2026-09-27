@@ -219,3 +219,108 @@ export function summarizePairs(pairs: readonly Pair[]): CorrelationSummary {
     xExtent: xs.length ? { min: Math.min(...xs), max: Math.max(...xs) } : null,
   };
 }
+
+// ---------------------------------------------------------------------------
+// Binary (habit) axes
+
+/**
+ * Below this many days in either group, a group mean is one unusual day away
+ * from a different answer, and the UI says so loudly.
+ */
+export const MIN_GROUP = 5;
+
+/** Linear-interpolated quantile of an ascending list (the "type 7"
+ * definition spreadsheets use). */
+export function quantile(sorted: readonly number[], p: number): number {
+  if (sorted.length === 0) return Number.NaN;
+  const position = (sorted.length - 1) * p;
+  const lower = Math.floor(position);
+  const upper = Math.ceil(position);
+  const low = sorted[lower]!;
+  return low + (sorted[upper]! - low) * (position - lower);
+}
+
+export interface GroupStats {
+  n: number;
+  mean: number;
+  median: number;
+  q1: number;
+  q3: number;
+  min: number;
+  max: number;
+}
+
+function groupStats(values: readonly number[]): GroupStats | null {
+  if (values.length === 0) return null;
+  const sorted = [...values].sort((a, b) => a - b);
+  return {
+    n: sorted.length,
+    mean: mean(sorted),
+    median: quantile(sorted, 0.5),
+    q1: quantile(sorted, 0.25),
+    q3: quantile(sorted, 0.75),
+    min: sorted[0]!,
+    max: sorted.at(-1)!,
+  };
+}
+
+export interface GroupComparison {
+  /** The other metric on days the habit was answered yes / no. */
+  yes: GroupStats | null;
+  no: GroupStats | null;
+  /** yes − no, in the other metric's units; null unless both groups exist. */
+  meanDifference: number | null;
+  medianDifference: number | null;
+}
+
+/**
+ * Splits paired days by a 0/1 habit on `habitAxis` and summarises the
+ * *other* axis in each group: "sleep on caffeine days vs. sleep on
+ * no-caffeine days". The pairs already carry the lag, so this compares
+ * exactly what the scatter would plot.
+ */
+export function compareGroups(
+  pairs: readonly Pair[],
+  habitAxis: "x" | "y",
+): GroupComparison {
+  const yes: number[] = [];
+  const no: number[] = [];
+  for (const pair of pairs) {
+    const [answer, other] =
+      habitAxis === "x" ? [pair.x, pair.y] : [pair.y, pair.x];
+    if (answer === 1) yes.push(other);
+    else if (answer === 0) no.push(other);
+  }
+  const yesStats = groupStats(yes);
+  const noStats = groupStats(no);
+  return {
+    yes: yesStats,
+    no: noStats,
+    meanDifference: yesStats && noStats ? yesStats.mean - noStats.mean : null,
+    medianDifference:
+      yesStats && noStats ? yesStats.median - noStats.median : null,
+  };
+}
+
+export interface CrossTab {
+  /** Keyed x answer then y answer: `yesNo` is x yes, y no. */
+  yesYes: number;
+  yesNo: number;
+  noYes: number;
+  noNo: number;
+  n: number;
+}
+
+/** 2×2 counts for two 0/1 series already paired (with any lag). */
+export function crossTabulate(pairs: readonly Pair[]): CrossTab {
+  const table: CrossTab = { yesYes: 0, yesNo: 0, noYes: 0, noNo: 0, n: 0 };
+  for (const { x, y } of pairs) {
+    if ((x !== 0 && x !== 1) || (y !== 0 && y !== 1)) continue;
+    table.n += 1;
+    if (x === 1 && y === 1) table.yesYes += 1;
+    else if (x === 1) table.yesNo += 1;
+    else if (y === 1) table.noYes += 1;
+    else table.noNo += 1;
+  }
+  return table;
+}

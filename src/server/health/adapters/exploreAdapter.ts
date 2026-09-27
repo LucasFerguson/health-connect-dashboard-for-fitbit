@@ -14,8 +14,18 @@
  *   provisional: every published score (164 of 499 days on 2026-09-27) is
  *   `partial`, none `available`, and the day view already shows partial
  *   recovery as a real value. The picker note says it is provisional.
+ * - habits (journal questions) become 1 for a yes day and 0 for a no day. A
+ *   recorded "no" is a real answer, so 0 is correct for it; a day with no
+ *   answer is missing, like every other gap here (`habitSeries`).
  */
-import type { DailyPoint, ExploreSeries } from "~/domain/exploreMetrics";
+import {
+  habitMetric,
+  type CoreSeries,
+  type DailyPoint,
+  type ExploreSeries,
+  type MetricDefinition,
+} from "~/domain/exploreMetrics";
+import { habitSeries, isValidDateKey } from "~/domain/habits";
 import { shiftDate } from "~/domain/correlation";
 import type { DateKey } from "~/domain/health";
 import { MAX_LAG } from "~/domain/exploreParams";
@@ -25,6 +35,7 @@ import type {
 } from "~/types/__generated__/graphql";
 
 type Analytics = ExplorePageQuery["viewer"]["analytics"];
+type Habits = ExplorePageQuery["viewer"]["habits"];
 
 const MINUTES_PER_DAY = 1440;
 const NOON = 720;
@@ -63,7 +74,39 @@ function supporting(analytics: Analytics, key: SupportingKey) {
   });
 }
 
-export function adaptExploreSeries(analytics: Analytics): ExploreSeries {
+/**
+ * One binary metric per journal question, and its series. Entries with a
+ * malformed date are dropped; a question whose all-time bounds are
+ * malformed is still offered, with no answer span.
+ */
+export function adaptExploreHabits(habits: Habits): {
+  metrics: MetricDefinition[];
+  series: ExploreSeries;
+} {
+  const metrics: MetricDefinition[] = [];
+  const series: ExploreSeries = {};
+  const sorted = [...habits].sort((a, b) =>
+    a.question.localeCompare(b.question),
+  );
+  for (const habit of sorted) {
+    const bounded =
+      isValidDateKey(habit.firstSeenDate) && isValidDateKey(habit.lastSeenDate);
+    const metric = habitMetric({
+      id: habit.id,
+      question: habit.question.trim(),
+      firstSeenDate: habit.firstSeenDate,
+      lastSeenDate: habit.lastSeenDate,
+      entryCount: bounded ? habit.entryCount : 0,
+    });
+    metrics.push(metric);
+    series[metric.id] = habitSeries(
+      habit.entries.filter((entry) => isValidDateKey(entry.date)),
+    );
+  }
+  return { metrics, series };
+}
+
+export function adaptExploreSeries(analytics: Analytics): CoreSeries {
   const recoveryUsable = new Set(["available", "partial"]);
   return {
     steps: collect(analytics.steps.daily, (day) => day.value),

@@ -96,10 +96,14 @@ void describe("habitSeries", () => {
         entry("2026-01-03", true),
         entry("2026-01-01", false),
         // 2026-01-02 unanswered: absent, never 0.
+        entry("2026-01-04", false),
+        entry("2026-01-04", true),
       ]),
       [
         { date: "2026-01-01", value: 0 },
         { date: "2026-01-03", value: 1 },
+        // Two cycles that disagree: a yes day, like the grid.
+        { date: "2026-01-04", value: 1 },
       ],
     );
   });

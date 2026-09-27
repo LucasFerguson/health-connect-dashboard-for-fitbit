@@ -11,10 +11,12 @@ import { notchStyle } from "~/components/ui/notch";
 import { pairSeries, summarizePairs } from "~/domain/correlation";
 import type { DateKey } from "~/domain/health";
 import {
-  METRIC_GROUPS,
   METRICS,
+  buildCatalog,
   formatMetricDelta,
   formatSlopeStep,
+  metricGroups,
+  seriesOf,
   type ExploreSeries,
   type MetricDefinition,
   type MetricId,
@@ -27,7 +29,14 @@ import {
   type ExploreRange,
   type ExploreSelection,
 } from "~/domain/exploreParams";
+import { ExploreGroupChart } from "./ExploreGroupChart";
 import { ExploreLineChart } from "./ExploreLineChart";
+import {
+  GroupComparisonView,
+  HabitCrossTab,
+  HabitOutOfRange,
+} from "./HabitComparison";
+import { Stat, formatR, yPhrase } from "./ExploreStat";
 import { ExploreScatterChart } from "./ExploreScatterChart";
 import { EXPLORE_COLORS } from "./chartTheme";
 
@@ -39,13 +48,20 @@ type Window = { from: DateKey | null; to: DateKey };
  * `history.replaceState` (Next keeps `useSearchParams` in sync, and nothing
  * refetches); a range change navigates, because the server fetches only the
  * selected window.
+ *
+ * A habit (a yes/no journal question) on either axis changes the view: a
+ * 0/1 scatter hides everything in two stacked lines, so the pairing becomes
+ * a group comparison (the other metric on yes days vs no days), or a 2×2
+ * table when both axes are habits. See `HabitComparison.tsx`.
  */
 export function ExploreView({
   initialSelection,
+  habitMetrics,
   series,
   window,
 }: {
   initialSelection: ExploreSelection;
+  habitMetrics: MetricDefinition[];
   series: ExploreSeries;
   window: Window;
 }) {
@@ -69,20 +85,32 @@ export function ExploreView({
   const update = (patch: Partial<ExploreSelection>) =>
     setSelection((current) => ({ ...current, ...patch }));
 
-  const x = METRICS[selection.x];
-  const y = METRICS[selection.y];
-  const counts = useMemo(() => countInWindow(series, window), [series, window]);
+  const catalog = useMemo(() => buildCatalog(habitMetrics), [habitMetrics]);
+  const groups = useMemo(() => metricGroups(catalog), [catalog]);
+  const x = catalog.get(selection.x) ?? METRICS.steps;
+  const y = catalog.get(selection.y) ?? METRICS.sleepDuration;
+  const counts = useMemo(
+    () => countInWindow(series, window, catalog),
+    [series, window, catalog],
+  );
   const pairs = useMemo(
     () =>
       pairSeries(
-        series[selection.x],
-        series[selection.y],
+        seriesOf(series, selection.x),
+        seriesOf(series, selection.y),
         selection.lag,
         window,
       ),
     [series, selection.x, selection.y, selection.lag, window],
   );
   const summary = useMemo(() => summarizePairs(pairs), [pairs]);
+  const binaryX = x.kind === "binary";
+  const binaryY = y.kind === "binary";
+  // A habit with no answers in the window: say where its answers are
+  // instead of drawing an empty chart.
+  const emptyHabit = [x, y].find(
+    (metric) => metric.kind === "binary" && (counts.get(metric.id) ?? 0) === 0,
+  );
 
   return (
     <PageShell>
@@ -109,6 +137,8 @@ export function ExploreView({
             color={EXPLORE_COLORS.x}
             value={selection.x}
             counts={counts}
+            groups={groups}
+            catalog={catalog}
             onChange={(id) => update({ x: id })}
           />
           <button
@@ -129,6 +159,8 @@ export function ExploreView({
             color={EXPLORE_COLORS.y}
             value={selection.y}
             counts={counts}
+            groups={groups}
+            catalog={catalog}
             onChange={(id) => update({ y: id })}
           />
         </div>
@@ -138,7 +170,15 @@ export function ExploreView({
             label="MODE"
             value={selection.mode}
             options={[
-              { value: "scatter", label: "SCATTER" },
+              {
+                value: "scatter",
+                label:
+                  binaryX && binaryY
+                    ? "2×2"
+                    : binaryX || binaryY
+                      ? "GROUPS"
+                      : "SCATTER",
+              },
               { value: "line", label: "LINE" },
             ]}
             onChange={(mode) => update({ mode })}
@@ -168,35 +208,80 @@ export function ExploreView({
         </div>
       </Card>
 
-      <StatsRow
-        x={x}
-        y={y}
-        summary={summary}
-        lag={selection.lag}
-        className={clsx(loadingRange && "opacity-60")}
-      />
-
-      <Card
-        className={clsx("mt-4", loadingRange && "opacity-60")}
-        padding="p-3 sm:p-4"
-      >
-        {selection.mode === "scatter" ? (
-          summary.n === 0 ? (
-            <NoOverlap x={x} y={y} counts={counts} />
+      {emptyHabit ? (
+        <HabitOutOfRange
+          habit={emptyHabit}
+          range={selection.range}
+          loading={loadingRange}
+          onShowAll={() => update({ range: "all" })}
+        />
+      ) : (
+        <>
+          {binaryX && binaryY ? null : binaryX || binaryY ? (
+            <GroupComparisonView
+              x={x}
+              y={y}
+              pairs={pairs}
+              summary={summary}
+              lag={selection.lag}
+              className={clsx(loadingRange && "opacity-60")}
+            />
           ) : (
-            <ExploreScatterChart x={x} y={y} pairs={pairs} summary={summary} />
-          )
-        ) : (
-          <ExploreLineChart
-            x={x}
-            y={y}
-            xSeries={series[selection.x]}
-            ySeries={series[selection.y]}
-            lag={selection.lag}
-            window={window}
-          />
-        )}
-      </Card>
+            <StatsRow
+              x={x}
+              y={y}
+              summary={summary}
+              lag={selection.lag}
+              className={clsx(loadingRange && "opacity-60")}
+            />
+          )}
+
+          <Card
+            className={clsx(
+              binaryX && binaryY ? "" : "mt-4",
+              loadingRange && "opacity-60",
+            )}
+            padding="p-3 sm:p-4"
+          >
+            {selection.mode === "scatter" ? (
+              summary.n === 0 ? (
+                <NoOverlap x={x} y={y} counts={counts} />
+              ) : binaryX && binaryY ? (
+                <HabitCrossTab
+                  x={x}
+                  y={y}
+                  pairs={pairs}
+                  summary={summary}
+                  lag={selection.lag}
+                />
+              ) : binaryX || binaryY ? (
+                <ExploreGroupChart
+                  x={x}
+                  y={y}
+                  pairs={pairs}
+                  lag={selection.lag}
+                />
+              ) : (
+                <ExploreScatterChart
+                  x={x}
+                  y={y}
+                  pairs={pairs}
+                  summary={summary}
+                />
+              )
+            ) : (
+              <ExploreLineChart
+                x={x}
+                y={y}
+                xSeries={seriesOf(series, selection.x)}
+                ySeries={seriesOf(series, selection.y)}
+                lag={selection.lag}
+                window={window}
+              />
+            )}
+          </Card>
+        </>
+      )}
 
       <p className="text-ink-100 font-prose mt-4 max-w-3xl text-xs leading-5">
         Correlation is not causation. Two metrics can move together because
@@ -208,16 +293,23 @@ export function ExploreView({
   );
 }
 
-function countInWindow(series: ExploreSeries, window: Window) {
-  const counts = {} as Record<MetricId, number>;
-  for (const [id, points] of Object.entries(series) as [
-    MetricId,
-    ExploreSeries[MetricId],
-  ][]) {
-    counts[id] = points.filter(
-      (point) =>
-        (!window.from || point.date >= window.from) && point.date <= window.to,
-    ).length;
+type Counts = ReadonlyMap<MetricId, number>;
+
+function countInWindow(
+  series: ExploreSeries,
+  window: Window,
+  catalog: ReadonlyMap<MetricId, MetricDefinition>,
+): Counts {
+  const counts = new Map<MetricId, number>();
+  for (const id of catalog.keys()) {
+    counts.set(
+      id,
+      seriesOf(series, id).filter(
+        (point) =>
+          (!window.from || point.date >= window.from) &&
+          point.date <= window.to,
+      ).length,
+    );
   }
   return counts;
 }
@@ -227,16 +319,20 @@ function MetricPicker({
   color,
   value,
   counts,
+  groups,
+  catalog,
   onChange,
 }: {
   axis: "X" | "Y";
   color: string;
   value: MetricId;
-  counts: Record<MetricId, number>;
+  counts: Counts;
+  groups: { group: string; metrics: MetricDefinition[] }[];
+  catalog: ReadonlyMap<MetricId, MetricDefinition>;
   onChange: (id: MetricId) => void;
 }) {
   const id = `explore-metric-${axis}`;
-  const metric = METRICS[value];
+  const metric = catalog.get(value) ?? METRICS.steps;
   return (
     <div className="flex min-w-0 flex-col gap-1.5">
       <label htmlFor={id} className="flex items-center gap-2">
@@ -250,24 +346,38 @@ function MetricPicker({
       <select
         id={id}
         value={value}
-        onChange={(event) => onChange(event.target.value as MetricId)}
+        onChange={(event) => {
+          const next = [...catalog.values()].find(
+            (option) => option.id === event.target.value,
+          );
+          if (next) onChange(next.id);
+        }}
         className="border-ink-500 bg-ink-900 text-ink-0 hover:border-ink-400 focus-visible:border-brand-400 h-9 w-full min-w-0 border px-2.5 font-mono text-[12px] outline-none"
         style={notchStyle(7)}
       >
-        {METRIC_GROUPS.map(({ group, metrics }) => (
+        {groups.map(({ group, metrics }) => (
           <optgroup key={group} label={group}>
-            {metrics.map((option) => (
-              <option
-                key={option.id}
-                value={option.id}
-                disabled={counts[option.id] === 0 && option.id !== value}
-              >
-                {option.label}
-                {counts[option.id] === 0
-                  ? " — no data"
-                  : ` · ${counts[option.id]}d`}
-              </option>
-            ))}
+            {metrics.map((option) => {
+              const count = counts.get(option.id) ?? 0;
+              // A habit stays selectable with no answers in range: picking
+              // it shows where its answers are and offers the range that
+              // has them, instead of a dead option.
+              const habit = option.kind === "binary";
+              return (
+                <option
+                  key={option.id}
+                  value={option.id}
+                  disabled={count === 0 && !habit && option.id !== value}
+                >
+                  {option.label}
+                  {count === 0
+                    ? habit
+                      ? " — none in range"
+                      : " — no data"
+                    : ` · ${count}d`}
+                </option>
+              );
+            })}
           </optgroup>
         ))}
       </select>
@@ -320,11 +430,17 @@ function ToggleGroup<T extends string>({
 
 /** "Y is read 1 day after X" etc. */
 function describeLag(lag: number, x: MetricDefinition, y: MetricDefinition) {
-  if (lag === 0) return `Same day: ${x.label} and ${y.label} from one date.`;
+  // Journal questions are quoted and keep their case, so the sentence
+  // doesn't read "does consumed caffeine? lead?".
+  const name = (metric: MetricDefinition) =>
+    metric.kind === "binary" ? `“${metric.label}”` : metric.label;
+  const inline = (metric: MetricDefinition) =>
+    metric.kind === "binary" ? name(metric) : metric.label.toLowerCase();
+  if (lag === 0) return `Same day: ${name(x)} and ${name(y)} from one date.`;
   const days = `${Math.abs(lag)} day${Math.abs(lag) === 1 ? "" : "s"}`;
   return lag > 0
-    ? `${y.label} from ${days} after ${x.label}: does ${x.label.toLowerCase()} lead?`
-    : `${y.label} from ${days} before ${x.label}: does ${y.label.toLowerCase()} lead?`;
+    ? `${name(y)} from ${days} after ${name(x)}: does ${inline(x)} lead?`
+    : `${name(y)} from ${days} before ${name(x)}: does ${inline(y)} lead?`;
 }
 
 function LagControl({
@@ -393,45 +509,6 @@ function LagControl({
         . {describeLag(lag, x, y)}
       </p>
     </div>
-  );
-}
-
-function formatR(value: number | null) {
-  if (value === null) return "—";
-  const text = Math.abs(value).toFixed(2);
-  return value > 0 ? `+${text}` : value < 0 ? `−${text}` : text;
-}
-
-/** "sleep duration", "sleep duration the next day", "… 3 days earlier". */
-function yPhrase(y: MetricDefinition, lag: number) {
-  const label = y.label.toLowerCase();
-  if (lag === 0) return label;
-  if (lag === 1) return `${label} the next day`;
-  if (lag === -1) return `${label} the day before`;
-  return `${label} ${Math.abs(lag)} days ${lag > 0 ? "later" : "earlier"}`;
-}
-
-/** A compact stat tile: caption, value, and a caption line underneath, so
- * the secondary text never squeezes the value at phone width. */
-function Stat({
-  label,
-  value,
-  caption,
-  accent,
-}: {
-  label: string;
-  value: string;
-  caption?: string;
-  accent?: string;
-}) {
-  return (
-    <Card topAccent={accent} className="flex min-w-0 flex-col gap-1.5">
-      <Label>{label}</Label>
-      <span className="text-ink-0 font-mono text-[22px] leading-none font-bold tracking-[-.03em] sm:text-[30px]">
-        {value}
-      </span>
-      <Label className="text-ink-100 min-h-[11px]">{caption ?? ""}</Label>
-    </Card>
   );
 }
 
@@ -537,14 +614,15 @@ function NoOverlap({
 }: {
   x: MetricDefinition;
   y: MetricDefinition;
-  counts: Record<MetricId, number>;
+  counts: Counts;
 }) {
   return (
     <div className="text-ink-100 flex h-[360px] flex-col items-center justify-center gap-2 px-4 text-center font-mono text-[11px] sm:h-[480px]">
       <span>NO DAYS WITH BOTH METRICS</span>
       <span className="text-ink-200">
-        {x.label}: {counts[x.id]} days · {y.label}: {counts[y.id]} days in this
-        range. Try a longer range, a different lag, or the line view.
+        {x.label}: {counts.get(x.id) ?? 0} days · {y.label}:{" "}
+        {counts.get(y.id) ?? 0} days in this range. Try a longer range, a
+        different lag, or the line view.
       </span>
     </div>
   );

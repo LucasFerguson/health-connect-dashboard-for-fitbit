@@ -20,10 +20,30 @@ import { graphql } from "~/types/__generated__";
  * Sleep duration comes from `sleepDebt.daily.sleepMinutes`, which matches
  * `headlineScores.sleepDuration` on every available day and costs nothing
  * extra, since the debt row is needed anyway.
+ *
+ * `habits` (WHOOP journal questions) sits under `viewer`, beside
+ * `analytics`, and takes the same `$range`. Each entry is trimmed to
+ * `date` + `answeredYes`; the question's all-time `firstSeenDate` /
+ * `lastSeenDate` come back even when the range holds none of its answers,
+ * which is what the "no habit answers in this range" message quotes.
+ * The habit selection's own payload was not measured separately; with
+ * 122 entries it is small next to the analytics lists above.
  */
 export const EXPLORE_QUERY = graphql(`
   query ExplorePage($range: TimeRange) {
     viewer {
+      habits(range: $range) {
+        id
+        question
+        firstSeenDate
+        lastSeenDate
+        entryCount
+        entries {
+          id
+          date
+          answeredYes
+        }
+      }
       analytics {
         id
         timeZone

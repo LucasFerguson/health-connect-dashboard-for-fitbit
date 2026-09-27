@@ -84,3 +84,20 @@ export function exploreSearch(selection: ExploreSelection): string {
     range: selection.range,
   }).toString();
 }
+
+/**
+ * `parseExploreParams` accepts any `habit:` id, since which questions exist
+ * is only known once the data is fetched. This drops an axis naming a
+ * question the catalog doesn't have (a stale shared link) back to its
+ * default.
+ */
+export function resolveSelection(
+  selection: ExploreSelection,
+  known: (id: MetricId) => boolean,
+): ExploreSelection {
+  return {
+    ...selection,
+    x: known(selection.x) ? selection.x : DEFAULT_SELECTION.x,
+    y: known(selection.y) ? selection.y : DEFAULT_SELECTION.y,
+  };
+}
