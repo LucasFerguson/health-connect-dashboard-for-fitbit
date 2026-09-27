@@ -74,13 +74,11 @@ export function HoverCrosshair({
     const plot = plotRef.current;
     const bounds = plot?.getBoundingClientRect();
     if (!plot || !bounds || bounds.width === 0) return null;
-    const clip = plot.parentElement?.getBoundingClientRect() ?? bounds;
     const percent = ((clientX - bounds.left) / bounds.width) * 100;
     return {
       percent: Math.min(100, Math.max(0, percent)),
       clientX,
-      visibleLeft: Math.max(0, clip.left),
-      visibleRight: Math.min(window.innerWidth, clip.right),
+      ...visibleExtent(plot),
     };
   };
 
@@ -117,7 +115,8 @@ export function HoverCrosshair({
   let readout: {
     time: string;
     values: InstantValues;
-    placeLeft: boolean;
+    /** Card's left edge relative to the crosshair line. */
+    offsetPx: number;
   } | null = null;
   if (hover) {
     const instantMs = percentToInstantMs(
@@ -126,16 +125,10 @@ export function HoverCrosshair({
       dayStartHour,
       day.timeZone,
     );
-    const fitsRight =
-      hover.clientX + CARD_OFFSET_PX + cardWidth <=
-      hover.visibleRight - EDGE_MARGIN_PX;
-    const fitsLeft =
-      hover.clientX - CARD_OFFSET_PX - cardWidth >=
-      hover.visibleLeft + EDGE_MARGIN_PX;
     readout = {
       time: formatClock(instantMs, day.timeZone),
       values: valuesAtInstant(day, instantMs, dayStartHour),
-      placeLeft: !fitsRight && fitsLeft,
+      offsetPx: cardOffset(hover, cardWidth),
     };
   }
 
@@ -161,9 +154,7 @@ export function HoverCrosshair({
             className="bg-ink-500 border-ink-400 pointer-events-none absolute top-[38px] border px-2 py-[5px] font-mono text-[8.5px] leading-[1.6] tracking-[.04em] whitespace-nowrap shadow-[0_4px_14px_rgba(0,0,0,.45)]"
             style={{
               left: `${hover.percent}%`,
-              transform: readout.placeLeft
-                ? `translateX(calc(-100% - ${CARD_OFFSET_PX}px))`
-                : `translateX(${CARD_OFFSET_PX}px)`,
+              transform: `translateX(${readout.offsetPx}px)`,
             }}
           >
             <ReadoutBody time={readout.time} values={readout.values} />
@@ -260,4 +251,41 @@ function stageColor(stage: NonNullable<InstantValues["sleepStage"]>): string {
   return stage === "asleep"
     ? "var(--color-sleep-light)"
     : SLEEP_STAGE_STYLE[stage].color;
+}
+
+/**
+ * The horizontal span of `element` actually visible on screen: the viewport
+ * intersected with every ancestor that clips overflow. On phones the timeline
+ * scrolls sideways inside an `overflow-x-auto` wrapper a few levels up, so
+ * measuring only the direct parent (the full-width scroll content) let the
+ * card run off the visible edge.
+ */
+function visibleExtent(element: HTMLElement): {
+  visibleLeft: number;
+  visibleRight: number;
+} {
+  let visibleLeft = 0;
+  let visibleRight = window.innerWidth;
+  for (let node = element.parentElement; node; node = node.parentElement) {
+    if (getComputedStyle(node).overflowX === "visible") continue;
+    const rect = node.getBoundingClientRect();
+    visibleLeft = Math.max(visibleLeft, rect.left);
+    visibleRight = Math.min(visibleRight, rect.right);
+  }
+  return { visibleLeft, visibleRight };
+}
+
+/**
+ * Right of the line when it fits, left of it when that fits instead, and
+ * otherwise clamped inside the visible span (a narrow phone often fits
+ * neither), so the card is never cut off.
+ */
+function cardOffset(hover: HoverPosition, cardWidth: number): number {
+  const minLeft = hover.visibleLeft + EDGE_MARGIN_PX;
+  const maxRight = hover.visibleRight - EDGE_MARGIN_PX;
+  const right = hover.clientX + CARD_OFFSET_PX;
+  if (right + cardWidth <= maxRight) return CARD_OFFSET_PX;
+  const left = hover.clientX - CARD_OFFSET_PX - cardWidth;
+  if (left >= minLeft) return -CARD_OFFSET_PX - cardWidth;
+  return Math.max(minLeft, maxRight - cardWidth) - hover.clientX;
 }
