@@ -31,7 +31,10 @@ import type {
   SleepEvent,
 } from "~/domain/analytics";
 import type { HealthSnapshot, SleepSession } from "~/domain/health";
-import type { OverviewPageQuery } from "~/types/__generated__/graphql";
+import type {
+  MetricUnit as GraphQLMetricUnit,
+  OverviewPageQuery,
+} from "~/types/__generated__/graphql";
 import { adaptHealthspan } from "./healthspanAdapter";
 import { adaptSleepConsistency } from "./sleepConsistencyAdapter";
 import { adaptSleepDebt } from "./sleepDebtAdapter";
@@ -39,14 +42,17 @@ import { adaptSleepDebt } from "./sleepDebtAdapter";
 /** The `viewer.analytics` selection the overview query makes. */
 export type GraphQLOverviewAnalytics = OverviewPageQuery["viewer"]["analytics"];
 
-/** The five metric series the overview selects, and their domain units. */
+/**
+ * The five metric series the overview selects, with their domain unit and the
+ * `MetricUnit` enum value the wire is expected to carry.
+ */
 const METRIC_UNITS = {
-  steps: "steps",
-  activeCalories: "kcal",
-  totalCalories: "kcal",
-  restingHeartRate: "bpm",
-  weight: "kg",
-} as const satisfies Record<string, MetricUnit>;
+  steps: ["steps", "STEPS"],
+  activeCalories: ["kcal", "KCAL"],
+  totalCalories: ["kcal", "KCAL"],
+  restingHeartRate: ["bpm", "BPM"],
+  weight: ["kg", "KG"],
+} as const satisfies Record<string, readonly [MetricUnit, GraphQLMetricUnit]>;
 
 type MetricName = keyof typeof METRIC_UNITS;
 
@@ -142,54 +148,36 @@ function toSession(session: {
   };
 }
 
-interface GraphQLOverviewMetric {
-  unit: string;
-  overview: {
-    average7Day: number | null;
-    average30Day: number | null;
-    changeFromPrevious: number | null;
-    sampleCount: number;
-    latest: GraphQLOverviewMetricDay | null;
-    previous: GraphQLOverviewMetricDay | null;
-  };
-  daily: GraphQLOverviewMetricDay[];
-}
-
-interface GraphQLOverviewMetricDay {
-  date: string;
-  value: number;
-  source: string | null;
-  qualityFlags: string[];
-}
+type GraphQLOverviewMetric = GraphQLOverviewAnalytics["steps"];
+type GraphQLOverviewMetricDay = GraphQLOverviewMetric["daily"][number];
 
 /**
  * `rolling7Day` and `monthly` are not selected by the overview (nothing there
  * renders them — see `overviewQuery.ts`), so they are empty here. The metric
  * detail routes have their own query that does select them.
  *
- * The unit comes from `METRIC_UNITS` rather than the wire value: the domain
- * type is a closed union and the API sends `String!`, so a backend changing
- * "kg" to "lb" must not silently relabel real numbers. A mismatch is logged.
+ * The unit comes from `METRIC_UNITS` rather than the wire value, so a backend
+ * contract change can't silently relabel real numbers; a mismatch is logged.
  */
 function toMetric(
   name: MetricName,
   series: GraphQLOverviewMetric,
 ): MetricAnalytics {
-  const unit = METRIC_UNITS[name];
-  if (series.unit !== unit) {
+  const [unit, wireUnit] = METRIC_UNITS[name];
+  if (series.unit !== wireUnit) {
     console.error(
-      `GraphQL overview ${name} reported unit "${series.unit}", expected "${unit}"; rendering as "${unit}"`,
+      `GraphQL overview ${name} reported unit ${series.unit}, expected ${wireUnit}; rendering as "${unit}"`,
     );
   }
   return {
     unit,
-    daily: series.daily.flatMap(toMetricDay),
+    daily: series.daily.map(toMetricDay),
     overview: {
       latest: series.overview.latest
-        ? (toMetricDay(series.overview.latest)[0] ?? null)
+        ? toMetricDay(series.overview.latest)
         : null,
       previous: series.overview.previous
-        ? (toMetricDay(series.overview.previous)[0] ?? null)
+        ? toMetricDay(series.overview.previous)
         : null,
       average7Day: series.overview.average7Day,
       average30Day: series.overview.average30Day,
@@ -202,22 +190,15 @@ function toMetric(
 }
 
 /**
- * `source` is nullable in the schema but required by the domain, where it
- * labels the value in the UI. A day with no attribution is dropped rather than
- * given an invented one; measured against live data this drops nothing.
- *
  * `bySource` is not selected by the overview (only the metric detail pages read
  * it), so it is empty here.
  */
-function toMetricDay(day: GraphQLOverviewMetricDay): [DailyMetricSummary] | [] {
-  if (day.source === null) return [];
-  return [
-    {
-      date: day.date,
-      value: day.value,
-      source: day.source,
-      bySource: [],
-      qualityFlags: day.qualityFlags,
-    },
-  ];
+function toMetricDay(day: GraphQLOverviewMetricDay): DailyMetricSummary {
+  return {
+    date: day.date,
+    value: day.value,
+    source: day.source,
+    bySource: [],
+    qualityFlags: day.qualityFlags,
+  };
 }

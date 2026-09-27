@@ -1,16 +1,14 @@
 /**
  * Maps HCGateway's `HealthspanSummary` onto the domain `HealthspanAnalytics`.
  *
- * Extracted from `getHealthspanAnalytics` so the overview page — which selects
- * the same fields as part of its wider query — reuses this mapping instead of
- * duplicating it. Both callers must keep selecting the same fields; the
- * parameter type below is the contract.
+ * Shared by `getHealthspanAnalytics` and the overview page, which selects the
+ * same fields inside its wider query. Both callers must keep selecting the
+ * same fields; the parameter type below is the contract.
  *
- * This page has the widest gap between the schema and the domain types: three
- * fields the domain narrows to string unions arrive as plain `String!`, and
- * several required numbers arrive nullable. Each is mapped explicitly below
- * rather than cast, because a cast here would put an unrecognized value into
- * a component that switches on it and render a wrong label as if it were real.
+ * The schema's closed value sets are GraphQL enums (SCREAMING_CASE); the
+ * domain's are lowercase. Each is translated through a total `Record` over the
+ * generated union, so a value added or renamed server-side becomes a compile
+ * error after `npm run codegen` instead of a silently missing factor card.
  */
 import type {
   DailyHealthspanEstimate,
@@ -19,81 +17,36 @@ import type {
   HealthspanFactorKey,
   HealthspanStatus,
 } from "~/domain/analytics";
+import type {
+  HealthspanFactorKey as GraphQLFactorKey,
+  HealthspanFactorUnit as GraphQLFactorUnit,
+  HealthspanPageQuery,
+  HealthspanStatus as GraphQLStatus,
+} from "~/types/__generated__/graphql";
 
-type FactorUnit = HealthspanFactor["unit"];
+export type GraphQLHealthspan =
+  HealthspanPageQuery["viewer"]["analytics"]["healthspan"];
+type GraphQLFactor = GraphQLHealthspan["trend"][number]["factors"][number];
 
-/**
- * `HealthspanSummary.status` is `String!` in the schema, so codegen cannot
- * constrain it. Typed as a total Record over the domain union so dropping a
- * status from the domain type becomes a compile error here.
- */
-const STATUSES: Record<HealthspanStatus, true> = {
-  calibrating: true,
-  partial: true,
-  ready: true,
+const STATUS: Record<GraphQLStatus, HealthspanStatus> = {
+  CALIBRATING: "calibrating",
+  PARTIAL: "partial",
+  READY: "ready",
 };
 
-/** `HealthspanFactor.key` is `String!` in the schema; same reasoning. */
-const FACTOR_KEYS: Record<HealthspanFactorKey, true> = {
-  sleep_duration: true,
-  sleep_consistency: true,
-  steps: true,
-  resting_heart_rate: true,
+const FACTOR_KEY: Record<GraphQLFactorKey, HealthspanFactorKey> = {
+  SLEEP_DURATION: "sleep_duration",
+  SLEEP_CONSISTENCY: "sleep_consistency",
+  STEPS: "steps",
+  RESTING_HEART_RATE: "resting_heart_rate",
 };
 
-/** `HealthspanFactor.unit` is `String!` in the schema; same reasoning. */
-const FACTOR_UNITS: Record<FactorUnit, true> = {
-  minutes: true,
-  percent: true,
-  steps: true,
-  bpm: true,
+const FACTOR_UNIT: Record<GraphQLFactorUnit, HealthspanFactor["unit"]> = {
+  MINUTES: "minutes",
+  PERCENT: "percent",
+  STEPS: "steps",
+  BPM: "bpm",
 };
-
-/**
- * An unknown status means this build doesn't understand what the server is
- * reporting, so it degrades to the most conservative value: "calibrating"
- * makes the UI present the estimate as provisional rather than asserting a
- * health age it can't vouch for. Claiming "ready" on an unrecognized status
- * would be the one unsafe direction.
- */
-function toStatus(status: string): HealthspanStatus {
-  return status in STATUSES ? (status as HealthspanStatus) : "calibrating";
-}
-
-function isFactorKey(key: string): key is HealthspanFactorKey {
-  return key in FACTOR_KEYS;
-}
-
-function isFactorUnit(unit: string): unit is FactorUnit {
-  return unit in FACTOR_UNITS;
-}
-
-export interface GraphQLHealthspan {
-  modelVersion: string;
-  status: string;
-  birthDateConfigured: boolean;
-  methodology: string;
-  calibrationReasons: string[];
-  paceOfAging: number | null;
-  paceWindowDays: number | null;
-  trend: {
-    date: string;
-    chronologicalAgeYears: number | null;
-    healthAgeYears: number | null;
-    ageDeltaYears: number | null;
-    paceOfAging: number | null;
-    qualityFlags: string[];
-    factors: {
-      key: string;
-      label: string;
-      value: number;
-      unit: string;
-      referenceValue: number | null;
-      ageImpactYears: number | null;
-      coverageDays: number | null;
-    }[];
-  }[];
-}
 
 export function adaptHealthspan(
   healthspan: GraphQLHealthspan,
@@ -104,13 +57,13 @@ export function adaptHealthspan(
     healthAgeYears: day.healthAgeYears,
     ageDeltaYears: day.ageDeltaYears,
     paceOfAging: day.paceOfAging,
-    factors: day.factors.flatMap(toFactor),
+    factors: day.factors.map(toFactor),
     qualityFlags: day.qualityFlags,
   }));
 
-  const analytics: HealthspanAnalytics = {
+  return {
     modelVersion: healthspan.modelVersion,
-    status: toStatus(healthspan.status),
+    status: STATUS[healthspan.status],
     birthDateConfigured: healthspan.birthDateConfigured,
     methodology: healthspan.methodology,
     calibrationReasons: healthspan.calibrationReasons,
@@ -119,57 +72,23 @@ export function adaptHealthspan(
     // Derived rather than selected separately so the two cannot disagree.
     latest: trend.at(-1) ?? null,
     paceOfAging: healthspan.paceOfAging,
-    // `paceWindowDays` is `Int` in the schema but required by the domain. It
-    // describes the model's regression window (180 in every run observed),
-    // not a measured health value, and nothing in the UI reads it today — so
-    // 0 cannot be mistaken for data. When it is missing there is no pace to
+    // `paceWindowDays` is still nullable in the schema but required by the
+    // domain. It describes the model's regression window (180 in every run
+    // observed), not a measured health value, and nothing in the UI reads it —
+    // so 0 cannot be mistaken for data. When it is missing there is no pace to
     // window anyway, which `paceOfAging: null` is what actually renders.
     paceWindowDays: healthspan.paceWindowDays ?? 0,
   };
-  return analytics;
 }
 
-/**
- * Drops a factor rather than coercing it. `key` and `unit` are `String!` in the
- * schema, and both drive presentation: an unrecognized key would be rendered
- * under whichever label the component happens to map it to, and an
- * unrecognized unit would format e.g. bpm as minutes. Showing a mislabeled
- * health number is worse than showing one fewer factor.
- *
- * `referenceValue`, `ageImpactYears` and `coverageDays` are nullable in the
- * schema but required by the domain, and all three are rendered verbatim next
- * to the value ("N recorded days · reference X"). No neutral default exists —
- * 0 recorded days or a 0 reference would both read as real data — so a factor
- * missing any of them is dropped too. Measured over 1,449 real factors none
- * were null, so this path is currently unreachable; see the backend follow-up
- * list about making them non-null.
- */
-function toFactor(factor: {
-  key: string;
-  label: string;
-  value: number;
-  unit: string;
-  referenceValue: number | null;
-  ageImpactYears: number | null;
-  coverageDays: number | null;
-}): HealthspanFactor[] {
-  if (!isFactorKey(factor.key) || !isFactorUnit(factor.unit)) return [];
-  if (
-    factor.referenceValue === null ||
-    factor.ageImpactYears === null ||
-    factor.coverageDays === null
-  ) {
-    return [];
-  }
-  return [
-    {
-      key: factor.key,
-      label: factor.label,
-      value: factor.value,
-      unit: factor.unit,
-      referenceValue: factor.referenceValue,
-      ageImpactYears: factor.ageImpactYears,
-      coverageDays: factor.coverageDays,
-    },
-  ];
+function toFactor(factor: GraphQLFactor): HealthspanFactor {
+  return {
+    key: FACTOR_KEY[factor.key],
+    label: factor.label,
+    value: factor.value,
+    unit: FACTOR_UNIT[factor.unit],
+    referenceValue: factor.referenceValue,
+    ageImpactYears: factor.ageImpactYears,
+    coverageDays: factor.coverageDays,
+  };
 }

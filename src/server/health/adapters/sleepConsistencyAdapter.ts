@@ -13,7 +13,10 @@ import type {
   SleepConsistencyBreakdown,
   SleepConsistencyCategory,
 } from "~/domain/analytics";
-import type { ConsistencyCategory } from "~/types/__generated__/graphql";
+import type {
+  ConsistencyCategory,
+  SleepConsistencyPageQuery,
+} from "~/types/__generated__/graphql";
 
 const categoryByEnum: Record<ConsistencyCategory, SleepConsistencyCategory> = {
   OPTIMAL: "optimal",
@@ -21,76 +24,30 @@ const categoryByEnum: Record<ConsistencyCategory, SleepConsistencyCategory> = {
   POOR: "poor",
 };
 
-export interface GraphQLSleepConsistency {
-  baselineWindowDays: number;
-  minimumBaselineNights: number;
-  methodology: string;
-  average7DayScore: number | null;
-  average30DayScore: number | null;
-  previous30DayAverageScore: number | null;
-  daily: {
-    date: string;
-    source: string | null;
-    bedtimeAt: string | null;
-    wakeAt: string | null;
-    bedtimeMinutesLocal: number | null;
-    wakeMinutesLocal: number | null;
-    baselineBedtimeMinutesLocal: number | null;
-    baselineWakeMinutesLocal: number | null;
-    bedtimeDeviationMinutes: number | null;
-    wakeDeviationMinutes: number | null;
-    baselineNightCount: number;
-    score: number | null;
-    category: ConsistencyCategory | null;
-    rolling7DayAverageScore: number | null;
-    rolling30DayAverageScore: number | null;
-    qualityFlags: string[];
-  }[];
-}
+export type GraphQLSleepConsistency =
+  SleepConsistencyPageQuery["viewer"]["analytics"]["sleepConsistency"];
 
 export function adaptSleepConsistency(
   sleepConsistency: GraphQLSleepConsistency,
 ): SleepConsistencyAnalytics {
-  // `source`, `bedtimeAt`, `wakeAt` and the local-minute fields are
-  // nullable in the schema but required by `DailySleepConsistency`. A day
-  // missing them has no usable bedtime/wake window to plot, so it is
-  // dropped rather than filled with invented values — a fabricated
-  // midnight would silently skew the consistency baseline. See the
-  // backend follow-up list: these should arrive non-null, or the domain
-  // type should admit nulls.
-  const daily: DailySleepConsistency[] = sleepConsistency.daily.flatMap(
-    (day) => {
-      if (
-        day.source === null ||
-        day.bedtimeAt === null ||
-        day.wakeAt === null ||
-        day.bedtimeMinutesLocal === null ||
-        day.wakeMinutesLocal === null
-      ) {
-        return [];
-      }
-      return [
-        {
-          date: day.date,
-          source: day.source,
-          bedtimeAt: day.bedtimeAt,
-          wakeAt: day.wakeAt,
-          bedtimeMinutesLocal: day.bedtimeMinutesLocal,
-          wakeMinutesLocal: day.wakeMinutesLocal,
-          baselineBedtimeMinutesLocal: day.baselineBedtimeMinutesLocal,
-          baselineWakeMinutesLocal: day.baselineWakeMinutesLocal,
-          bedtimeDeviationMinutes: day.bedtimeDeviationMinutes,
-          wakeDeviationMinutes: day.wakeDeviationMinutes,
-          baselineNightCount: day.baselineNightCount,
-          score: day.score,
-          category: day.category ? categoryByEnum[day.category] : null,
-          rolling7DayAverageScore: day.rolling7DayAverageScore,
-          rolling30DayAverageScore: day.rolling30DayAverageScore,
-          qualityFlags: day.qualityFlags,
-        },
-      ];
-    },
-  );
+  const daily: DailySleepConsistency[] = sleepConsistency.daily.map((day) => ({
+    date: day.date,
+    source: day.source,
+    bedtimeAt: day.bedtimeAt,
+    wakeAt: day.wakeAt,
+    bedtimeMinutesLocal: day.bedtimeMinutesLocal,
+    wakeMinutesLocal: day.wakeMinutesLocal,
+    baselineBedtimeMinutesLocal: day.baselineBedtimeMinutesLocal,
+    baselineWakeMinutesLocal: day.baselineWakeMinutesLocal,
+    bedtimeDeviationMinutes: day.bedtimeDeviationMinutes,
+    wakeDeviationMinutes: day.wakeDeviationMinutes,
+    baselineNightCount: day.baselineNightCount,
+    score: day.score,
+    category: day.category ? categoryByEnum[day.category] : null,
+    rolling7DayAverageScore: day.rolling7DayAverageScore,
+    rolling30DayAverageScore: day.rolling30DayAverageScore,
+    qualityFlags: day.qualityFlags,
+  }));
 
   const analytics: SleepConsistencyAnalytics = {
     baselineWindowDays: sleepConsistency.baselineWindowDays,
