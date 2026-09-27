@@ -1,10 +1,10 @@
 import { notFound } from "next/navigation";
 import { DayView } from "~/components/day-view/DayView";
+import { isDateKey } from "~/domain/health";
 import { getDayAnalytics } from "~/server/health/getDayAnalytics";
 
 /**
- * No `export const dynamic = "force-dynamic"` here (unlike the old
- * `getDayViewSnapshot`-backed version of this page): the underlying
+ * No `export const dynamic = "force-dynamic"` here: the underlying
  * `HealthConnectClient` requests are already `cache: "no-store"`, and
  * `getDayAnalytics()` layers its own two-tier in-memory cache on top
  * (`dayAnalyticsCache.ts`) — a short 30s TTL for an open/still-arriving
@@ -17,7 +17,6 @@ import { getDayAnalytics } from "~/server/health/getDayAnalytics";
  * purely on the server-side cache's long TTL.
  */
 
-const DATE_PATTERN = /^\d{4}-\d{2}-\d{2}$/;
 const NEARBY_RADIUS = 7;
 
 export default async function DayViewPage({
@@ -26,7 +25,7 @@ export default async function DayViewPage({
   params: Promise<{ date: string }>;
 }) {
   const { date } = await params;
-  if (!DATE_PATTERN.test(date)) {
+  if (!isDateKey(date)) {
     notFound();
   }
 

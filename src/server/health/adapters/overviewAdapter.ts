@@ -69,8 +69,8 @@ export function adaptOverview(
 
   const dailySleep: DailySleepSummary[] = analytics.days.flatMap((day) => {
     const sleep = day.headlineScores.sleepDuration;
-    // MISSING days send nulls rather than zero; the legacy `dailySleep`
-    // likewise only contained days that had sleep, so a gap stays a gap.
+    // MISSING days send nulls rather than zero. Dropping them means
+    // `dailySleep` holds only days that had sleep, so a gap stays a gap.
     if (
       sleep.value === null ||
       sleep.eventCount === null ||
@@ -98,13 +98,6 @@ export function adaptOverview(
     }));
 
   const healthAnalytics: HealthAnalytics = {
-    algorithmVersion: analytics.algorithmVersion,
-    // Fingerprints are components of the runId, which the API exposes as
-    // one opaque identifier rather than its parts. Nothing in the UI reads
-    // these two fields; they exist on the legacy type only.
-    sourceFingerprint: analytics.runId,
-    configurationFingerprint: analytics.runId,
-    processedAt: analytics.processedAt ?? new Date(0).toISOString(),
     sleepEvents,
     dailySleep,
     sleepDebt: adaptSleepDebt(analytics.sleepDebt),
@@ -120,7 +113,6 @@ export function adaptOverview(
 
   return {
     generatedAt: analytics.processedAt ?? new Date().toISOString(),
-    source: "health-connect",
     sleepSessions,
     analytics: healthAnalytics,
   };

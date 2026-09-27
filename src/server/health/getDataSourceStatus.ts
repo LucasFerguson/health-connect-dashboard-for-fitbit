@@ -1,6 +1,6 @@
 /**
  * GraphQL-backed feed-presence read for the data-sources page. Same pattern as
- * `getSleepDebtAnalytics` — see GRAPHQL_MIGRATION_REDUNDANCY.md.
+ * `getSleepDebtAnalytics`.
  */
 import { withAnalytics } from "./graphql/fetchAnalytics";
 import { DATA_SOURCES_QUERY } from "./graphql/dataSourcesQuery";
@@ -15,14 +15,14 @@ export type FeedPresence = {
   weight: boolean;
 };
 
-/** Returns `null` when GraphQL can't serve this page; see `withAnalytics`. */
+/** Throws when GraphQL can't serve this page; see `withAnalytics`. */
 export function getDataSourceStatus() {
   return withAnalytics(
     "data-sources",
     DATA_SOURCES_QUERY,
     (analytics): FeedPresence => ({
-      // A non-null `latest` is the cheapest proof that any sleep day exists;
-      // the legacy check was `dailySleep.length > 0`.
+      // A non-null `latest` is the cheapest proof that any sleep day exists,
+      // without selecting the whole daily series just to count it.
       sleep: analytics.sleepDebt.latest !== null,
       steps: analytics.steps.overview.sampleCount > 0,
       activeCalories: analytics.activeCalories.overview.sampleCount > 0,

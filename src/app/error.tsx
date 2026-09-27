@@ -4,10 +4,11 @@ import { useEffect } from "react";
 
 /**
  * Root error boundary. Catches render-time throws from every page below
- * `layout.tsx` — including the legacy `getHealthSnapshot()` pages and the
- * HCGateway-backed `/day` pages — so an unreachable data source (e.g. the
- * self-hosted API host going down or being briefly unreachable) shows a
- * readable in-app message instead of Next's default crash page.
+ * `layout.tsx` — the GraphQL-backed pages, whose `withAnalytics` reads throw
+ * rather than render empty, and the REST-backed `/day` pages — so an
+ * unreachable data source (e.g. the self-hosted API host going down or being
+ * briefly unreachable) shows a readable in-app message instead of Next's
+ * default crash page.
  */
 export default function GlobalError({
   error,
@@ -26,11 +27,13 @@ export default function GlobalError({
         ⚠
       </span>
       <div className="space-y-1">
-        <h1 className="text-lg font-semibold">Couldn&apos;t load health data</h1>
+        <h1 className="text-lg font-semibold">
+          Couldn&apos;t load health data
+        </h1>
         <p className="max-w-md text-sm text-white/55">
           The dashboard couldn&apos;t reach its data source. It may be
-          temporarily unreachable — check that it&apos;s up and reachable
-          from this server, then try again.
+          temporarily unreachable — check that it&apos;s up and reachable from
+          this server, then try again.
         </p>
       </div>
       <button

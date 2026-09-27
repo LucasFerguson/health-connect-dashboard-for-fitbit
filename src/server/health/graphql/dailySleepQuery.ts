@@ -5,8 +5,8 @@ import { graphql } from "~/types/__generated__";
  *
  * There is no `dailySleep` field on the API, so the per-day sleep totals come
  * from `days { headlineScores { sleepDuration } }`, which carries the same
- * three numbers the legacy `DailySleepSummary` had (minutes, event count,
- * recording count). `sleepDebt.targetMinutes` supplies the target line.
+ * three numbers `DailySleepSummary` needs (minutes, event count, recording
+ * count). `sleepDebt.targetMinutes` supplies the target line.
  *
  * `days` is requested without a `range` deliberately: the page renders a
  * full-history calendar heatmap, so it wants every recorded day. Only the

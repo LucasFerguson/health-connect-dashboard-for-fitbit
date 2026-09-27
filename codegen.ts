@@ -2,9 +2,9 @@ import type { CodegenConfig } from "@graphql-codegen/cli";
 
 /**
  * Generates TypeScript types from HCGateway's GraphQL schema so the frontend
- * never hand-maintains a parallel copy of the backend's contract (the problem
- * `src/domain/analytics.ts` and `dayAnalyticsSchema.ts` represent today — see
- * GRAPHQL_MIGRATION_REDUNDANCY.md).
+ * never hand-maintains a parallel copy of the backend's wire contract. (The
+ * REST day view's `dayAnalyticsSchema.ts` is still hand-written Zod, since
+ * that endpoint has no schema to generate from.)
  *
  * The schema is read from the checked-in `graphql-introspection.json` rather
  * than the live endpoint, because `/graphql` requires a bearer token and this

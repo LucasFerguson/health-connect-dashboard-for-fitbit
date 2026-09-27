@@ -1,14 +1,7 @@
 /**
- * LEGACY — part of the old plan where this repo computed its own health
- * analytics locally. That plan has changed: a separate backend (HCGateway)
- * now owns analytics computation, and this repo is moving toward being
- * frontend-only. This file still runs for pages that haven't been migrated
- * yet (see README.md's "Architecture and data flow" section).
- *
- * Do not extend this file with new metrics, new computations, or new
- * data-processing logic. If a page needs something this doesn't already
- * provide, ask the user whether it should come from a new HCGateway API
- * endpoint instead of being built here.
+ * Read-only lookups over the overview `HealthSnapshot` for the sleep calendar,
+ * stage graph and device-comparison cards. They filter and reshape what
+ * HCGateway already computed; none of them derive new health numbers.
  */
 import type { DeviceSleepSummary, SleepEvent } from "~/domain/analytics";
 import type { DateKey, HealthSnapshot, SleepSession } from "~/domain/health";
@@ -18,15 +11,6 @@ export interface SleepDaySummary {
   sleepMinutes: number;
   sessionCount: number;
   recordingCount: number;
-}
-
-export function selectSleepSessionsForDate(
-  snapshot: HealthSnapshot,
-  date: DateKey | null,
-): SleepSession[] {
-  return selectSleepEventsForDate(snapshot, date).flatMap(
-    (event) => event.recordings,
-  );
 }
 
 export function selectSleepEventsForDate(

@@ -2,15 +2,15 @@ import { graphql } from "~/types/__generated__";
 import { OverviewPageDocument } from "~/types/__generated__/graphql";
 
 /**
- * Overview (home) page query — the widest of the migrated pages, because the
- * dashboard shows every analytics section at once.
+ * Overview (home) page query — the widest page query, because the dashboard
+ * shows every analytics section at once.
  *
  * **Stage timelines are deliberately excluded.** Selecting `stages` on all 590
  * sleep events costs 5.5 MB (32,224 individual stages) — only ~2x better than
- * the 10 MB legacy snapshot this replaces. Without them the same full history
- * is 321 KB, a 17x reduction, which is what the sleep calendar and every
- * summary card actually need: only `SleepStagesGraph` reads `.stages`, and only
- * for the one selected day.
+ * the ~10 MB whole-history snapshot the app once loaded locally. Without them
+ * the same full history is 321 KB, a 17x reduction, which is what the sleep
+ * calendar and every summary card actually need: only `SleepStagesGraph` reads
+ * `.stages`, and only for the one selected day.
  *
  * `overviewSleepStagesQuery()` below fetches stages for a bounded date range
  * on demand, so navigating the calendar pulls one month (~128 KB) at a time.

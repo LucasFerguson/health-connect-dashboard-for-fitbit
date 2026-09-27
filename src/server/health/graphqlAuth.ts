@@ -52,9 +52,9 @@ export function invalidateGraphQLToken(): void {
 }
 
 /**
- * True when API_URL/API_USERNAME/API_PASSWORD are all configured, matching
- * `createHealthRepository`'s all-or-nothing gate. Callers must fall back to
- * fixture data when this is false, the same way the REST paths do.
+ * True when API_URL/API_USERNAME/API_PASSWORD are all configured. All three
+ * or nothing: there is no anonymous or partial mode, so `withAnalytics` throws
+ * when this is false rather than attempting a request that can only fail.
  */
 export function isGraphQLConfigured(): boolean {
   return Boolean(env.API_URL && env.API_USERNAME && env.API_PASSWORD);

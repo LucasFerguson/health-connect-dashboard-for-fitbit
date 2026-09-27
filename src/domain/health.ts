@@ -1,12 +1,13 @@
-/**
- * SHARED — used by both the legacy local-analytics-pipeline path (most
- * pages) and the newer HCGateway-backed day view (`/day/[date]`). Do not
- * assume this is safe to delete or purely legacy; check both call sites
- * before changing its behavior. See README.md's "Architecture and data
- * flow" section for the two-path split.
- */
+import type { HealthAnalytics } from "./analytics";
+
 export type ISODateTime = string;
+/** A calendar day, `YYYY-MM-DD`. */
 export type DateKey = string;
+
+/** Narrows untrusted input (a search param, a route segment) to a `DateKey`. */
+export function isDateKey(value: string | null | undefined): value is DateKey {
+  return typeof value === "string" && /^\d{4}-\d{2}-\d{2}$/.test(value);
+}
 
 export type SleepStageKind =
   | "awake"
@@ -32,48 +33,13 @@ export interface SleepSession {
   stages: SleepStage[];
 }
 
-export interface IntervalObservation {
-  id: string;
-  source: string;
-  startAt: ISODateTime;
-  endAt: ISODateTime;
-}
-
-export interface StepsObservation extends IntervalObservation {
-  count: number;
-}
-
-export interface EnergyObservation extends IntervalObservation {
-  energyKcal: number;
-}
-
-export interface RestingHeartRateObservation {
-  id: string;
-  source: string;
-  observedAt: ISODateTime;
-  bpm: number;
-}
-
-export interface WeightObservation {
-  id: string;
-  source: string;
-  observedAt: ISODateTime;
-  kilograms: number;
-}
-
-export interface RawHealthData {
-  sleepSessions: SleepSession[];
-  steps: StepsObservation[];
-  activeCalories: EnergyObservation[];
-  totalCalories: EnergyObservation[];
-  restingHeartRates: RestingHeartRateObservation[];
-  weights: WeightObservation[];
-}
-
+/**
+ * Everything the overview dashboard renders, as one value: built from the
+ * overview GraphQL query by `adaptOverview` and held client-side by
+ * `HealthDataProvider`, which polls for fresh copies.
+ */
 export interface HealthSnapshot {
   generatedAt: ISODateTime;
-  source: "health-connect" | "fixture";
   sleepSessions: SleepSession[];
   analytics: HealthAnalytics;
 }
-import type { HealthAnalytics } from "./analytics";

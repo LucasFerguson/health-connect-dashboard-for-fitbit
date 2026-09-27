@@ -1,6 +1,7 @@
 /**
  * GraphQL-backed daily-sleep read for the sleep-quantity page. Same pattern as
- * `getSleepDebtAnalytics` — see GRAPHQL_MIGRATION_REDUNDANCY.md.
+ * `getSleepDebtAnalytics`: a query plus a thin mapping run through
+ * `withAnalytics`.
  */
 import type { DailySleepSummary } from "~/domain/analytics";
 import { withAnalytics } from "./graphql/fetchAnalytics";
@@ -11,7 +12,7 @@ export interface DailySleepPageData {
   targetMinutes: number;
 }
 
-/** Returns `null` when GraphQL can't serve this page; see `withAnalytics`. */
+/** Throws when GraphQL can't serve this page; see `withAnalytics`. */
 export function getDailySleep() {
   return withAnalytics(
     "daily-sleep",
@@ -20,10 +21,9 @@ export function getDailySleep() {
       const daily = days.flatMap((day): DailySleepSummary[] => {
         const sleep = day.headlineScores.sleepDuration;
         // Days with no sleep recorded report status MISSING and null values
-        // rather than zero — the API is explicit about absence. The legacy
-        // `dailySleep` array likewise contained only days that had sleep, so
-        // skipping them preserves the existing chart and heatmap semantics: a
-        // gap stays a gap instead of becoming a plotted zero-minute night.
+        // rather than zero — the API is explicit about absence. Skipping them
+        // keeps the chart and heatmap honest: a gap stays a gap instead of
+        // becoming a plotted zero-minute night.
         if (
           sleep.value === null ||
           sleep.eventCount === null ||

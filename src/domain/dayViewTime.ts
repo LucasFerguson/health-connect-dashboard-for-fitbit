@@ -7,12 +7,12 @@ import type { DateKey, ISODateTime } from "./health";
  * requirement that the axis be implemented once and shared.
  *
  * The axis always spans exactly 24 hours, anchored to a **local calendar
- * day** in `timeZone` (the same IANA zone the analytics pipeline uses via
- * `HEALTH_HOME_TIME_ZONE` — see `pipeline/context.ts` and
- * `pipeline/shared/dateKey.ts`), not UTC midnight. `dayStartHour` pivots
- * the origin within that local day (0 = midnight-to-midnight, 18 =
- * 18:00-to-18:00) so a night can be viewed whole; it is a parameter, not a
- * constant, per the open design question on the default.
+ * day** in `timeZone` (the account's IANA zone, which HCGateway reports as
+ * `day.timeZone` and uses to bucket its own analytics), not UTC midnight.
+ * `dayStartHour` pivots the origin within that local day (0 =
+ * midnight-to-midnight, 18 = 18:00-to-18:00) so a night can be viewed whole;
+ * it is a parameter, not a constant, per the open design question on the
+ * default.
  */
 
 const MINUTES_PER_DAY = 24 * 60;
@@ -48,9 +48,9 @@ function clockFormatterFor(timeZone: string): Intl.DateTimeFormat {
   return formatter;
 }
 
-/** The `YYYY-MM-DD` calendar-day key for an instant, in `timeZone`. Mirrors
- * `dateKeyInTimeZone` in `pipeline/shared/dateKey.ts` so the day view buckets
- * dates the same way the analytics pipeline does. */
+/** The `YYYY-MM-DD` calendar-day key for an instant, in `timeZone`. Pass
+ * HCGateway's `day.timeZone` so the day view buckets dates the same way the
+ * backend's analytics do. */
 export function dateKeyOf(iso: ISODateTime, timeZone: string): DateKey {
   const parts = dateFormatterFor(timeZone).formatToParts(new Date(iso));
   const part = (type: Intl.DateTimeFormatPartTypes) =>

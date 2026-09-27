@@ -1,26 +1,19 @@
 /**
- * LEGACY — part of the old plan where this repo computed its own health
- * analytics locally. That plan has changed: a separate backend (HCGateway)
- * now owns analytics computation, and this repo is moving toward being
- * frontend-only. This file still runs for pages that haven't been migrated
- * yet (see README.md's "Architecture and data flow" section).
+ * Display-time sleep duration for a single `SleepSession`. The analytics
+ * totals (daily sleep, debt, consistency) come prepared from HCGateway; this
+ * only labels individual sessions and recordings in the UI.
  *
- * Do not extend this file with new metrics, new computations, or new
- * data-processing logic. If a page needs something this doesn't already
- * provide, ask the user whether it should come from a new HCGateway API
- * endpoint instead of being built here.
+ * Sessions from the overview snapshot arrive with `stages: []` (see
+ * `overviewAdapter.ts`), so there this is the session's wall-clock span, awake
+ * time included. Only sessions fetched with their stages exclude awake time.
  */
-import type { DateKey, SleepSession, SleepStageKind } from "./health";
+import type { SleepSession, SleepStageKind } from "./health";
 
-export function dateKeyForSession(session: SleepSession): DateKey {
-  return session.startAt.slice(0, 10);
-}
-
-export function minutesBetween(startAt: string, endAt: string): number {
+function minutesBetween(startAt: string, endAt: string): number {
   return Math.max(0, (Date.parse(endAt) - Date.parse(startAt)) / 60_000);
 }
 
-export function isSleepingStage(kind: SleepStageKind): boolean {
+function isSleepingStage(kind: SleepStageKind): boolean {
   return kind !== "awake" && kind !== "unknown";
 }
 

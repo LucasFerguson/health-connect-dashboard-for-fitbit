@@ -11,15 +11,7 @@ export const env = createEnv({
     API_URL: z.string().url().optional(),
     API_USERNAME: z.string().min(1).optional(),
     API_PASSWORD: z.string().min(1).optional(),
-    ANALYTICS_MONGO_URI: z.string().url().optional(),
-    ANALYTICS_DATABASE: z.string().min(1).optional(),
     DEV_ALLOWED_ORIGINS: z.string().min(1).optional(),
-    HEALTH_HOME_TIME_ZONE: z.string().min(1).optional(),
-    SLEEP_TARGET_MINUTES: z.coerce.number().int().min(240).max(720).optional(),
-    HEALTH_BIRTH_DATE: z
-      .string()
-      .regex(/^\d{4}-\d{2}-\d{2}$/)
-      .optional(),
   },
 
   /**
@@ -40,12 +32,7 @@ export const env = createEnv({
     API_URL: process.env.API_URL,
     API_USERNAME: process.env.API_USERNAME,
     API_PASSWORD: process.env.API_PASSWORD,
-    ANALYTICS_MONGO_URI: process.env.ANALYTICS_MONGO_URI,
-    ANALYTICS_DATABASE: process.env.ANALYTICS_DATABASE,
     DEV_ALLOWED_ORIGINS: process.env.DEV_ALLOWED_ORIGINS,
-    HEALTH_HOME_TIME_ZONE: process.env.HEALTH_HOME_TIME_ZONE,
-    SLEEP_TARGET_MINUTES: process.env.SLEEP_TARGET_MINUTES,
-    HEALTH_BIRTH_DATE: process.env.HEALTH_BIRTH_DATE,
     // NEXT_PUBLIC_CLIENTVAR: process.env.NEXT_PUBLIC_CLIENTVAR,
   },
   /**

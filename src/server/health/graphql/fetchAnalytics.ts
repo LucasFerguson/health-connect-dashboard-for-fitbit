@@ -1,16 +1,12 @@
 /**
  * Shared plumbing for GraphQL-backed pages, so each page's data module is just
- * a query plus (while the legacy domain types still exist) a thin adapter.
+ * a query plus a thin adapter.
  *
- * Every migrated page needs the same three things, and getting any of them
- * wrong is a real bug rather than a style preference:
- *
- * 1. Skip GraphQL entirely when it isn't configured (the fixture/demo path).
- * 2. Never throw — a transport failure must fall back to the legacy pipeline
- *    so the page still renders and MigrationNotice can report which path
- *    served it. Throwing here 500s a page that has a working fallback.
- * 3. Surface run provenance (`runId`/`algorithmVersion`/`processedAt`)
- *    consistently, so the UI can show which prepared run produced the numbers.
+ * Throws when GraphQL can't serve the page — unconfigured credentials, an
+ * unreachable backend, or a response carrying only errors. There is no local
+ * fallback: the root `error.tsx` boundary renders a "couldn't load health
+ * data" state instead, which is the honest outcome. Never catch this to render
+ * an empty page; empty reads as "no health data", not "backend down".
  *
  * This is the React-Server-Component path: it uses `query()` from
  * `registerApolloClient`, which scopes the client and its cache to one
@@ -22,70 +18,30 @@
 import type { TypedDocumentNode } from "@apollo/client";
 import { isGraphQLConfigured, query } from "../graphqlClient";
 
-/** Provenance of the prepared analytics run that produced a page's numbers. */
-export interface RunProvenance {
-  runId: string;
-  algorithmVersion: string;
-  timeZone: string;
-  processedAt: string | null;
+interface AnalyticsQueryResult {
+  viewer: { analytics: unknown };
 }
 
 /**
- * Every page query selects these run fields on `viewer.analytics`, so results
- * are constrained to include them. Keeps `withAnalytics` able to extract
- * provenance without each caller re-implementing it.
- */
-export interface AnalyticsQueryResult {
-  viewer: {
-    analytics: {
-      runId: string;
-      algorithmVersion: string;
-      timeZone: string;
-      processedAt: string | null;
-    };
-  };
-}
-
-export interface AnalyticsPage<T> {
-  /** Page-specific data, mapped by the caller's `select`. */
-  data: T;
-  run: RunProvenance;
-}
-
-/**
- * Runs `document` against HCGateway's GraphQL API and maps the result with
- * `select`. Returns `null` — never throws — when GraphQL can't serve the page,
- * which the caller should treat as "fall back to the legacy pipeline".
+ * Runs `document` against HCGateway's GraphQL API and maps
+ * `viewer.analytics` with `select`.
  *
- * @param label short name used in the error log, e.g. "sleep-debt"
+ * @param label short name used in error messages, e.g. "sleep-debt"
  */
 export async function withAnalytics<TResult extends AnalyticsQueryResult, T>(
   label: string,
   document: TypedDocumentNode<TResult, Record<string, never>>,
   select: (analytics: TResult["viewer"]["analytics"]) => T,
-): Promise<AnalyticsPage<T> | null> {
-  if (!isGraphQLConfigured()) return null;
-
-  try {
-    const { data } = await query({ query: document });
-    // Apollo types `data` as possibly undefined: a query can resolve carrying
-    // only errors.
-    if (!data) return null;
-    const { analytics } = data.viewer;
-    return {
-      data: select(analytics),
-      run: {
-        runId: analytics.runId,
-        algorithmVersion: analytics.algorithmVersion,
-        timeZone: analytics.timeZone,
-        processedAt: analytics.processedAt,
-      },
-    };
-  } catch (error) {
-    console.error(
-      `GraphQL ${label} query failed; falling back to legacy pipeline`,
-      error instanceof Error ? error.message : String(error),
+): Promise<T> {
+  if (!isGraphQLConfigured()) {
+    throw new Error(
+      `GraphQL ${label} query skipped: API_URL, API_USERNAME and API_PASSWORD must all be set`,
     );
-    return null;
   }
+
+  const { data } = await query({ query: document });
+  // Apollo types `data` as possibly undefined: a query can resolve carrying
+  // only errors.
+  if (!data) throw new Error(`GraphQL ${label} query returned no data`);
+  return select(data.viewer.analytics);
 }

@@ -1,6 +1,6 @@
 /**
  * GraphQL-backed read for the four metric detail pages. Same pattern as
- * `getSleepDebtAnalytics` — see GRAPHQL_MIGRATION_REDUNDANCY.md.
+ * `getSleepDebtAnalytics`.
  *
  * Adapts HCGateway's `MetricSeries` onto the `MetricAnalytics` shape
  * `MetricDetailPage` already consumes. The adapter does no health-data
@@ -62,7 +62,7 @@ const primarySeries: Record<MetricKind, SeriesName> = {
   weight: "weight",
 };
 
-/** Returns `null` when GraphQL can't serve these pages; see `withAnalytics`. */
+/** Throws when GraphQL can't serve these pages; see `withAnalytics`. */
 export function getMetricSeries() {
   return withAnalytics("metric-series", METRIC_SERIES_QUERY, (analytics) => {
     const series: MetricSeriesSet = {

@@ -1,16 +1,14 @@
 /**
- * LEGACY — part of the old plan where this repo computed its own health
- * analytics locally. That plan has changed: a separate backend (HCGateway)
- * now owns analytics computation, and this repo is moving toward being
- * frontend-only. As of 2026-09-20 every page reads GraphQL, so this now runs
- * ONLY as the fallback when the GraphQL API can't serve a request — see the
- * `?? await getHealthSnapshot()` in each page. It is scheduled for deletion;
- * see GRAPHQL_MIGRATION_REDUNDANCY.md for what goes with it.
+ * The UI's view-model types for prepared analytics. HCGateway computes every
+ * value; the adapters in `src/server/health/adapters/` and the `get*` readers
+ * map its GraphQL responses onto these shapes, and components render them.
  *
- * Do not extend this file with new metrics, new computations, or new
- * data-processing logic. If a page needs something this doesn't already
- * provide, ask the user whether it should come from a new HCGateway API
- * endpoint instead of being built here.
+ * These are hand-maintained rather than generated because they are the
+ * components' contract, not the wire's: they rename schema enums, narrow
+ * `String!` fields like units to closed unions, drop records the UI can't
+ * label, and let one component render the output of several queries. Don't
+ * add health-data computation on top of them — if a page needs a number the
+ * API doesn't provide, it belongs in HCGateway.
  */
 import type { DateKey, ISODateTime, SleepSession } from "./health";
 
@@ -195,10 +193,6 @@ export interface MetricAnalytics {
 }
 
 export interface HealthAnalytics {
-  algorithmVersion: string;
-  sourceFingerprint: string;
-  configurationFingerprint: string;
-  processedAt: ISODateTime;
   sleepEvents: SleepEvent[];
   dailySleep: DailySleepSummary[];
   sleepDebt: SleepDebtAnalytics;

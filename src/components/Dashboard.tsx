@@ -26,10 +26,6 @@ export function Dashboard({ snapshot }: { snapshot: HealthSnapshot }) {
                   Your health data, under your control.
                 </p>
               </div>
-              <p className="rounded-full bg-white/10 px-3 py-1 text-xs text-white/70">
-                Source:{" "}
-                {snapshot.source === "fixture" ? "demo data" : "Health Connect"}
-              </p>
             </div>
           </header>
           <div className="flex flex-col gap-8">

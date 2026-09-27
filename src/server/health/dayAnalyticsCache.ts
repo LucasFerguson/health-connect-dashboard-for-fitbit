@@ -3,16 +3,14 @@ import type { HealthDayResponse } from "./dayAnalyticsSchema";
 
 /**
  * Module-scope in-memory cache for `GET /api/v2/analytics/day`, tuned to
- * this endpoint's shape rather than reusing the old blanket "cache
- * everything for 5 minutes" strategy from `getDayViewSnapshot.ts`.
+ * this endpoint's shape rather than a blanket "cache everything for N
+ * minutes" TTL.
  *
- * The old cache existed because the legacy endpoint returned the entire
- * history on every call; caching was the only way to avoid re-paying that
- * cost on every page load. The new endpoint is already scoped to one
- * `date` + `radius`, so the caching problem is different: most requested
- * days are closed and only change when the analytics worker completes a
- * rebuild (rare, and self-identifying via `runId`), while the current/open
- * day can have new data arrive continuously as the phone uploads.
+ * The endpoint is scoped to one `date` + `radius`, so the problem is not
+ * payload size but freshness: most requested days are closed and only change
+ * when the analytics worker completes a rebuild (rare, and self-identifying
+ * via `runId`), while the current/open day can have new data arrive
+ * continuously as the phone uploads.
  *
  * Strategy (two tiers, chosen from the response itself so we never need to
  * independently compute "is this the user's today" against the home time

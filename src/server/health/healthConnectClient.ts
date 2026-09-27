@@ -1,9 +1,8 @@
 /**
- * SHARED — used by both the legacy local-analytics-pipeline path (most
- * pages) and the newer HCGateway-backed day view (`/day/[date]`). Do not
- * assume this is safe to delete or purely legacy; check both call sites
- * before changing its behavior. See README.md's "Architecture and data
- * flow" section for the two-path split.
+ * REST client for HCGateway's Flask API (port 6644). Only the day view uses it
+ * now — every other page reads GraphQL. It goes away when `/day` moves to the
+ * GraphQL `day(date:)` field, which is blocked on the backend ignoring
+ * variables (GRAPHQL_BACKEND_REQUESTS.md item 1).
  */
 import { z } from "zod";
 import {
@@ -24,7 +23,7 @@ const RETRY_DELAY_MS = 400;
 
 /**
  * Tokens are cached per base URL/username rather than per client instance:
- * callers (e.g. `createHealthRepository`) construct a fresh
+ * callers (`getDayAnalytics`) construct a fresh
  * `HealthConnectClient` on every request, so an instance-level cache would
  * force a new login handshake on every page load. Sharing it here means the
  * token is reused across requests until the server rejects it.
@@ -67,37 +66,6 @@ export class ResponseValidationError extends Error {
 
 export class HealthConnectClient {
   constructor(private readonly options: HealthConnectClientOptions) {}
-
-  async fetchRecords<T>(
-    method: string,
-    parse: (payload: unknown) => T,
-  ): Promise<T> {
-    return withRetry(async (attempt) => {
-      const token = await this.getToken(attempt > 0);
-      const response = await fetch(
-        `${this.options.baseUrl}/api/v2/fetch/${method}`,
-        {
-          method: "POST",
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({ queries: {} }),
-          cache: "no-store",
-          signal: AbortSignal.timeout(15_000),
-        },
-      );
-      await this.handleUnauthorized(response);
-      if (!response.ok) {
-        throw new HttpStatusError(
-          response.status,
-          `Health Connect ${method} returned ${response.status}`,
-        );
-      }
-      const payload: unknown = await response.json();
-      return parse(payload);
-    });
-  }
 
   /**
    * `GET /api/v2/analytics/day?date=&radius=` — the day dashboard contract

@@ -6,7 +6,7 @@ import type ReactEChartsType from "echarts-for-react";
 import { Spinner } from "./Spinner";
 
 /**
- * ECharts is a large first-load dependency (see CLEAN_CODE_REPORT.md). Every
+ * ECharts is a large first-load dependency. Every
  * chart in the dashboard renders client-side already, so there's no reason
  * to ship it in the initial bundle — load it only once a chart actually
  * mounts. Drop-in replacement for `ReactECharts` from "echarts-for-react".

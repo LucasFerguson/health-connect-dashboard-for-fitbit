@@ -8,13 +8,14 @@
  * selected day, so it asks for them here instead.
  */
 import { NextResponse } from "next/server";
+import { isDateKey } from "~/domain/health";
 import { getSleepStagesForDate } from "~/server/health/getSleepStages";
 
 export const dynamic = "force-dynamic";
 
 export async function GET(request: Request) {
   const date = new URL(request.url).searchParams.get("date");
-  if (!date || !/^\d{4}-\d{2}-\d{2}$/.test(date)) {
+  if (!isDateKey(date)) {
     return NextResponse.json(
       { error: "A `date` query parameter of the form YYYY-MM-DD is required" },
       { status: 400 },

@@ -152,7 +152,6 @@ const devices = [
 
 export function DataSourcesPage({
   feedStatus: status,
-  usingFixture,
 }: {
   /**
    * Which feeds have any data. Passed in rather than derived from a whole
@@ -160,7 +159,6 @@ export function DataSourcesPage({
    * GraphQL path answers it with counts instead of transferring the series.
    */
   feedStatus: Record<FeedKey, boolean>;
-  usingFixture: boolean;
 }) {
   const recordedCount = Object.values(status).filter(Boolean).length;
 
@@ -188,11 +186,6 @@ export function DataSourcesPage({
                 implemented feeds
               </span>
             </p>
-            {usingFixture ? (
-              <p className="mt-1 text-xs text-amber-300">
-                Showing bundled demo data, not the live database
-              </p>
-            ) : null}
           </div>
         </header>
 
@@ -418,5 +411,3 @@ function Key({ color, label }: { color: string; label: string }) {
     </span>
   );
 }
-
-
