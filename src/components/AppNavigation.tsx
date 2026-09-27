@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link, { useLinkStatus } from "next/link";
 import { usePathname } from "next/navigation";
 import { clsx } from "clsx";
@@ -20,6 +20,7 @@ const links = [
   { href: "/resting-heart-rate", label: "HEART" },
   { href: "/weight", label: "WEIGHT" },
   { href: "/healthspan", label: "HEALTHSPAN" },
+  { href: "/explore", label: "EXPLORE" },
   { href: "/data-sources", label: "DATA SOURCES" },
 ];
 
@@ -35,16 +36,37 @@ export function AppNavigation() {
   const pathname = usePathname();
   const syncStatus = useSyncStatus();
   const sync = syncStatus ? describeSyncStatus(syncStatus, new Date()) : null;
+  const linksRef = useRef<HTMLDivElement>(null);
+
+  // On a narrow screen the link row scrolls horizontally, and the active
+  // page (e.g. EXPLORE, near the end) would otherwise sit off-screen.
+  // Scroll only the row, never the page. Re-run when the row resizes: the
+  // sync label arrives after mount and narrows it.
+  useEffect(() => {
+    const row = linksRef.current;
+    if (!row) return;
+    const reveal = () => {
+      const active = row.querySelector<HTMLElement>('[aria-current="page"]');
+      if (!active) return;
+      const rowBox = row.getBoundingClientRect();
+      const box = active.getBoundingClientRect();
+      if (box.left < rowBox.left || box.right > rowBox.right) {
+        row.scrollLeft +=
+          box.left - rowBox.left - (rowBox.width - box.width) / 2;
+      }
+    };
+    reveal();
+    const observer = new ResizeObserver(reveal);
+    observer.observe(row);
+    return () => observer.disconnect();
+  }, [pathname]);
 
   return (
     <nav
       aria-label="Primary navigation"
       className="border-ink-600 bg-ink-950 flex h-[38px] shrink-0 items-center border-b px-4"
     >
-      <Link
-        href="/"
-        className="flex shrink-0 items-center gap-2 pr-[18px]"
-      >
+      <Link href="/" className="flex shrink-0 items-center gap-2 pr-[18px]">
         <span
           className="bg-brand-400 block size-[14px]"
           style={notchStyle(6)}
@@ -54,7 +76,10 @@ export function AppNavigation() {
           DASHBOARD
         </span>
       </Link>
-      <div className="flex h-[38px] min-w-0 flex-1 items-center overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+      <div
+        ref={linksRef}
+        className="flex h-[38px] min-w-0 flex-1 items-center overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+      >
         {links.map((link) => {
           const active =
             link.href === "/"
