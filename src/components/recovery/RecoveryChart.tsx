@@ -2,6 +2,7 @@
 
 import { LazyECharts as ReactECharts } from "../ui/LazyECharts";
 import type { RecoveryDay } from "~/server/health/getRecoveryAnalytics";
+import { displayScore } from "~/domain/recovery";
 
 /**
  * Recovery score over time. Only days with a numeric score are plotted; the
@@ -10,9 +11,11 @@ import type { RecoveryDay } from "~/server/health/getRecoveryAnalytics";
  */
 export function RecoveryChart({ daily }: { daily: RecoveryDay[] }) {
   const scored = daily
-    .flatMap((day) =>
-      day.score === null ? [] : [{ ...day, score: day.score }],
-    )
+    .flatMap((day) => {
+      // Insufficient days and null scores stay out of the numeric chart.
+      const score = displayScore(day);
+      return score === null ? [] : [{ ...day, score }];
+    })
     .sort((a, b) => a.date.localeCompare(b.date));
   const data: [string, number | null][] = [];
   scored.forEach((day, index) => {

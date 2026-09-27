@@ -5,6 +5,7 @@ import type {
   RecoveryDay,
   RecoverySummary,
 } from "~/server/health/getRecoveryAnalytics";
+import { displayScore, recoveryStatusLabel } from "~/domain/recovery";
 import { RecoveryChart } from "./RecoveryChart";
 
 type Component = RecoveryDay["components"]["sleep"];
@@ -101,15 +102,15 @@ function DayRow({ day }: { day: RecoveryDay }) {
     <li className="flex flex-col gap-1.5 py-3">
       <div className="flex flex-wrap items-baseline gap-3">
         <span className="font-mono text-sm">{day.date}</span>
-        {day.score !== null ? (
+        {displayScore(day) !== null ? (
           <>
             <span className="text-recovery text-xl font-semibold">
-              {day.score}
+              {displayScore(day)}
             </span>
             {day.band ? <Label>{day.band}</Label> : null}
           </>
         ) : null}
-        <span className="text-ink-100 text-xs">{statusLabel(day)}</span>
+        <span className="text-ink-100 text-xs">{recoveryStatusLabel(day)}</span>
       </div>
       {day.quality.reasons.length > 0 ? (
         <p className="text-ink-200 text-[11px]">
@@ -168,14 +169,6 @@ function Stat({
       <span className="text-ink-50 text-sm">{children}</span>
     </div>
   );
-}
-
-function statusLabel(day: RecoveryDay) {
-  if (day.score === null || day.status === "insufficient_data") {
-    return "Not enough physiological data";
-  }
-  if (day.status === "partial") return "Provisional · Partial";
-  return "";
 }
 
 const pct = (weight: number) => `${Math.round(weight * 100)}%`;

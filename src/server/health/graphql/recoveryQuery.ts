@@ -68,6 +68,7 @@ export const RECOVERY_QUERY = graphql(`
             quality {
               publishable
               complete
+              estimateBasis
               availableWeight
               baselineWindowDays
               minimumBaselineDays
