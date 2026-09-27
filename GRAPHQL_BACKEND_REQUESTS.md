@@ -151,61 +151,40 @@ admits null and the UI renders "—" / "Calibrating":
 `HealthspanDay.healthAgeYears` (21/508), `ageDeltaYears` (10/508),
 `paceOfAging` (26/508).
 
-## 4. `breakdown30Day` is an untyped `JSON` scalar
+## 4. ~~`breakdown30Day` is an untyped `JSON` scalar~~ (resolved)
 
-Both `SleepDebtSummary.breakdown30Day` and
-`SleepConsistencySummary.breakdown30Day` are `JSON`. The actual payload is
-perfectly regular:
+Now typed as `SleepDebtBreakdown` / `SleepConsistencyBreakdown`. The sleep-debt,
+sleep-consistency and overview queries select it, and the adapters use it
+instead of re-tallying `daily`.
 
-```json
-{ "recordedDays": 30, "none": 9, "low": 2, "moderate": 0, "high": 19 }
-```
+The switch changed a number, and the server's is the right one. The old
+tally counted the last 30 *records*; the server counts the 30 *calendar*
+days ending at the latest record, the same window as `average30Day*` and the
+trend view's 30-day tab. On 2026-09-27, with a gap from 09-20 to 09-24, the
+overview card went from "18 of 30" high-debt days, reaching back to 08-24, to
+"13 of 25", which matches /sleep-debt's own 30-day breakdown.
 
-Because it is `JSON`, codegen produces `unknown` and none of it is
-type-checked or field-selectable. Both frontend adapters currently ignore the
-field and re-tally the counts from the typed `daily` array instead — correct,
-but duplicated work the server already did.
+`CurrentRun.counts` and `AnalyticsJobStatus.{error,result}` are still `JSON`;
+no page reads them yet.
 
-**Request:** give these real types, e.g.
+## 5. ~~No `id` on the date-keyed analytics types~~ (resolved, one follow-up)
 
-```graphql
-type SleepDebtBreakdown {
-  recordedDays: Int!
-  none: Int!
-  low: Int!
-  moderate: Int!
-  high: Int!
-}
-```
+Every date-keyed type now has an account- and run-scoped `id: ID!`. Every page
+query selects it, and both Apollo clients share `typePolicies` in
+`src/server/health/graphql/typePolicies.ts`.
 
-Same for the consistency variant (`scoredDays/optimal/sufficient/poor`).
-`CurrentRun.counts` and `AnalyticsJobStatus.{error,result}` are also `JSON`;
-lower priority since no page reads them yet, but the same argument applies.
+**Follow-up: ids are long, and the API does not compress.** Each id is about
+185 bytes (`<account>:<algorithm>:<64-hex>:<64-hex>:<date>`), and a page
+query carries thousands of them. Selecting ids roughly doubled the
+uncompressed responses: overview 1.11 MB to 2.04 MB before other trimming,
+metric series 349 KB to 794 KB. `:6645` sends no `Content-Encoding` even when
+asked for gzip, so that is what crosses the wire. Gzipped, the same overview
+is only 113 KB to 132 KB, because the ids repeat. Either would fix it:
 
-## 5. No `id` on the date-keyed analytics types
-
-Only 15 of 83 object types expose `id` — raw records, `SleepEvent`,
-`StrainWorkout`, `ObservedDevice`. The date-keyed types (`Day`, `MetricDay`,
-`SleepDebtDay`, `SleepConsistencyDay`, `HealthspanDay`, `StrainDay`,
-`RecoveryDay`) have none.
-
-Apollo's `InMemoryCache` normalizes by `__typename` + `id`. Without one:
-
-- two queries covering overlapping date ranges store duplicate copies rather
-  than merging;
-- if a new `runId` is published mid-session, days from the old and new run can
-  coexist in the cache with nothing distinguishing them.
-
-`HealthspanFactor` has no `id` either, and it is a list nested inside the
-already-unidentified `HealthspanDay`.
-
-**Request:** add `id: ID!` of the form `"<runId>:<date>"` (and
-`"<runId>:<date>:<key>"` for factors). Server-side is
-better than a client-side `keyFields: ["date"]` because it makes `runId` part
-of the identity, which is exactly the run-mixing protection the read-API audit
-calls for. If you would rather not, tell us and we will configure
-`keyFields` client-side — but then please confirm `runId` is stable for the
-lifetime of one page's queries.
+- enable gzip/br on the GraphQL server (the bigger win: roughly 10x on every
+  page), or
+- shorten the ids, e.g. hash the run prefix to 8-12 characters. They only
+  need to be unique per account and run.
 
 ## 6. `@defer` accepted but not streaming
 
