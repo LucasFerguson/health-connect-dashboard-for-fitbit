@@ -16,7 +16,7 @@
  * browser.
  */
 import type { TypedDocumentNode } from "@apollo/client";
-import { ServerError } from "@apollo/client/errors";
+import { CombinedGraphQLErrors, ServerError } from "@apollo/client/errors";
 import { env } from "~/env";
 import {
   BackendRequestError,
@@ -114,7 +114,7 @@ export async function withViewer<
     try {
       result = await run();
     } catch (error) {
-      if (!(ServerError.is(error) && error.statusCode === 401)) throw error;
+      if (!isTokenRejection(error)) throw error;
       // HCGateway keeps one token per account and every login replaces it, so
       // any other client signing in as the same user (the other dashboard
       // container, a dev server, the phone app) revokes ours. Log in again
@@ -134,7 +134,7 @@ export async function withViewer<
   } catch (error) {
     // Still rejected after a fresh login; drop the token anyway so the next
     // request doesn't reuse it.
-    if (ServerError.is(error) && error.statusCode === 401) {
+    if (isTokenRejection(error)) {
       invalidateGraphQLToken();
     }
     const diagnostics = diagnose(error, context);
@@ -149,4 +149,20 @@ export async function withViewer<
     );
     throw new BackendRequestError(diagnostics);
   }
+}
+
+/**
+ * HCGateway answers a revoked token with HTTP 401 *and* a JSON GraphQL body
+ * (`extensions.code: "UNAUTHENTICATED"`). Apollo parses that body, so the
+ * failure usually surfaces as `CombinedGraphQLErrors`, not `ServerError` —
+ * checking only the status let a stale token stick forever.
+ */
+function isTokenRejection(error: unknown): boolean {
+  if (ServerError.is(error)) return error.statusCode === 401;
+  if (CombinedGraphQLErrors.is(error)) {
+    return error.errors.some(
+      (entry) => entry.extensions?.code === "UNAUTHENTICATED",
+    );
+  }
+  return false;
 }
