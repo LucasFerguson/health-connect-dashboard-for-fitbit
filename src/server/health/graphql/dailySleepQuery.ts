@@ -17,14 +17,13 @@ export const DAILY_SLEEP_QUERY = graphql(`
   query DailySleepPage {
     viewer {
       analytics {
-        runId
-        algorithmVersion
+        id
         timeZone
-        processedAt
         sleepDebt {
           targetMinutes
         }
         days {
+          id
           date
           headlineScores {
             sleepDuration {

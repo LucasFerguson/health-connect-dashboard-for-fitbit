@@ -26,17 +26,20 @@ import { OverviewPageDocument } from "~/types/__generated__/graphql";
  *   it, and the metric detail routes have their own query that includes it.
  * - `rolling7Day` and `monthly` (~70 KB): no overview component reads either;
  *   those trend charts live on the detail pages.
+ * - `healthspan.trend` (~280 KB, ~590 KB once ids are selected): the overview
+ *   card shows only the latest estimate and the pace, so it selects
+ *   `healthspan.latest`. The full trend is on /healthspan.
  *
- * `daily` is kept in full because every date is selectable — the summary cards
- * look up the chosen day by date, so a bounded range would break selection for
- * older days.
+ * `daily`, `days` and `sleepEvents` are kept in full, with no `range`, because
+ * every date is selectable — the sleep calendar navigates all history and
+ * `DailyHealthSummary` looks the chosen day up by date in each series, so a
+ * bounded range would blank the cards for older days.
  */
 const OVERVIEW_QUERY_SOURCE = graphql(`
   query OverviewPage {
     viewer {
       analytics {
-        runId
-        algorithmVersion
+        id
         timeZone
         processedAt
         sleepEvents {
@@ -67,6 +70,7 @@ const OVERVIEW_QUERY_SOURCE = graphql(`
           averageDifferenceMinutes
         }
         days {
+          id
           date
           headlineScores {
             sleepDuration {
@@ -83,7 +87,15 @@ const OVERVIEW_QUERY_SOURCE = graphql(`
           average7DayMinutes
           average30DayMinutes
           previous30DayAverageMinutes
+          breakdown30Day {
+            recordedDays
+            none
+            low
+            moderate
+            high
+          }
           daily {
+            id
             date
             sleepMinutes
             targetMinutes
@@ -102,7 +114,14 @@ const OVERVIEW_QUERY_SOURCE = graphql(`
           average7DayScore
           average30DayScore
           previous30DayAverageScore
+          breakdown30Day {
+            scoredDays
+            optimal
+            sufficient
+            poor
+          }
           daily {
+            id
             date
             source
             bedtimeAt
@@ -129,7 +148,8 @@ const OVERVIEW_QUERY_SOURCE = graphql(`
           calibrationReasons
           paceOfAging
           paceWindowDays
-          trend {
+          latest {
+            id
             date
             chronologicalAgeYears
             healthAgeYears
@@ -137,6 +157,7 @@ const OVERVIEW_QUERY_SOURCE = graphql(`
             paceOfAging
             qualityFlags
             factors {
+              id
               key
               label
               value
@@ -155,12 +176,14 @@ const OVERVIEW_QUERY_SOURCE = graphql(`
             changeFromPrevious
             sampleCount
             latest {
+              id
               date
               value
               source
               qualityFlags
             }
             previous {
+              id
               date
               value
               source
@@ -168,6 +191,7 @@ const OVERVIEW_QUERY_SOURCE = graphql(`
             }
           }
           daily {
+            id
             date
             value
             source
@@ -182,12 +206,14 @@ const OVERVIEW_QUERY_SOURCE = graphql(`
             changeFromPrevious
             sampleCount
             latest {
+              id
               date
               value
               source
               qualityFlags
             }
             previous {
+              id
               date
               value
               source
@@ -195,6 +221,7 @@ const OVERVIEW_QUERY_SOURCE = graphql(`
             }
           }
           daily {
+            id
             date
             value
             source
@@ -209,12 +236,14 @@ const OVERVIEW_QUERY_SOURCE = graphql(`
             changeFromPrevious
             sampleCount
             latest {
+              id
               date
               value
               source
               qualityFlags
             }
             previous {
+              id
               date
               value
               source
@@ -222,6 +251,7 @@ const OVERVIEW_QUERY_SOURCE = graphql(`
             }
           }
           daily {
+            id
             date
             value
             source
@@ -236,12 +266,14 @@ const OVERVIEW_QUERY_SOURCE = graphql(`
             changeFromPrevious
             sampleCount
             latest {
+              id
               date
               value
               source
               qualityFlags
             }
             previous {
+              id
               date
               value
               source
@@ -249,6 +281,7 @@ const OVERVIEW_QUERY_SOURCE = graphql(`
             }
           }
           daily {
+            id
             date
             value
             source
@@ -263,12 +296,14 @@ const OVERVIEW_QUERY_SOURCE = graphql(`
             changeFromPrevious
             sampleCount
             latest {
+              id
               date
               value
               source
               qualityFlags
             }
             previous {
+              id
               date
               value
               source
@@ -276,6 +311,7 @@ const OVERVIEW_QUERY_SOURCE = graphql(`
             }
           }
           daily {
+            id
             date
             value
             source

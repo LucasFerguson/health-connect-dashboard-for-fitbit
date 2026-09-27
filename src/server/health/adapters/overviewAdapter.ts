@@ -20,6 +20,9 @@
  * them on demand through `SLEEP_STAGES_QUERY`. Anything new that renders stages
  * from this snapshot must fetch them the same way rather than assuming they are
  * present.
+ *
+ * Likewise `healthspan.trend` is `[]` here: the overview selects only
+ * `healthspan.latest`, which is all `HealthspanCard` shows.
  */
 import type {
   DailyMetricSummary,

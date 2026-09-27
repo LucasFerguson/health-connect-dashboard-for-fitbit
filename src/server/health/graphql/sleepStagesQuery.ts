@@ -22,6 +22,7 @@ export const SLEEP_STAGES_QUERY = graphql(`
   query SleepStages($range: TimeRange!) {
     viewer {
       analytics {
+        id
         sleepEvents(range: $range) {
           id
           recordings {

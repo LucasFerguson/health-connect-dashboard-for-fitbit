@@ -7,7 +7,6 @@
  * the parameter type below is the contract.
  *
  * Does no health-data computation: every value is already prepared server-side.
- * `buildBreakdown` is the one exception and is a pure tally, explained below.
  */
 import type {
   DailySleepDebt,
@@ -46,6 +45,7 @@ export interface GraphQLSleepDebt {
     rolling7DayTotalMinutes: number | null;
     rolling30DayAverageMinutes: number | null;
   }[];
+  breakdown30Day: SleepDebtBreakdown | null;
 }
 
 export function adaptSleepDebt(
@@ -76,23 +76,31 @@ export function adaptSleepDebt(
     average7DayMinutes: sleepDebt.average7DayMinutes,
     average30DayMinutes: sleepDebt.average30DayMinutes,
     previous30DayAverageMinutes: sleepDebt.previous30DayAverageMinutes,
-    breakdown30Day: buildBreakdown(daily),
+    breakdown30Day: toBreakdown(sleepDebt.breakdown30Day),
   };
 }
 
 /**
- * `SleepDebtSummary.breakdown30Day` is an untyped `JSON` scalar in the schema,
- * so it isn't safe to read blindly. Recomputing the counts from the typed
- * `daily` array is a pure tally over already-prepared categories — no health
- * analytics — and it stays correct if the JSON shape changes.
+ * The server's `breakdown30Day` is used as-is rather than re-tallied from
+ * `daily`. The two agreed on live data when this switched over, but only by
+ * coincidence of an unbroken month: the server counts the 30 *calendar* days
+ * ending at the latest record, the old local tally counted the last 30
+ * *records*. With a gap in the window those differ (they would have at 378 of
+ * the 492 recorded end dates on the primary account), and the calendar window
+ * is the right one: it is the same window `average30DayMinutes` covers and the
+ * one the trend view's 30-day tab shows, so the card's "N of M" now matches
+ * both.
+ *
+ * `null` only comes back when the account has no sleep-debt summary at all,
+ * which is exactly zero recorded days, not missing data being rendered as 0.
  */
-function buildBreakdown(daily: DailySleepDebt[]): SleepDebtBreakdown {
-  const last30 = daily.slice(-30);
+function toBreakdown(breakdown: SleepDebtBreakdown | null): SleepDebtBreakdown {
+  // Copied field by field so Apollo's `__typename` stays out of the domain.
   return {
-    recordedDays: last30.length,
-    none: last30.filter((day) => day.category === "none").length,
-    low: last30.filter((day) => day.category === "low").length,
-    moderate: last30.filter((day) => day.category === "moderate").length,
-    high: last30.filter((day) => day.category === "high").length,
+    recordedDays: breakdown?.recordedDays ?? 0,
+    none: breakdown?.none ?? 0,
+    low: breakdown?.low ?? 0,
+    moderate: breakdown?.moderate ?? 0,
+    high: breakdown?.high ?? 0,
   };
 }

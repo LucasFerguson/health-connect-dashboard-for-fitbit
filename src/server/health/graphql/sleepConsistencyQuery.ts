@@ -5,10 +5,8 @@ export const SLEEP_CONSISTENCY_QUERY = graphql(`
   query SleepConsistencyPage {
     viewer {
       analytics {
-        runId
-        algorithmVersion
+        id
         timeZone
-        processedAt
         sleepConsistency {
           baselineWindowDays
           minimumBaselineNights
@@ -16,7 +14,14 @@ export const SLEEP_CONSISTENCY_QUERY = graphql(`
           average7DayScore
           average30DayScore
           previous30DayAverageScore
+          breakdown30Day {
+            scoredDays
+            optimal
+            sufficient
+            poor
+          }
           daily {
+            id
             date
             source
             bedtimeAt

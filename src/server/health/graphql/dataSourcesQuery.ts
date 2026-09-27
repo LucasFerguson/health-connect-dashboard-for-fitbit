@@ -16,12 +16,11 @@ export const DATA_SOURCES_QUERY = graphql(`
   query DataSourcesPage {
     viewer {
       analytics {
-        runId
-        algorithmVersion
+        id
         timeZone
-        processedAt
         sleepDebt {
           latest {
+            id
             date
           }
         }

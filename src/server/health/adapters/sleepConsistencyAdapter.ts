@@ -58,21 +58,25 @@ export function adaptSleepConsistency(
     average7DayScore: sleepConsistency.average7DayScore,
     average30DayScore: sleepConsistency.average30DayScore,
     previous30DayAverageScore: sleepConsistency.previous30DayAverageScore,
-    breakdown30Day: buildBreakdown(daily),
+    breakdown30Day: toBreakdown(sleepConsistency.breakdown30Day),
   };
   return analytics;
 }
 
-/** `breakdown30Day` is an untyped `JSON` scalar; tally from typed days instead. */
-function buildBreakdown(
-  daily: DailySleepConsistency[],
+/**
+ * Same reasoning as `sleepDebtAdapter`: the server's breakdown covers the 30
+ * calendar days ending at the latest *scored* night, the window
+ * `average30DayScore` uses. The old local tally took the last 30 records and
+ * then dropped unscored ones, which undercounts whenever a gap or an
+ * unscored night falls inside the month. `null` means no summary exists.
+ */
+function toBreakdown(
+  breakdown: GraphQLSleepConsistency["breakdown30Day"],
 ): SleepConsistencyBreakdown {
-  const last30 = daily.slice(-30);
-  const scored = last30.filter((day) => day.category !== null);
   return {
-    scoredDays: scored.length,
-    optimal: scored.filter((day) => day.category === "optimal").length,
-    sufficient: scored.filter((day) => day.category === "sufficient").length,
-    poor: scored.filter((day) => day.category === "poor").length,
+    scoredDays: breakdown?.scoredDays ?? 0,
+    optimal: breakdown?.optimal ?? 0,
+    sufficient: breakdown?.sufficient ?? 0,
+    poor: breakdown?.poor ?? 0,
   };
 }

@@ -41,6 +41,7 @@ function missing(note = "Synthetic missing note.") {
 /** Mirrors the backend's `empty_day()`: every metric missing, value null. */
 function emptyDay(date: string, dayState: Day["dayState"]): Day {
   return {
+    id: `test-run:${date}`,
     date,
     timeZone: TIME_ZONE,
     dayState,
@@ -169,6 +170,7 @@ function stripDay(
   strain: number | null,
 ): StripDay {
   return {
+    id: `test-run:${date}`,
     date,
     dayState: "RECORDED",
     headlineScores: {
@@ -185,7 +187,7 @@ function stripDay(
 }
 
 function analytics(day: Day | null, days: StripDay[] = []): Analytics {
-  return { timeZone: TIME_ZONE, day, days };
+  return { id: "test-run", timeZone: TIME_ZONE, day, days };
 }
 
 void describe("adaptDayView: focused day", () => {

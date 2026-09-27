@@ -26,8 +26,10 @@ export const DAY_QUERY = graphql(`
   query DayPage($date: Date!, $range: TimeRange!) {
     viewer {
       analytics {
+        id
         timeZone
         day(date: $date) {
+          id
           date
           timeZone
           dayState
@@ -156,6 +158,7 @@ export const DAY_QUERY = graphql(`
           }
         }
         days(range: $range) {
+          id
           date
           dayState
           headlineScores {
@@ -182,6 +185,7 @@ export const DAY_TIME_ZONE_QUERY = graphql(`
   query DayIndexTimeZone {
     viewer {
       analytics {
+        id
         timeZone
       }
     }
