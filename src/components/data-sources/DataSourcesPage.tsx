@@ -173,16 +173,16 @@ export function DataSourcesPage({
             <h1 className="mt-3 text-4xl font-extrabold tracking-tight sm:text-5xl">
               Data sources
             </h1>
-            <p className="mt-4 max-w-2xl text-sm leading-6 text-slate-400">
+            <p className="mt-4 max-w-2xl text-sm leading-6 text-slate-300">
               A traceable map from physical sensors, through Android Health
               Connect, into this dashboard’s processing models.
             </p>
           </div>
           <div className="rounded-2xl border border-white/10 bg-white/5 px-5 py-4">
-            <p className="text-xs text-slate-500">Database coverage</p>
+            <p className="text-xs text-slate-400">Database coverage</p>
             <p className="mt-1 text-2xl font-bold">
               {recordedCount} / {feeds.length}{" "}
-              <span className="text-sm font-normal text-slate-400">
+              <span className="text-sm font-normal text-slate-300">
                 implemented feeds
               </span>
             </p>
@@ -201,7 +201,7 @@ export function DataSourcesPage({
               <div>
                 <DeviceIllustration kind={device.kind} />
                 <h2 className="mt-4 text-xl font-bold">{device.name}</h2>
-                <p className="text-sm text-slate-500">{device.caption}</p>
+                <p className="text-sm text-slate-400">{device.caption}</p>
               </div>
               <div className="grid gap-4">
                 <DeviceList
@@ -229,13 +229,13 @@ export function DataSourcesPage({
                 Health Connect → database → algorithms
               </h2>
             </div>
-            <div className="flex gap-4 text-xs text-slate-400">
+            <div className="flex gap-4 text-xs text-slate-300">
               <Key color="bg-emerald-400" label="Recorded" />
               <Key color="bg-rose-400" label="Not recorded" />
             </div>
           </div>
           <div className="overflow-hidden rounded-3xl border border-white/10 bg-[#0d1320]">
-            <div className="grid grid-cols-[1fr_auto_1fr] border-b border-white/10 bg-white/[0.03] px-4 py-3 text-xs font-bold tracking-wider text-slate-500 uppercase sm:grid-cols-[1fr_5rem_1fr_5rem_1fr]">
+            <div className="grid grid-cols-[1fr_auto_1fr] border-b border-white/10 bg-white/[0.03] px-4 py-3 text-xs font-bold tracking-wider text-slate-400 uppercase sm:grid-cols-[1fr_5rem_1fr_5rem_1fr]">
               <span>Health Connect record</span>
               <span />
               <span>Database intake</span>
@@ -250,7 +250,7 @@ export function DataSourcesPage({
                 >
                   <div>
                     <p className="font-semibold">{feed.label}</p>
-                    <p className="mt-1 font-mono text-[10px] text-slate-500">
+                    <p className="mt-1 font-mono text-[10px] text-slate-400">
                       {feed.record}
                     </p>
                   </div>
@@ -263,7 +263,7 @@ export function DataSourcesPage({
                     >
                       {status[feed.key] ? "● Recorded" : "● No records"}
                     </p>
-                    <p className="mt-1 text-xs text-slate-400">
+                    <p className="mt-1 text-xs text-slate-300">
                       Mapper + analytics schema ready
                     </p>
                   </div>
@@ -294,7 +294,7 @@ export function DataSourcesPage({
           <h2 className="mt-2 text-2xl font-bold">
             Available signals we are not storing
           </h2>
-          <p className="mt-2 max-w-3xl text-sm leading-6 text-slate-400">
+          <p className="mt-2 max-w-3xl text-sm leading-6 text-slate-300">
             These require a Health Connect permission/read path in the Android
             gateway, a raw observation model and repository mapper here, then
             analytics persistence and UI treatment.
@@ -311,16 +311,16 @@ export function DataSourcesPage({
                     NOT IN DB
                   </span>
                 </div>
-                <p className="mt-2 font-mono text-[10px] text-slate-500">
+                <p className="mt-2 font-mono text-[10px] text-slate-400">
                   {feed.record}
                 </p>
-                <p className="mt-2 text-xs text-slate-400">{feed.reason}</p>
+                <p className="mt-2 text-xs text-slate-300">{feed.reason}</p>
               </article>
             ))}
           </div>
         </section>
 
-        <footer className="mt-8 text-xs leading-5 text-slate-500">
+        <footer className="mt-8 text-xs leading-5 text-slate-400">
           Device capabilities are modeled as WHOOP 4.0 and Pixel Watch 2. A
           sensor indicates measurement hardware; Health Connect availability
           still depends on the companion app, region, membership, permissions
@@ -367,7 +367,7 @@ function DeviceList({
       : "border-sky-400/15 bg-sky-400/5";
   return (
     <div>
-      <h3 className="text-xs font-bold tracking-wider text-slate-500 uppercase">
+      <h3 className="text-xs font-bold tracking-wider text-slate-400 uppercase">
         {title}
       </h3>
       <div className="mt-2 flex flex-wrap gap-1.5">

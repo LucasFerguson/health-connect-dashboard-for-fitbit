@@ -67,7 +67,7 @@ export function BackendErrorPanel({
           <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">
             {diagnostics.title}
           </h1>
-          <p className="max-w-3xl text-sm leading-6 text-white/70">
+          <p className="max-w-3xl text-sm leading-6 text-white/80">
             {diagnostics.explanation}
           </p>
         </header>
@@ -89,8 +89,8 @@ export function BackendErrorPanel({
               passed:
                 "border-emerald-400/30 bg-emerald-950/40 text-emerald-200",
               failed: "border-red-400/60 bg-red-950/60 text-red-100",
-              skipped: "border-white/10 bg-white/[0.03] text-white/35",
-              unknown: "border-white/10 bg-white/[0.03] text-white/60",
+              skipped: "border-white/10 bg-white/[0.03] text-white/50",
+              unknown: "border-white/10 bg-white/[0.03] text-white/75",
             }[state];
             const mark = {
               passed: "✓",
@@ -156,7 +156,7 @@ export function BackendErrorPanel({
             {diagnostics.http.bodySnippet ? (
               <Code>{diagnostics.http.bodySnippet}</Code>
             ) : (
-              <p className="text-xs text-white/50">(empty body)</p>
+              <p className="text-xs text-white/65">(empty body)</p>
             )}
           </Section>
         ) : null}
@@ -170,7 +170,7 @@ export function BackendErrorPanel({
                   className="rounded-md border border-white/10 bg-black/30 p-3 text-sm"
                 >
                   <p className="text-red-100">{entry.message}</p>
-                  <p className="mt-1 font-mono text-[11px] text-white/50">
+                  <p className="mt-1 font-mono text-[11px] text-white/65">
                     {entry.path ? `path: ${entry.path}` : "path: (none)"}
                     {entry.code ? ` · code: ${entry.code}` : ""}
                   </p>
@@ -193,13 +193,13 @@ export function BackendErrorPanel({
 
         {diagnostics.causes.length > 0 ? (
           <Section title="Cause chain">
-            <ol className="space-y-1 font-mono text-xs text-white/75">
+            <ol className="space-y-1 font-mono text-xs text-white/85">
               {diagnostics.causes.map((cause, index) => (
                 <li key={index}>
-                  <span className="text-white/40">{"↳ ".repeat(index)}</span>
+                  <span className="text-white/55">{"↳ ".repeat(index)}</span>
                   <span className="text-amber-200">{cause.name}</span>
                   {cause.code ? (
-                    <span className="text-white/50"> [{cause.code}]</span>
+                    <span className="text-white/65"> [{cause.code}]</span>
                   ) : null}
                   : {cause.message}
                 </li>
@@ -225,13 +225,13 @@ export function BackendErrorPanel({
 
         <div className="flex flex-wrap items-center gap-3">
           <RetryButton />
-          <span className="text-xs text-white/45">
+          <span className="text-xs text-white/60">
             Server logs: <code>scripts/deploy.sh logs prod</code>
           </span>
         </div>
 
         <details className="rounded-lg border border-white/10 bg-white/[0.03] p-3">
-          <summary className="cursor-pointer text-xs text-white/60">
+          <summary className="cursor-pointer text-xs text-white/75">
             Raw diagnosis (JSON, safe to paste into a bug report)
           </summary>
           <Code>{JSON.stringify(diagnostics, null, 2)}</Code>
@@ -244,7 +244,7 @@ export function BackendErrorPanel({
 function Section({ title, children }: { title: string; children: ReactNode }) {
   return (
     <section className="flex flex-col gap-2 rounded-xl border border-white/10 bg-white/[0.035] p-4">
-      <h2 className="font-mono text-[11px] font-semibold tracking-[.12em] text-white/60 uppercase">
+      <h2 className="font-mono text-[11px] font-semibold tracking-[.12em] text-white/75 uppercase">
         {title}
       </h2>
       {children}
@@ -263,7 +263,7 @@ function Facts({
         .filter(([, value]) => value !== null)
         .map(([label, value]) => (
           <div key={label} className="contents">
-            <dt className="text-white/50">{label}</dt>
+            <dt className="text-white/65">{label}</dt>
             <dd className="font-mono text-xs leading-5 break-all whitespace-pre-wrap text-white/85">
               {value}
             </dd>
@@ -275,7 +275,7 @@ function Facts({
 
 function Code({ children }: { children: string }) {
   return (
-    <pre className="max-h-80 overflow-auto rounded-md bg-black/40 p-3 font-mono text-[11px] leading-5 whitespace-pre-wrap text-white/75">
+    <pre className="max-h-80 overflow-auto rounded-md bg-black/40 p-3 font-mono text-[11px] leading-5 whitespace-pre-wrap text-white/85">
       {children}
     </pre>
   );

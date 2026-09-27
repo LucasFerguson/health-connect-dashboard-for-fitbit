@@ -21,7 +21,7 @@ export function HealthSignalsSection() {
         <h2 id="signals-heading" className="text-2xl font-bold">
           Long-term health trends
         </h2>
-        <p className="mt-1 text-sm text-white/60">
+        <p className="mt-1 text-sm text-white/75">
           Longer-range trends from the prepared, source-aware daily record.
         </p>
       </div>
@@ -45,7 +45,7 @@ export function HealthSignalsSection() {
           href="/calories"
           secondary={
             totalCalories ? (
-              <p className="mt-3 rounded-lg bg-white/5 px-3 py-2 text-xs text-white/60">
+              <p className="mt-3 rounded-lg bg-white/5 px-3 py-2 text-xs text-white/75">
                 Latest total: {integer.format(totalCalories.value)} kcal on{" "}
                 {totalCalories.date}
               </p>

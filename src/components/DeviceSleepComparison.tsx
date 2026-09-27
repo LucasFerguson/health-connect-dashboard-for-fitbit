@@ -14,7 +14,7 @@ export function DeviceSleepComparison() {
         <h2 id="device-comparison-heading" className="text-2xl font-bold">
           Device sleep comparison
         </h2>
-        <p className="mt-1 max-w-3xl text-sm text-white/60">
+        <p className="mt-1 max-w-3xl text-sm text-white/75">
           Average sleep reported by each source. Paired differences compare
           devices only when they recorded the same sleep event.
         </p>
@@ -30,20 +30,20 @@ export function DeviceSleepComparison() {
                 <h3 className="text-lg font-semibold">
                   {healthSourceLabel(summary.source)}
                 </h3>
-                <p className="text-xs text-white/50">
+                <p className="text-xs text-white/65">
                   {summary.recordingCount} sleep recordings
                 </p>
               </div>
-              <span className="rounded-full bg-white/10 px-2.5 py-1 text-xs text-white/70">
+              <span className="rounded-full bg-white/10 px-2.5 py-1 text-xs text-white/80">
                 {formatDuration(summary.averageSleepMinutes)} avg
               </span>
             </div>
             <div className="mt-5 border-t border-white/10 pt-4">
-              <p className="text-sm text-white/60">On matching sleep events</p>
+              <p className="text-sm text-white/75">On matching sleep events</p>
               <p className="mt-1 text-xl font-bold">
                 {formatDifference(summary.averageDifferenceMinutes)}
               </p>
-              <p className="mt-1 text-xs text-white/45">
+              <p className="mt-1 text-xs text-white/60">
                 Across {summary.comparisonCount} paired comparisons
               </p>
             </div>

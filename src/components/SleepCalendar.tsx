@@ -74,7 +74,7 @@ export function SleepCalendar() {
         components={{ Day }}
         defaultMonth={selected}
         footer={
-          <div className="mt-4 flex items-center justify-between gap-4 text-sm text-slate-500">
+          <div className="mt-4 flex items-center justify-between gap-4 text-sm text-slate-400">
             <button
               type="button"
               className="hover:text-slate-800"

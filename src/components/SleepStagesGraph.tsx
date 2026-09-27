@@ -102,7 +102,7 @@ export function SleepStagesGraph() {
 
 function EmptyState({ message }: { message: string }) {
   return (
-    <div className="flex min-h-48 items-center justify-center rounded-lg border border-dashed border-white/30 text-sm text-white/60">
+    <div className="flex min-h-48 items-center justify-center rounded-lg border border-dashed border-white/30 text-sm text-white/75">
       {message}
     </div>
   );

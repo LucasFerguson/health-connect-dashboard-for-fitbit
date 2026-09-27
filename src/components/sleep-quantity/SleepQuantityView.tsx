@@ -38,14 +38,14 @@ export function SleepQuantityView({
               Sleep analytics
             </p>
             <h1 className="mt-2 text-4xl font-extrabold">Sleep quantity</h1>
-            <p className="mt-2 text-white/60">
+            <p className="mt-2 text-white/75">
               Total reconciled sleep across each day, including separate naps
               while avoiding overlapping device duplicates.
             </p>
           </div>
           {latest ? (
             <div className="rounded-xl border border-white/10 bg-white/10 px-5 py-3 text-right">
-              <p className="text-xs text-white/45">Latest · {latest.date}</p>
+              <p className="text-xs text-white/60">Latest · {latest.date}</p>
               <p className="mt-1 text-2xl font-bold">
                 {formatDurationMinutes(latest.sleepMinutes)}
               </p>
@@ -63,7 +63,7 @@ export function SleepQuantityView({
                 <p className="text-3xl font-bold">
                   {formatDurationMinutes(selected.sleepMinutes)}
                 </p>
-                <p className="text-sm text-white/55">
+                <p className="text-sm text-white/70">
                   {selected.eventCount} sleep session
                   {selected.eventCount === 1 ? "" : "s"} ·{" "}
                   {selected.recordingCount} device recording
@@ -71,7 +71,7 @@ export function SleepQuantityView({
                 </p>
               </div>
             ) : (
-              <p className="mt-2 text-sm text-white/55">
+              <p className="mt-2 text-sm text-white/70">
                 No sleep was recorded for this day.
               </p>
             )}
@@ -108,7 +108,7 @@ export function SleepQuantityView({
 
         <section className="mt-6 rounded-xl border border-white/10 bg-white/10 p-5">
           <h2 className="text-xl font-semibold">Daily sleep trend</h2>
-          <p className="mt-1 text-sm text-white/55">
+          <p className="mt-1 text-sm text-white/70">
             Daily quantity compared with your configured target.
           </p>
           <div
@@ -125,7 +125,7 @@ export function SleepQuantityView({
 
         <section className="mt-6 rounded-xl border border-white/10 bg-white/10 p-5">
           <h2 className="text-xl font-semibold">Monthly direction</h2>
-          <p className="mt-1 text-sm text-white/55">
+          <p className="mt-1 text-sm text-white/70">
             Average sleep per recorded day; missing days are excluded.
           </p>
           <div
@@ -147,7 +147,7 @@ export function SleepQuantityView({
 function Summary({ label, value }: { label: string; value: string }) {
   return (
     <article className="rounded-xl border border-white/10 bg-white/10 p-4">
-      <p className="text-xs text-white/45">{label}</p>
+      <p className="text-xs text-white/60">{label}</p>
       <p className="mt-2 text-lg font-semibold">{value}</p>
     </article>
   );

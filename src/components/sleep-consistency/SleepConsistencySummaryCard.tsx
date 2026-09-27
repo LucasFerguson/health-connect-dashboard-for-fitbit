@@ -24,7 +24,7 @@ export function SleepConsistencySummaryCard() {
           >
             Sleep consistency
           </h2>
-          <p className="mt-1 max-w-2xl text-sm text-white/55">
+          <p className="mt-1 max-w-2xl text-sm text-white/70">
             Bedtime and wake-time regularity against your preceding 14-day
             schedule.
           </p>
@@ -62,7 +62,7 @@ export function SleepConsistencySummaryCard() {
 function Stat({ label, value }: { label: string; value: string }) {
   return (
     <div className="rounded-lg bg-black/10 p-3">
-      <p className="text-xs text-white/45">{label}</p>
+      <p className="text-xs text-white/60">{label}</p>
       <p className="mt-1 text-lg font-semibold">{value}</p>
     </div>
   );

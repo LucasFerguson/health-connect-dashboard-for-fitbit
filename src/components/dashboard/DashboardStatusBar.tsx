@@ -40,7 +40,7 @@ export function DashboardStatusBar({
                 ? "Showing last known data"
                 : "Dashboard ready"}
           </p>
-          <p className="mt-0.5 text-xs text-white/50">
+          <p className="mt-0.5 text-xs text-white/65">
             {loading
               ? "The page frame is ready. Health data and charts are loading."
               : stale
@@ -65,7 +65,7 @@ export function DashboardStatusBar({
         <time
           dateTime={generatedAt}
           title={generatedAt}
-          className="w-full font-mono text-[9px] tracking-[.08em] text-white/35 uppercase sm:w-auto"
+          className="w-full font-mono text-[9px] tracking-[.08em] text-white/50 uppercase sm:w-auto"
         >
           Snapshot {formatUtcTimestamp(generatedAt)}
         </time>
@@ -86,7 +86,7 @@ function Stage({
       ? "text-recovery"
       : state === "active"
         ? "text-brand-text"
-        : "text-white/25";
+        : "text-white/40";
 
   return (
     <li className={`flex items-center gap-1.5 ${tone}`}>

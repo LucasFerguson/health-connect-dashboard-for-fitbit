@@ -30,7 +30,7 @@ export default function GlobalError({
         <h1 className="text-lg font-semibold">
           Couldn&apos;t load health data
         </h1>
-        <p className="max-w-md text-sm text-white/55">
+        <p className="max-w-md text-sm text-white/70">
           The dashboard couldn&apos;t reach its data source. It may be
           temporarily unreachable — check that it&apos;s up and reachable from
           this server, then try again.

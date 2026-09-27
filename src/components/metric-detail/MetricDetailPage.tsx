@@ -42,17 +42,17 @@ export function MetricDetailPage({
             <h1 className="mt-1 text-4xl font-extrabold tracking-tight">
               {presentation.title}
             </h1>
-            <p className="mt-2 text-white/65">{presentation.description}</p>
+            <p className="mt-2 text-white/80">{presentation.description}</p>
           </div>
           {latest ? (
             <div className="rounded-xl border border-white/10 bg-white/10 px-5 py-3 text-right">
-              <p className="text-xs text-white/50">
+              <p className="text-xs text-white/65">
                 Latest reading · {latest.date}
               </p>
               <p className="mt-1 text-2xl font-bold">
                 {presentation.formatValue(latest.value)}
               </p>
-              <p className="text-xs text-white/45">
+              <p className="text-xs text-white/60">
                 {healthSourceLabel(latest.source)}
               </p>
             </div>
@@ -70,7 +70,7 @@ export function MetricDetailPage({
                   <p className="text-3xl font-bold">
                     {presentation.formatValue(selected.value)}
                   </p>
-                  <p className="mt-1 text-sm text-white/55">
+                  <p className="mt-1 text-sm text-white/70">
                     Displayed source: {healthSourceLabel(selected.source)}
                   </p>
                 </div>
@@ -80,7 +80,7 @@ export function MetricDetailPage({
                       key={reading.source}
                       className="rounded-lg border border-white/10 bg-black/10 px-3 py-2 text-sm"
                     >
-                      <span className="text-white/55">
+                      <span className="text-white/70">
                         {healthSourceLabel(reading.source)}
                       </span>{" "}
                       <strong>{presentation.formatValue(reading.value)}</strong>
@@ -89,7 +89,7 @@ export function MetricDetailPage({
                 </div>
               </div>
             ) : (
-              <p className="mt-2 text-sm text-white/55">
+              <p className="mt-2 text-sm text-white/70">
                 No {presentation.title.toLowerCase()} reading was recorded for
                 this day.
               </p>
@@ -131,7 +131,7 @@ export function MetricDetailPage({
             <MonthlyMetricChart data={analytics.monthly} kind={kind} />
           </div>
         ) : (
-          <div className="mt-8 rounded-xl border border-dashed border-white/15 p-12 text-center text-white/45">
+          <div className="mt-8 rounded-xl border border-dashed border-white/15 p-12 text-center text-white/60">
             These visualizations will appear after measurements are available.
           </div>
         )}
@@ -143,7 +143,7 @@ export function MetricDetailPage({
 function SummaryStat({ label, value }: { label: string; value: string }) {
   return (
     <article className="rounded-xl border border-white/10 bg-white/10 p-4">
-      <p className="text-xs text-white/50">{label}</p>
+      <p className="text-xs text-white/65">{label}</p>
       <p className="mt-2 text-lg font-semibold">{value}</p>
     </article>
   );

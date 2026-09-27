@@ -19,7 +19,7 @@ export function HealthspanCard() {
           <h2 id="healthspan-heading" className="mt-2 text-3xl font-extrabold">
             Health age and pace of aging
           </h2>
-          <p className="mt-2 text-sm leading-6 text-white/60">
+          <p className="mt-2 text-sm leading-6 text-white/75">
             An explainable composite of sleep duration, sleep consistency,
             steps, and resting heart rate. Every year added or removed is
             traceable to a prepared signal.
@@ -71,7 +71,7 @@ export function HealthspanCard() {
 function Stat({ label, value }: { label: string; value: string }) {
   return (
     <div className="rounded-xl border border-white/10 bg-black/15 p-3">
-      <p className="text-xs text-white/45">{label}</p>
+      <p className="text-xs text-white/60">{label}</p>
       <p className="mt-1 text-lg font-semibold">{value}</p>
     </div>
   );

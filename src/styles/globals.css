@@ -20,9 +20,9 @@
   --color-ink-500: #241d30; /* border */
   --color-ink-400: #302842; /* border hover, flattened future bar */
   --color-ink-300: #3e2e6e; /* awake stage, muted plan bar */
-  --color-ink-200: #5e5870; /* dim text */
-  --color-ink-100: #9a93ab; /* secondary text */
-  --color-ink-50: #c8c2d6; /* bright secondary text */
+  --color-ink-200: #8d86a0; /* dim text — 5.3:1 on card (was #5e5870, 2.7:1) */
+  --color-ink-100: #b6b0c7; /* secondary text — 8.8:1 on card */
+  --color-ink-50: #dcd7e7; /* bright secondary text — 13:1 on card */
   --color-ink-0: #efecf5; /* primary text */
 
   /* Brand purple. */
@@ -134,5 +134,22 @@
   .dashboard-skeleton::after {
     transform: none;
     opacity: 0.45;
+  }
+}
+
+/*
+ * Secondary and dim text renders one step heavier than body copy so small
+ * grey labels stay legible on the dark surfaces. It lives in the base layer
+ * on purpose: any explicit `font-*` utility (utilities layer) still wins, so
+ * headings and deliberately bold text are unaffected.
+ */
+@layer base {
+  .text-ink-200,
+  .text-ink-100,
+  .text-ink-50,
+  [class*="text-white/"],
+  .text-slate-300,
+  .text-slate-400 {
+    font-weight: 500;
   }
 }

@@ -49,7 +49,7 @@ export function MovementLane({
           />
         );
       })}
-      <div className="text-ink-200 pointer-events-none absolute top-[3px] right-1.5 z-[6] font-mono text-[7.5px] tracking-[.06em]">
+      <div className="text-ink-50 bg-ink-900/85 pointer-events-none absolute top-[3px] right-1.5 z-[6] px-1 font-mono text-[7.5px] tracking-[.06em]">
         {hasAnyData && peakHourEntry
           ? `STEPS/H · PEAK ${formatSteps(peak)} AT ${formatHourLabel(
               peakHourEntry.hour,

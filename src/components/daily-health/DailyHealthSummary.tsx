@@ -41,7 +41,7 @@ export function DailyHealthSummary() {
           <h2 id="daily-health-heading" className="mt-1 text-2xl font-bold">
             {format(parseISO(date), "EEEE, MMMM d, yyyy")}
           </h2>
-          <p className="mt-1 text-sm text-white/55">
+          <p className="mt-1 text-sm text-white/70">
             Choose a date here or from the sleep calendar below.
           </p>
         </div>
@@ -50,7 +50,7 @@ export function DailyHealthSummary() {
             type="button"
             aria-label="Previous day"
             onClick={() => shiftDate(-1)}
-            className="rounded-lg px-3 py-2 text-lg text-white/70 hover:bg-white/10 hover:text-white"
+            className="rounded-lg px-3 py-2 text-lg text-white/80 hover:bg-white/10 hover:text-white"
           >
             ←
           </button>
@@ -68,7 +68,7 @@ export function DailyHealthSummary() {
             type="button"
             aria-label="Next day"
             onClick={() => shiftDate(1)}
-            className="rounded-lg px-3 py-2 text-lg text-white/70 hover:bg-white/10 hover:text-white"
+            className="rounded-lg px-3 py-2 text-lg text-white/80 hover:bg-white/10 hover:text-white"
           >
             →
           </button>

@@ -41,7 +41,7 @@ export function MonthlyMetricChart({
   return (
     <section className="rounded-xl border border-white/10 bg-white/10 p-5">
       <h2 className="text-xl font-semibold">Monthly direction</h2>
-      <p className="mt-1 text-sm text-white/55">
+      <p className="mt-1 text-sm text-white/70">
         Average per recorded day. Missing days are excluded rather than treated
         as zero.
       </p>

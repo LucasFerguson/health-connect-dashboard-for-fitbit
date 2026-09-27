@@ -68,9 +68,9 @@ export function CalendarHeatmap({
       <div className="mb-5 flex flex-wrap items-start justify-between gap-3">
         <div>
           <h2 className="text-xl font-semibold">{title}</h2>
-          <p className="mt-1 text-sm text-white/55">{description}</p>
+          <p className="mt-1 text-sm text-white/70">{description}</p>
         </div>
-        <label className="flex items-center gap-2 text-sm text-white/60">
+        <label className="flex items-center gap-2 text-sm text-white/75">
           Year
           <select
             value={year}
@@ -137,7 +137,7 @@ export function CalendarHeatmap({
           })}
         </svg>
       </div>
-      <div className="mt-2 flex items-center justify-end gap-1 text-xs text-white/45">
+      <div className="mt-2 flex items-center justify-end gap-1 text-xs text-white/60">
         <span className="mr-1">Less</span>
         {[0.18, 0.38, 0.58, 0.78, 1].map((opacity) => (
           <span

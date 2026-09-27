@@ -26,7 +26,7 @@ export function TrendRangeTabs({
           className={`min-w-12 rounded-lg px-4 py-2 text-xs font-bold transition ${
             value === range.days
               ? "bg-white/15 text-white"
-              : "text-white/50 hover:text-white"
+              : "text-white/65 hover:text-white"
           }`}
         >
           {range.label}

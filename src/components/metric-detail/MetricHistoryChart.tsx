@@ -74,7 +74,7 @@ export function MetricHistoryChart({
   return (
     <section className="rounded-xl border border-white/10 bg-white/10 p-5">
       <h2 className="text-xl font-semibold">Progress and trend</h2>
-      <p className="mt-1 text-sm text-white/55">
+      <p className="mt-1 text-sm text-white/70">
         Daily readings with a calendar-based seven-day average. Drag the range
         control to focus on a period.
       </p>

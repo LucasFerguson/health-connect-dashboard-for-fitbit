@@ -22,7 +22,7 @@ export function SleepDebtSummaryCard() {
           <h2 id="sleep-debt-heading" className="mt-1 text-2xl font-bold">
             Rolling sleep debt
           </h2>
-          <p className="mt-1 max-w-2xl text-sm text-white/55">
+          <p className="mt-1 max-w-2xl text-sm text-white/70">
             Daily shortfall against a{" "}
             {formatDurationMinutes(sleepDebt.targetMinutes)} target. Missing
             sleep records are not counted as debt.
@@ -61,7 +61,7 @@ export function SleepDebtSummaryCard() {
 function Stat({ label, value }: { label: string; value: string }) {
   return (
     <div className="rounded-lg bg-black/10 p-3">
-      <p className="text-xs text-white/45">{label}</p>
+      <p className="text-xs text-white/60">{label}</p>
       <p className="mt-1 text-lg font-semibold">{value}</p>
     </div>
   );

@@ -37,7 +37,7 @@ export function TrendBreakdown({
               style={{ background: item.color }}
             />
             <strong>{item.count}×</strong>
-            <span className="text-white/55">{item.label}</span>
+            <span className="text-white/70">{item.label}</span>
           </div>
         ))}
       </div>

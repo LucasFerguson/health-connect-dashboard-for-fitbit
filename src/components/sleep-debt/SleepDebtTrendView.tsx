@@ -52,7 +52,7 @@ export function SleepDebtTrendView({
                 Trend view
               </p>
               <h1 className="mt-2 text-3xl font-extrabold">Sleep debt</h1>
-              <p className="mt-2 max-w-2xl text-sm text-white/60">
+              <p className="mt-2 max-w-2xl text-sm text-white/75">
                 Shortfall from your{" "}
                 {formatDurationMinutes(analytics.targetMinutes)} nightly target,
                 calculated from reconciled sleep sessions.
@@ -63,7 +63,7 @@ export function SleepDebtTrendView({
 
           <div className="mt-8 flex flex-wrap items-end justify-between gap-4">
             <div>
-              <p className="text-xs font-semibold text-white/45 uppercase">
+              <p className="text-xs font-semibold text-white/60 uppercase">
                 Average
               </p>
               <p className="mt-1 text-5xl font-light tracking-tight">
@@ -82,12 +82,12 @@ export function SleepDebtTrendView({
                 </p>
               ) : null}
             </div>
-            <p className="text-sm font-semibold text-white/75">
+            <p className="text-sm font-semibold text-white/85">
               {periodLabel(period.current, rangeDays)}
             </p>
           </div>
 
-          <p className="mt-6 max-w-3xl text-sm leading-6 text-white/70">
+          <p className="mt-6 max-w-3xl text-sm leading-6 text-white/80">
             Your average sleep debt for this period was{" "}
             {average === null
               ? "not available"
@@ -109,7 +109,7 @@ export function SleepDebtTrendView({
               />
             </div>
           ) : (
-            <div className="mt-8 rounded-xl border border-dashed border-white/15 p-12 text-center text-white/45">
+            <div className="mt-8 rounded-xl border border-dashed border-white/15 p-12 text-center text-white/60">
               No sleep records are available in this period.
             </div>
           )}
@@ -148,13 +148,13 @@ export function SleepDebtTrendView({
         <section className="mt-6 grid gap-4 md:grid-cols-2">
           <article className="rounded-xl border border-white/10 bg-white/5 p-5">
             <h2 className="text-lg font-semibold">How it is calculated</h2>
-            <p className="mt-2 text-sm leading-6 text-white/60">
+            <p className="mt-2 text-sm leading-6 text-white/75">
               {analytics.methodology}
             </p>
           </article>
           <article className="rounded-xl border border-white/10 bg-white/5 p-5">
             <h2 className="text-lg font-semibold">What the trend means</h2>
-            <p className="mt-2 text-sm leading-6 text-white/60">
+            <p className="mt-2 text-sm leading-6 text-white/75">
               Bars show each recorded day&apos;s shortfall. The white line
               smooths those readings into a seven-day average; lower is better.
               Surplus sleep remains available in the prepared data but does not

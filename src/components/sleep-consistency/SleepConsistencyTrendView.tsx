@@ -55,7 +55,7 @@ export function SleepConsistencyTrendView({
               <h1 className="mt-2 text-3xl font-extrabold">
                 Sleep consistency
               </h1>
-              <p className="mt-2 max-w-2xl text-sm text-white/60">
+              <p className="mt-2 max-w-2xl text-sm text-white/75">
                 A versioned estimate of bedtime and wake-time regularity. Higher
                 is better.
               </p>
@@ -65,7 +65,7 @@ export function SleepConsistencyTrendView({
 
           <div className="mt-8 flex flex-wrap items-end justify-between gap-4">
             <div>
-              <p className="text-xs font-semibold text-white/45 uppercase">
+              <p className="text-xs font-semibold text-white/60 uppercase">
                 Average
               </p>
               <p className="mt-1 text-5xl font-light tracking-tight">
@@ -80,12 +80,12 @@ export function SleepConsistencyTrendView({
                 </p>
               ) : null}
             </div>
-            <p className="text-sm font-semibold text-white/75">
+            <p className="text-sm font-semibold text-white/85">
               {periodLabel(period.current, rangeDays)}
             </p>
           </div>
 
-          <p className="mt-6 max-w-3xl text-sm leading-6 text-white/70">
+          <p className="mt-6 max-w-3xl text-sm leading-6 text-white/80">
             Your average sleep consistency for this period was{" "}
             {formatScore(average)}
             {priorAverage === null
@@ -105,7 +105,7 @@ export function SleepConsistencyTrendView({
               />
             </div>
           ) : (
-            <div className="mt-8 rounded-xl border border-dashed border-white/15 p-12 text-center text-white/45">
+            <div className="mt-8 rounded-xl border border-dashed border-white/15 p-12 text-center text-white/60">
               No scored nights are available in this period.
             </div>
           )}
@@ -150,13 +150,13 @@ export function SleepConsistencyTrendView({
         <section className="mt-6 grid gap-4 md:grid-cols-2">
           <article className="rounded-xl border border-white/10 bg-white/5 p-5">
             <h2 className="text-lg font-semibold">How it is calculated</h2>
-            <p className="mt-2 text-sm leading-6 text-white/60">
+            <p className="mt-2 text-sm leading-6 text-white/75">
               {analytics.methodology}
             </p>
           </article>
           <article className="rounded-xl border border-white/10 bg-white/5 p-5">
             <h2 className="text-lg font-semibold">Designed for refinement</h2>
-            <p className="mt-2 text-sm leading-6 text-white/60">
+            <p className="mt-2 text-sm leading-6 text-white/75">
               The pipeline stores baseline times, deviations, sample counts,
               source, and quality flags—not only the final score. A later
               algorithm can be compared with this version without rewriting the
@@ -195,7 +195,7 @@ function SelectedNight({
           <Detail label="Source" value={healthSourceLabel(day.source)} />
         </div>
       ) : (
-        <p className="mt-2 text-sm text-white/55">
+        <p className="mt-2 text-sm text-white/70">
           No main sleep was recorded for this day.
         </p>
       )}
@@ -206,7 +206,7 @@ function SelectedNight({
 function Detail({ label, value }: { label: string; value: string }) {
   return (
     <div>
-      <p className="text-xs text-white/45">{label}</p>
+      <p className="text-xs text-white/60">{label}</p>
       <p className="mt-1 font-semibold">{value}</p>
     </div>
   );

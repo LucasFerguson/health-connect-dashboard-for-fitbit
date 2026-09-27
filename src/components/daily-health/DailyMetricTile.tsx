@@ -22,19 +22,19 @@ export function DailyMetricTile({
         className="mb-3 h-1 w-10 rounded-full"
         style={{ background: accent }}
       />
-      <h3 className="text-sm font-medium text-white/65">{title}</h3>
+      <h3 className="text-sm font-medium text-white/80">{title}</h3>
       {value ? (
         <>
           <p className="mt-1 text-2xl font-bold tracking-tight">{value}</p>
           {secondary ? (
-            <div className="mt-1 text-sm text-white/65">{secondary}</div>
+            <div className="mt-1 text-sm text-white/80">{secondary}</div>
           ) : null}
           {source ? (
-            <p className="mt-3 text-xs text-white/45">Source: {source}</p>
+            <p className="mt-3 text-xs text-white/60">Source: {source}</p>
           ) : null}
         </>
       ) : (
-        <p className="mt-2 text-sm text-white/40">No reading for this day</p>
+        <p className="mt-2 text-sm text-white/55">No reading for this day</p>
       )}
       {href ? (
         <p className="mt-3 text-xs font-medium text-violet-200 group-hover:text-white">

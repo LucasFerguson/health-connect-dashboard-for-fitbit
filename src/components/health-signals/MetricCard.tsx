@@ -42,16 +42,16 @@ export function MetricCard({
               <p className="mt-2 text-3xl font-bold tracking-tight">
                 {formatValue(latest.value)}
               </p>
-              <p className="mt-1 text-xs text-white/50">
+              <p className="mt-1 text-xs text-white/65">
                 {latest.date} · {healthSourceLabel(latest.source)}
               </p>
             </>
           ) : (
-            <p className="mt-4 text-sm text-white/50">No measurements yet</p>
+            <p className="mt-4 text-sm text-white/65">No measurements yet</p>
           )}
         </div>
         {average7Day !== null ? (
-          <div className="text-right text-xs text-white/55">
+          <div className="text-right text-xs text-white/70">
             <span className="block">7-day average</span>
             <strong className="mt-1 block text-sm text-white/85">
               {formatValue(average7Day)}
@@ -62,7 +62,7 @@ export function MetricCard({
 
       {secondary}
       {changeFromPrevious !== null ? (
-        <p className="mt-3 text-xs text-white/55">
+        <p className="mt-3 text-xs text-white/70">
           {formatSigned(changeFromPrevious, formatValue)} from previous reading
         </p>
       ) : null}
@@ -75,7 +75,7 @@ export function MetricCard({
           days={trendDays}
         />
       ) : (
-        <div className="mt-4 flex h-44 items-center justify-center rounded-lg border border-dashed border-white/15 text-sm text-white/35">
+        <div className="mt-4 flex h-44 items-center justify-center rounded-lg border border-dashed border-white/15 text-sm text-white/50">
           Trend appears after data is recorded
         </div>
       )}

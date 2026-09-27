@@ -17,7 +17,7 @@ export function DashboardLoadingShell() {
             <h1 className="text-3xl font-extrabold tracking-tight sm:text-4xl">
               Health <span className="text-violet-300">Dashboard</span>
             </h1>
-            <p className="mt-1 text-sm text-white/70">
+            <p className="mt-1 text-sm text-white/80">
               Your health data, under your control.
             </p>
           </div>
