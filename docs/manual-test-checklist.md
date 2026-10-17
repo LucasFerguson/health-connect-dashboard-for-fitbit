@@ -26,7 +26,7 @@ a stale install and would silently use the old Health Connect library), then
 - [ ] The phone app keeps syncing without asking you to log in again, checked about 12 hours after the 2026-10-17 backend deploy (when its old token would have expired and converted into a permanent session).
 
 ### Embedded dashboard (added 2026-10-17)
-- [ ] In your embedding page over plain HTTP, the login page shows the notice explaining that sign-in can't work in the frame, with an "open in a new tab" link. (Ships with the next frontend deploy.)
+- [ ] In your embedding page over plain HTTP, the login page shows the notice explaining that sign-in can't work in the frame, with an "open in a new tab" link. (Deployed 2026-10-17.)
 - [ ] Once the dashboard is served over HTTPS (for example through Cloudflare), signing in inside the embedded frame works and stays signed in.
 
 ### New account flow (for your friend)
