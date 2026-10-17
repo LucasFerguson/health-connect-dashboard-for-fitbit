@@ -9,9 +9,9 @@ Dashboard: http://192.168.8.239:3000 (prod), http://192.168.8.239:3001 (dev).
 ## Waiting on you
 
 ### Android app v2.3.0: HRV and skin temperature (added 2026-10-17)
-Build on your PC first: `cd app && npm install` (the build script won't catch
-a stale install and would silently use the old Health Connect library), then
-`./build-android-apk-on-linux.sh` from the HCGateway repo root.
+Built on the server and published 2026-10-17: on your phone, open
+http://192.168.8.239:3000/login and tap DOWNLOAD APK (v2.3.0, 69 MB), then
+open the file to install it over the current app (same signing key).
 - [ ] Android → Apps → HCGateway shows version 2.3.0.
 - [ ] The permission prompt includes **Heart rate variability** and **Skin temperature**; allow both.
 - [ ] Health Connect → App permissions → HCGateway shows both enabled.
@@ -34,7 +34,7 @@ a stale install and would silently use the old Health Connect library), then
 - [ ] Logging in with a username that doesn't exist fails in both the app and the website instead of creating an account.
 
 ### Android app download page (added 2026-10-17)
-Publish a build first, from your PC:
+v2.3.0 is already published (built on the server). To publish a build from your PC instead:
 `scp app-release.apk root@192.168.8.239:/root/HCGateway/releases/incoming.apk && ssh root@192.168.8.239 /root/HCGateway/scripts/publish-apk.sh /root/HCGateway/releases/incoming.apk`
 (bump `expo.version`/`versionCode` in `app/app.json` and pull it on the server first; the script reads the version from the server's checkout).
 - [ ] The login page shows the "Get the Android app" card with the right version, "updated …" time and size.
