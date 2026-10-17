@@ -20,6 +20,8 @@ const links = [
   { href: "/steps", label: "STEPS" },
   { href: "/calories", label: "CALORIES" },
   { href: "/resting-heart-rate", label: "HEART" },
+  { href: "/hrv", label: "HRV" },
+  { href: "/skin-temperature", label: "SKIN TEMP" },
   { href: "/weight", label: "WEIGHT" },
   { href: "/healthspan", label: "HEALTHSPAN" },
   { href: "/recovery", label: "RECOVERY" },

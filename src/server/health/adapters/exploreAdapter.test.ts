@@ -33,6 +33,11 @@ function analytics(): Analytics {
     restingHeartRate: metric([["2026-01-01", Number.NaN]]),
     heartRateVariability: metric([]),
     weight: metric([]),
+    skinTemperature: metric([
+      ["2026-01-03", Number.NaN],
+      ["2026-01-02", 0],
+      ["2026-01-01", -0.3],
+    ]),
     sleepDebt: {
       daily: [
         {
@@ -133,7 +138,6 @@ function analytics(): Analytics {
         supportingMetrics: {
           respiratoryRate: value("AVAILABLE", 15.2),
           oxygenSaturation: value("PARTIAL", 94),
-          skinTemperatureDeviation: value("MISSING", null),
           zone3AndAbove: value("AVAILABLE", 0),
         },
       },
@@ -143,7 +147,6 @@ function analytics(): Analytics {
         supportingMetrics: {
           respiratoryRate: value("MISSING", null),
           oxygenSaturation: value("AVAILABLE", 97),
-          skinTemperatureDeviation: value("AVAILABLE", null),
           zone3AndAbove: value("MISSING", null),
         },
       },
@@ -177,8 +180,14 @@ void describe("adaptExploreSeries", () => {
     assert.deepEqual(series.oxygenSaturation, [
       { date: "2026-01-02", value: 97 },
     ]);
-    assert.deepEqual(series.skinTemperature, []);
     assert.deepEqual(series.zone3Minutes, [{ date: "2026-01-01", value: 0 }]);
+  });
+
+  void it("keeps signed skin-temperature deviations, including zero", () => {
+    assert.deepEqual(series.skinTemperature, [
+      { date: "2026-01-01", value: -0.3 },
+      { date: "2026-01-02", value: 0 },
+    ]);
   });
 
   void it("keeps strain only when publishable", () => {

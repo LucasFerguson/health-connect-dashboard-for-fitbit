@@ -22,6 +22,12 @@ export function YearHeatmap({
       color={presentation.color}
       formatValue={presentation.formatValue}
       initialDate={initialDate}
+      diverging={presentation.diverging}
+      description={
+        presentation.diverging
+          ? "Each square is one night; deeper color is further from your baseline."
+          : undefined
+      }
     />
   );
 }

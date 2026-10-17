@@ -1,16 +1,17 @@
 import { graphql } from "~/types/__generated__";
+import { MetricSeriesPageDocument } from "~/types/__generated__/graphql";
 
 /**
- * Query for the four metric detail pages (/steps, /calories,
- * /resting-heart-rate, /weight). They all render through `HealthMetricPage`,
- * so they share one query rather than four near-identical ones — the selection
- * set is the same shape for every series.
+ * Query for the metric detail pages (/steps, /calories, /resting-heart-rate,
+ * /hrv, /skin-temperature, /weight). They all render through
+ * `HealthMetricPage`, so they share one query rather than six near-identical
+ * ones — the selection set is the same shape for every series.
  *
  * Each series is behind an `@include(if: $<series>)` variable, and
  * `getMetricSeries(kind)` turns on only the ones that page renders: one, or
- * two for calories (active against total). One document still serves all
- * four pages, but a page no longer downloads the other series. With entity ids
- * selected, all five came to ~790 KB; /steps now fetches ~90 KB. Within a
+ * two for calories (active against total). One document still serves every
+ * page, but a page no longer downloads the other series. With entity ids
+ * selected, the first five came to ~790 KB; /steps now fetches ~90 KB. Within a
  * series nothing is trimmed: the history chart, year heatmap and monthly chart
  * all span the full history, and `?date=` can select any day's `bySource`.
  *
@@ -23,13 +24,15 @@ import { graphql } from "~/types/__generated__";
  * Written with the codegen `graphql()` function rather than `gql`, so the
  * returned document carries its own result and variable types.
  */
-export const METRIC_SERIES_QUERY = graphql(`
+const METRIC_SERIES_QUERY_SOURCE = graphql(`
   query MetricSeriesPage(
     $steps: Boolean!
     $activeCalories: Boolean!
     $totalCalories: Boolean!
     $restingHeartRate: Boolean!
     $weight: Boolean!
+    $heartRateVariability: Boolean!
+    $skinTemperature: Boolean!
   ) {
     viewer {
       analytics {
@@ -335,7 +338,132 @@ export const METRIC_SERIES_QUERY = graphql(`
             sampleCount
           }
         }
+        heartRateVariability @include(if: $heartRateVariability) {
+          unit
+          daily {
+            id
+            date
+            value
+            source
+            qualityFlags
+            bySource {
+              source
+              value
+              observationCount
+              coverageMinutes
+            }
+          }
+          overview {
+            latest {
+              id
+              date
+              value
+              source
+              qualityFlags
+              bySource {
+                source
+                value
+                observationCount
+                coverageMinutes
+              }
+            }
+            previous {
+              id
+              date
+              value
+              source
+              qualityFlags
+              bySource {
+                source
+                value
+                observationCount
+                coverageMinutes
+              }
+            }
+            average7Day
+            average30Day
+            changeFromPrevious
+            sampleCount
+          }
+          rolling7Day {
+            id
+            date
+            value
+            sampleCount
+          }
+          monthly {
+            id
+            month
+            value
+            sampleCount
+          }
+        }
+        skinTemperature @include(if: $skinTemperature) {
+          unit
+          daily {
+            id
+            date
+            value
+            source
+            qualityFlags
+            bySource {
+              source
+              value
+              observationCount
+              coverageMinutes
+            }
+          }
+          overview {
+            latest {
+              id
+              date
+              value
+              source
+              qualityFlags
+              bySource {
+                source
+                value
+                observationCount
+                coverageMinutes
+              }
+            }
+            previous {
+              id
+              date
+              value
+              source
+              qualityFlags
+              bySource {
+                source
+                value
+                observationCount
+                coverageMinutes
+              }
+            }
+            average7Day
+            average30Day
+            changeFromPrevious
+            sampleCount
+          }
+          rolling7Day {
+            id
+            date
+            value
+            sampleCount
+          }
+          monthly {
+            id
+            month
+            value
+            sampleCount
+          }
+        }
       }
     }
   }
 `);
+
+export const METRIC_SERIES_QUERY = MetricSeriesPageDocument;
+
+// Referenced so the source stays live for codegen and lint.
+void METRIC_SERIES_QUERY_SOURCE;

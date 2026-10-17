@@ -13,10 +13,29 @@ export function MonthlyMetricChart({
   kind: MetricKind;
 }) {
   const presentation = metricPresentation(kind);
+  const { diverging, formatValue } = presentation;
+  // Deviation months grow up or down from the zero baseline, colored by sign.
+  const barData = diverging
+    ? data.map((month) => ({
+        value: month.value,
+        itemStyle: {
+          color: month.value < 0 ? diverging.negativeColor : presentation.color,
+          borderRadius: month.value < 0 ? [0, 0, 5, 5] : [5, 5, 0, 0],
+        },
+      }))
+    : data.map((month) => month.value);
   const option = {
     animation: false,
     grid: { top: 20, right: 16, bottom: 32, left: 64 },
-    tooltip: { trigger: "axis" },
+    tooltip: {
+      trigger: "axis",
+      ...(diverging
+        ? {
+            valueFormatter: (value: unknown) =>
+              typeof value === "number" ? formatValue(value) : "—",
+          }
+        : {}),
+    },
     xAxis: {
       type: "category",
       data: data.map((month) => month.month),
@@ -25,14 +44,17 @@ export function MonthlyMetricChart({
     },
     yAxis: {
       type: "value",
-      axisLabel: { color: "#94a3b8" },
+      axisLabel: {
+        color: "#94a3b8",
+        ...(diverging ? { formatter: diverging.formatTick } : {}),
+      },
       splitLine: { lineStyle: { color: "rgba(255,255,255,0.08)" } },
     },
     series: [
       {
         name: "Average per recorded day",
         type: "bar",
-        data: data.map((month) => month.value),
+        data: barData,
         itemStyle: { color: presentation.color, borderRadius: [5, 5, 0, 0] },
       },
     ],

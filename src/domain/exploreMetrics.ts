@@ -96,6 +96,10 @@ export interface MetricDefinition {
   slopeStep: number;
   /** One line on where the value comes from, shown under the picker. */
   note: string;
+  /** A deviation around zero (skin temperature): values are written with an
+   * explicit sign, "+0.30 °C" / "−0.20 °C", so a reading never looks like an
+   * absolute quantity. */
+  signed?: boolean;
   /** Binary (habit) metrics: the all-time answer span, which the backend
    * reports even when the fetched range holds none of the answers. */
   answerSpan?: { from: DateKey; to: DateKey } | null;
@@ -174,7 +178,7 @@ export const METRICS: Record<CoreMetricId, MetricDefinition> = {
     unit: "ms",
     decimals: 0,
     slopeStep: 10,
-    note: "Daily HRV.",
+    note: "Nightly HRV (RMSSD). Readings start with phone app v2.3.0.",
   }),
   respiratoryRate: define({
     id: "respiratoryRate",
@@ -274,7 +278,8 @@ export const METRICS: Record<CoreMetricId, MetricDefinition> = {
     unit: "°C",
     decimals: 2,
     slopeStep: 0.1,
-    note: "Deviation from your skin-temperature baseline.",
+    signed: true,
+    note: "Nightly deviation from your own skin-temperature baseline, dated by wake day. Not a body temperature. Readings start with phone app v2.3.0.",
   }),
   healthAge: define({
     id: "healthAge",
@@ -415,8 +420,19 @@ export function formatMetricValue(metric: MetricDefinition, value: number) {
       return formatClock(value);
     case "duration":
       return formatMinutes(value);
-    case "number":
-      return withUnit(numberFormat(metric.decimals).format(value), metric.unit);
+    case "number": {
+      if (!metric.signed) {
+        return withUnit(
+          numberFormat(metric.decimals).format(value),
+          metric.unit,
+        );
+      }
+      // A value that rounds to zero gets no sign ("0 °C", not "−0 °C").
+      const rounded = Number(value.toFixed(metric.decimals));
+      const sign = rounded > 0 ? "+" : rounded < 0 ? "−" : "";
+      const text = numberFormat(metric.decimals).format(Math.abs(rounded));
+      return withUnit(`${sign}${text}`, metric.unit);
+    }
   }
 }
 

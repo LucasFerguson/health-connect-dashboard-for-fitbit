@@ -16,7 +16,10 @@ import { graphql } from "~/types/__generated__";
  * needs; the backend doesn't gzip.
  *
  * `days` is selected only for the supporting metrics that have no series of
- * their own (respiratory rate, SpO₂, skin temperature, zone 3+ minutes).
+ * their own (respiratory rate, SpO₂, zone 3+ minutes). Skin temperature
+ * used to come from `days.supportingMetrics.skinTemperatureDeviation`; it now
+ * reads `analytics.skinTemperature`, the same nightly series /skin-temperature
+ * charts.
  * Sleep duration comes from `sleepDebt.daily.sleepMinutes`, which matches
  * `headlineScores.sleepDuration` on every available day and costs nothing
  * extra, since the debt row is needed anyway.
@@ -76,6 +79,13 @@ export const EXPLORE_QUERY = graphql(`
           }
         }
         heartRateVariability {
+          daily(range: $range) {
+            id
+            date
+            value
+          }
+        }
+        skinTemperature {
           daily(range: $range) {
             id
             date
@@ -145,10 +155,6 @@ export const EXPLORE_QUERY = graphql(`
               value
             }
             oxygenSaturation {
-              status
-              value
-            }
-            skinTemperatureDeviation {
               status
               value
             }

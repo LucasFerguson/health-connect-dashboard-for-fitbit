@@ -13,6 +13,36 @@ export const formatCalories = (value: number) =>
   `${integer.format(value)} kcal`;
 export const formatHeartRate = (value: number) =>
   `${integer.format(value)} bpm`;
+export const formatHrv = (value: number) => `${integer.format(value)} ms`;
+
+const tenths = new Intl.NumberFormat(undefined, {
+  minimumFractionDigits: 1,
+  maximumFractionDigits: 1,
+});
+
+/**
+ * A skin-temperature *deviation* from the wearer's baseline, always signed:
+ * "+0.3 °C", "−0.2 °C". A value that rounds to zero reads "0.0 °C" with no
+ * sign. Never use this for an absolute temperature.
+ */
+export function formatTemperatureDeviation(value: number): string {
+  const rounded = Math.round(value * 10) / 10;
+  const sign = rounded > 0 ? "+" : rounded < 0 ? "−" : "";
+  return `${sign}${tenths.format(Math.abs(rounded))} °C`;
+}
+
+const hundredths = new Intl.NumberFormat(undefined, {
+  maximumFractionDigits: 2,
+});
+
+/** Axis-tick form of `formatTemperatureDeviation`: up to two decimals, so
+ * ticks 0.05 apart stay distinct ("+0.05 °C", "+0.1 °C"). */
+export function formatTemperatureDeviationTick(value: number): string {
+  const rounded = Math.round(value * 100) / 100;
+  const sign = rounded > 0 ? "+" : rounded < 0 ? "−" : "";
+  return `${sign}${hundredths.format(Math.abs(rounded))} °C`;
+}
+
 export const formatKilograms = (value: number) => `${decimal.format(value)} kg`;
 export const formatPounds = (value: number) =>
   `${decimal.format(kilogramsToPounds(value))} lb`;

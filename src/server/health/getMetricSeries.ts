@@ -1,5 +1,5 @@
 /**
- * GraphQL-backed read for the four metric detail pages. Same pattern as
+ * GraphQL-backed read for the metric detail pages. Same pattern as
  * `getSleepDebtAnalytics`.
  *
  * Adapts HCGateway's `MetricSeries` onto the `MetricAnalytics` shape
@@ -23,12 +23,14 @@ type Analytics = MetricSeriesPageQuery["viewer"]["analytics"];
 type GraphQLMetricSeries = NonNullable<Analytics["steps"]>;
 type GraphQLMetricDay = GraphQLMetricSeries["daily"][number];
 
-/** The five series the query can fetch, keyed as `HealthAnalytics` names them. */
+/** The series the query can fetch, keyed as `HealthAnalytics` names them. */
 type SeriesName =
   | "steps"
   | "activeCalories"
   | "totalCalories"
   | "restingHeartRate"
+  | "heartRateVariability"
+  | "skinTemperature"
   | "weight";
 
 /** What a metric page renders: its primary series, plus calories' overlay. */
@@ -49,6 +51,8 @@ const expectedUnit: Record<SeriesName, [MetricUnit, GraphQLMetricUnit]> = {
   activeCalories: ["kcal", "KCAL"],
   totalCalories: ["kcal", "KCAL"],
   restingHeartRate: ["bpm", "BPM"],
+  heartRateVariability: ["ms", "MS"],
+  skinTemperature: ["celsius_delta", "CELSIUS_DELTA"],
   weight: ["kg", "KG"],
 };
 
@@ -63,6 +67,8 @@ const pageSeries: Record<
   steps: { primary: "steps" },
   calories: { primary: "activeCalories", secondary: "totalCalories" },
   "heart-rate": { primary: "restingHeartRate" },
+  hrv: { primary: "heartRateVariability" },
+  "skin-temperature": { primary: "skinTemperature" },
   weight: { primary: "weight" },
 };
 
@@ -87,6 +93,8 @@ export function getMetricSeries(kind: MetricKind) {
       activeCalories: wanted("activeCalories"),
       totalCalories: wanted("totalCalories"),
       restingHeartRate: wanted("restingHeartRate"),
+      heartRateVariability: wanted("heartRateVariability"),
+      skinTemperature: wanted("skinTemperature"),
       weight: wanted("weight"),
     },
   );

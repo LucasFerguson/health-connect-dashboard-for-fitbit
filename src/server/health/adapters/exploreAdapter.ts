@@ -5,7 +5,7 @@
  * Missing is absent, never zero. A day is dropped from a series when its
  * value is null, non-finite, or not trustworthy by the backend's own flag:
  *
- * - supporting metrics (respiratory rate, SpO₂, skin temperature, zone 3+)
+ * - supporting metrics (respiratory rate, SpO₂, zone 3+)
  *   count only when their status is `AVAILABLE`. A `0` with that status is
  *   kept: zero minutes in zone 3 is a real reading.
  * - strain counts only when `quality.publishable`.
@@ -148,7 +148,10 @@ export function adaptExploreSeries(analytics: Analytics): CoreSeries {
         : null,
     ),
     weight: collect(analytics.weight.daily, (day) => day.value),
-    skinTemperature: supporting(analytics, "skinTemperatureDeviation"),
+    skinTemperature: collect(
+      analytics.skinTemperature.daily,
+      (day) => day.value,
+    ),
     healthAge: collect(analytics.healthspan.trend, (day) => day.healthAgeYears),
     ageDelta: collect(analytics.healthspan.trend, (day) => day.ageDeltaYears),
     paceOfAging: collect(analytics.healthspan.trend, (day) => day.paceOfAging),

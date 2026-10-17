@@ -146,7 +146,15 @@ export interface DeviceSleepSummary {
   averageDifferenceMinutes: number | null;
 }
 
-export type MetricUnit = "steps" | "kcal" | "bpm" | "kg";
+/** `celsius_delta` is a signed deviation from the wearer's own baseline
+ * (skin temperature), never an absolute temperature. */
+export type MetricUnit =
+  | "steps"
+  | "kcal"
+  | "bpm"
+  | "kg"
+  | "ms"
+  | "celsius_delta";
 
 export interface SourceMetricValue {
   source: string;

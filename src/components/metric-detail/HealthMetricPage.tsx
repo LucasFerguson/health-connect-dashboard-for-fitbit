@@ -5,7 +5,8 @@ import { getMetricSeries } from "~/server/health/getMetricSeries";
 import { MetricDetailPage } from "./MetricDetailPage";
 import { settle } from "~/server/health/backendDiagnostics";
 
-/** Shared body of /steps, /calories, /resting-heart-rate and /weight. */
+/** Shared body of /steps, /calories, /resting-heart-rate, /hrv,
+ * /skin-temperature and /weight. */
 export async function HealthMetricPage({
   kind,
   selectedDate,

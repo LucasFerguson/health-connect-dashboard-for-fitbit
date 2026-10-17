@@ -111,7 +111,12 @@ export function MetricDetailPage({
           />
           <SummaryStat
             label="Change from prior"
-            value={formatChange(changeFromPrevious, presentation.formatValue)}
+            value={
+              presentation.diverging
+                ? // Already signed: "+0.2 °C" is the change itself.
+                  formatNullable(changeFromPrevious, presentation.formatValue)
+                : formatChange(changeFromPrevious, presentation.formatValue)
+            }
           />
           <SummaryStat label="Recorded days" value={String(sampleCount)} />
         </section>
@@ -132,7 +137,7 @@ export function MetricDetailPage({
           </div>
         ) : (
           <div className="mt-8 rounded-xl border border-dashed border-white/15 p-12 text-center text-white/60">
-            These visualizations will appear after measurements are available.
+            {presentation.emptyMessage}
           </div>
         )}
       </div>

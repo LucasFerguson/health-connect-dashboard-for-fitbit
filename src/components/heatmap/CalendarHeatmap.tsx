@@ -35,6 +35,7 @@ export function CalendarHeatmap({
   color,
   formatValue,
   initialDate,
+  diverging,
 }: {
   data: HeatmapDatum[];
   title?: string;
@@ -43,6 +44,13 @@ export function CalendarHeatmap({
   color: string;
   formatValue: (value: number) => string;
   initialDate?: string;
+  /** For a signed deviation around zero: shade by distance from zero, in
+   * `color` above it and `negativeColor` below, instead of by magnitude. */
+  diverging?: {
+    negativeColor: string;
+    negativeLabel: string;
+    positiveLabel: string;
+  };
 }) {
   const availableYears = useMemo(
     () => [...new Set(data.map((day) => Number(day.date.slice(0, 4))))].sort(),
@@ -60,7 +68,11 @@ export function CalendarHeatmap({
   const yearValues = days
     .map((day) => values.get(day.date))
     .filter((value): value is number => value !== undefined);
-  const maximum = Math.max(...yearValues, 0);
+  const maximum = diverging
+    ? Math.max(...yearValues.map(Math.abs), 0)
+    : Math.max(...yearValues, 0);
+  const fillFor = (value: number) =>
+    diverging && value < 0 ? diverging.negativeColor : color;
   const weeks = Math.max(...days.map((day) => day.week), 0) + 1;
 
   return (
@@ -124,9 +136,15 @@ export function CalendarHeatmap({
                 width={BOX}
                 height={BOX}
                 rx={2}
-                fill={value === undefined ? "rgba(255,255,255,0.06)" : color}
+                fill={
+                  value === undefined
+                    ? "rgba(255,255,255,0.06)"
+                    : fillFor(value)
+                }
                 fillOpacity={
-                  value === undefined ? 1 : heatOpacity(value, maximum)
+                  value === undefined
+                    ? 1
+                    : heatOpacity(diverging ? Math.abs(value) : value, maximum)
                 }
               >
                 <title>
@@ -137,17 +155,38 @@ export function CalendarHeatmap({
           })}
         </svg>
       </div>
-      <div className="mt-2 flex items-center justify-end gap-1 text-xs text-white/60">
-        <span className="mr-1">Less</span>
-        {[0.18, 0.38, 0.58, 0.78, 1].map((opacity) => (
-          <span
-            key={opacity}
-            className="h-3 w-3 rounded-sm"
-            style={{ backgroundColor: color, opacity }}
-          />
-        ))}
-        <span className="ml-1">More</span>
-      </div>
+      {diverging ? (
+        <div className="mt-2 flex items-center justify-end gap-1 text-xs text-white/60">
+          <span className="mr-1">{diverging.negativeLabel}</span>
+          {[1, 0.58, 0.18].map((opacity) => (
+            <span
+              key={`n${opacity}`}
+              className="h-3 w-3 rounded-sm"
+              style={{ backgroundColor: diverging.negativeColor, opacity }}
+            />
+          ))}
+          {[0.18, 0.58, 1].map((opacity) => (
+            <span
+              key={`p${opacity}`}
+              className="h-3 w-3 rounded-sm"
+              style={{ backgroundColor: color, opacity }}
+            />
+          ))}
+          <span className="ml-1">{diverging.positiveLabel}</span>
+        </div>
+      ) : (
+        <div className="mt-2 flex items-center justify-end gap-1 text-xs text-white/60">
+          <span className="mr-1">Less</span>
+          {[0.18, 0.38, 0.58, 0.78, 1].map((opacity) => (
+            <span
+              key={opacity}
+              className="h-3 w-3 rounded-sm"
+              style={{ backgroundColor: color, opacity }}
+            />
+          ))}
+          <span className="ml-1">More</span>
+        </div>
+      )}
     </section>
   );
 }

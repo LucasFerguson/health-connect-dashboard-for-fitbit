@@ -1120,6 +1120,41 @@
               },
               "isDeprecated": false,
               "deprecationReason": null
+            },
+            {
+              "name": "skinTemperature",
+              "description": "Nightly skin-temperature records (Health Connect SkinTemperature), matched by overlap with range.",
+              "args": [
+                {
+                  "name": "range",
+                  "description": null,
+                  "type": {
+                    "kind": "INPUT_OBJECT",
+                    "name": "TimeRange",
+                    "ofType": null
+                  },
+                  "defaultValue": null
+                }
+              ],
+              "type": {
+                "kind": "NON_NULL",
+                "name": null,
+                "ofType": {
+                  "name": null,
+                  "kind": "LIST",
+                  "ofType": {
+                    "name": null,
+                    "kind": "NON_NULL",
+                    "ofType": {
+                      "name": "SkinTemperatureRecord",
+                      "kind": "OBJECT",
+                      "ofType": null
+                    }
+                  }
+                }
+              },
+              "isDeprecated": false,
+              "deprecationReason": null
             }
           ],
           "inputFields": null,
@@ -2229,6 +2264,172 @@
         },
         {
           "kind": "OBJECT",
+          "name": "SkinTemperatureRecord",
+          "description": "One Health Connect SkinTemperature record, read straight from the stored\nrecord. Pixel Watch writes one per night: each delta is sleep-time skin\ntemperature relative to the wearer's baseline. baselineCelsius is null when\nthe writer supplied no baseline. No per-record summary is computed here;\nthe nightly value lives in analytics.skinTemperature.",
+          "fields": [
+            {
+              "name": "id",
+              "description": null,
+              "args": [],
+              "type": {
+                "kind": "NON_NULL",
+                "name": null,
+                "ofType": {
+                  "name": "ID",
+                  "kind": "SCALAR",
+                  "ofType": null
+                }
+              },
+              "isDeprecated": false,
+              "deprecationReason": null
+            },
+            {
+              "name": "source",
+              "description": null,
+              "args": [],
+              "type": {
+                "kind": "NON_NULL",
+                "name": null,
+                "ofType": {
+                  "name": "String",
+                  "kind": "SCALAR",
+                  "ofType": null
+                }
+              },
+              "isDeprecated": false,
+              "deprecationReason": null
+            },
+            {
+              "name": "startAt",
+              "description": null,
+              "args": [],
+              "type": {
+                "kind": "NON_NULL",
+                "name": null,
+                "ofType": {
+                  "name": "DateTime",
+                  "kind": "SCALAR",
+                  "ofType": null
+                }
+              },
+              "isDeprecated": false,
+              "deprecationReason": null
+            },
+            {
+              "name": "endAt",
+              "description": null,
+              "args": [],
+              "type": {
+                "kind": "NON_NULL",
+                "name": null,
+                "ofType": {
+                  "name": "DateTime",
+                  "kind": "SCALAR",
+                  "ofType": null
+                }
+              },
+              "isDeprecated": false,
+              "deprecationReason": null
+            },
+            {
+              "name": "baselineCelsius",
+              "description": null,
+              "args": [],
+              "type": {
+                "kind": "SCALAR",
+                "name": "Float",
+                "ofType": null
+              },
+              "isDeprecated": false,
+              "deprecationReason": null
+            },
+            {
+              "name": "deltas",
+              "description": null,
+              "args": [],
+              "type": {
+                "kind": "NON_NULL",
+                "name": null,
+                "ofType": {
+                  "name": null,
+                  "kind": "LIST",
+                  "ofType": {
+                    "name": null,
+                    "kind": "NON_NULL",
+                    "ofType": {
+                      "name": "SkinTemperatureDelta",
+                      "kind": "OBJECT",
+                      "ofType": null
+                    }
+                  }
+                }
+              },
+              "isDeprecated": false,
+              "deprecationReason": null
+            },
+            {
+              "name": "measurementLocation",
+              "description": "Health Connect SkinTemperatureRecord measurement-location constant (0 = unknown), or null if absent.",
+              "args": [],
+              "type": {
+                "kind": "SCALAR",
+                "name": "Int",
+                "ofType": null
+              },
+              "isDeprecated": false,
+              "deprecationReason": null
+            }
+          ],
+          "inputFields": null,
+          "interfaces": [],
+          "enumValues": null,
+          "possibleTypes": null
+        },
+        {
+          "kind": "OBJECT",
+          "name": "SkinTemperatureDelta",
+          "description": null,
+          "fields": [
+            {
+              "name": "observedAt",
+              "description": null,
+              "args": [],
+              "type": {
+                "kind": "NON_NULL",
+                "name": null,
+                "ofType": {
+                  "name": "DateTime",
+                  "kind": "SCALAR",
+                  "ofType": null
+                }
+              },
+              "isDeprecated": false,
+              "deprecationReason": null
+            },
+            {
+              "name": "celsius",
+              "description": null,
+              "args": [],
+              "type": {
+                "kind": "NON_NULL",
+                "name": null,
+                "ofType": {
+                  "name": "Float",
+                  "kind": "SCALAR",
+                  "ofType": null
+                }
+              },
+              "isDeprecated": false,
+              "deprecationReason": null
+            }
+          ],
+          "inputFields": null,
+          "interfaces": [],
+          "enumValues": null,
+          "possibleTypes": null
+        },
+        {
+          "kind": "OBJECT",
           "name": "ExerciseSession",
           "description": null,
           "fields": [
@@ -2681,6 +2882,22 @@
             {
               "name": "heartRateVariability",
               "description": null,
+              "args": [],
+              "type": {
+                "kind": "NON_NULL",
+                "name": null,
+                "ofType": {
+                  "name": "MetricSeries",
+                  "kind": "OBJECT",
+                  "ofType": null
+                }
+              },
+              "isDeprecated": false,
+              "deprecationReason": null
+            },
+            {
+              "name": "skinTemperature",
+              "description": "Nightly skin-temperature deviation from baseline (median of each night's mean delta), dated by wake time.",
               "args": [],
               "type": {
                 "kind": "NON_NULL",
@@ -7033,6 +7250,12 @@
             },
             {
               "name": "MS",
+              "description": null,
+              "isDeprecated": false,
+              "deprecationReason": null
+            },
+            {
+              "name": "CELSIUS_DELTA",
               "description": null,
               "isDeprecated": false,
               "deprecationReason": null
