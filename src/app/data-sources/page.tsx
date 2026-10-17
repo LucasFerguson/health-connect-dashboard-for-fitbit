@@ -8,5 +8,5 @@ export const dynamic = "force-dynamic";
 export default async function DataSourcesRoute() {
   const result = await settle(getDataSourceStatus());
   if (!result.ok) return <BackendErrorPanel diagnostics={result.diagnostics} />;
-  return <DataSourcesPage feedStatus={result.data} />;
+  return <DataSourcesPage status={result.data} />;
 }

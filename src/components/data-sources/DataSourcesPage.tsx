@@ -1,413 +1,252 @@
-import { DeviceIllustration } from "./DeviceIllustration";
+import { clsx } from "clsx";
+import { Card } from "~/components/ui/Card";
+import { Label } from "~/components/ui/Label";
+import { PageShell } from "~/components/ui/PageShell";
+import {
+  CATEGORY_ORDER,
+  STALE_AFTER_DAYS,
+  collectionFor,
+  type RecordRow,
+  type RecordStatus,
+} from "~/domain/dataSources";
+import type { DataSourceStatus } from "~/server/health/getDataSourceStatus";
 
-type FeedKey =
-  | "sleep"
-  | "steps"
-  | "activeCalories"
-  | "totalCalories"
-  | "restingHeartRate"
-  | "weight";
+const STATUS: Record<RecordStatus, { label: string; className: string }> = {
+  receiving: {
+    label: "RECEIVING",
+    className: "text-recovery border-recovery/40",
+  },
+  stalled: {
+    label: "STALLED",
+    className: "text-caution-text border-caution/50",
+  },
+  "no-data": { label: "NO DATA", className: "text-ink-200 border-ink-500" },
+  "not-collected": {
+    label: "NOT COLLECTED",
+    className: "text-alert border-alert/40",
+  },
+};
 
-const feeds: Array<{
-  key: FeedKey;
-  label: string;
-  record: string;
-  algorithms: string[];
-}> = [
-  {
-    key: "sleep",
-    label: "Sleep & stages",
-    record: "SleepSessionRecord",
-    algorithms: [
-      "Sleep reconciliation",
-      "Sleep debt",
-      "Sleep consistency",
-      "Healthspan",
-    ],
-  },
-  {
-    key: "steps",
-    label: "Steps",
-    record: "StepsRecord",
-    algorithms: ["Daily activity", "Healthspan"],
-  },
-  {
-    key: "activeCalories",
-    label: "Active energy",
-    record: "ActiveCaloriesBurnedRecord",
-    algorithms: ["Calorie trends"],
-  },
-  {
-    key: "totalCalories",
-    label: "Total energy",
-    record: "TotalCaloriesBurnedRecord",
-    algorithms: ["Calorie trends"],
-  },
-  {
-    key: "restingHeartRate",
-    label: "Resting heart rate",
-    record: "RestingHeartRateRecord",
-    algorithms: ["RHR trend", "Healthspan"],
-  },
-  {
-    key: "weight",
-    label: "Weight",
-    record: "WeightRecord",
-    algorithms: ["Weight trend"],
-  },
-];
+const numberFormat = new Intl.NumberFormat("en-US");
 
-const missingFeeds = [
-  {
-    label: "Continuous heart rate",
-    record: "HeartRateRecord",
-    reason: "No repository mapper or database field",
-  },
-  {
-    label: "Heart-rate variability",
-    record: "HeartRateVariabilityRmssdRecord",
-    reason: "No repository mapper or database field",
-  },
-  {
-    label: "Blood oxygen (SpO₂)",
-    record: "OxygenSaturationRecord",
-    reason: "Exported by WHOOP; not ingested",
-  },
-  {
-    label: "Respiratory rate",
-    record: "RespiratoryRateRecord",
-    reason: "Exported by WHOOP; not ingested",
-  },
-  {
-    label: "Skin temperature",
-    record: "SkinTemperatureRecord",
-    reason: "Health Connect supports it; not ingested",
-  },
-  {
-    label: "Exercise sessions",
-    record: "ExerciseSessionRecord",
-    reason: "No repository mapper or database field",
-  },
-  {
-    label: "Distance",
-    record: "DistanceRecord",
-    reason: "No repository mapper or database field",
-  },
-  {
-    label: "Floors / elevation",
-    record: "FloorsClimbedRecord",
-    reason: "No repository mapper or database field",
-  },
-];
-
-const devices = [
-  {
-    name: "WHOOP 4.0",
-    kind: "whoop" as const,
-    caption: "Continuous recovery wearable",
-    sensors: [
-      "5-LED optical PPG",
-      "4 photodiodes",
-      "Pulse oximeter",
-      "Skin temperature",
-      "3-axis accelerometer",
-    ],
-    exposure: [
-      "Sleep",
-      "Steps",
-      "Calories",
-      "Resting HR",
-      "Respiratory rate",
-      "Blood oxygen",
-      "Exercise",
-    ],
-    accent: "emerald",
-  },
-  {
-    name: "Pixel Watch 2",
-    kind: "pixel" as const,
-    caption: "Wear OS smartwatch",
-    sensors: [
-      "Multi-path optical HR",
-      "Red + infrared SpO₂",
-      "ECG electrodes",
-      "cEDA",
-      "Skin temperature",
-      "Accelerometer + gyro",
-      "Altimeter + barometer",
-    ],
-    exposure: [
-      "Sleep",
-      "Steps",
-      "Calories",
-      "Resting HR",
-      "HRV",
-      "SpO₂",
-      "Respiratory rate",
-      "Exercise",
-    ],
-    accent: "sky",
-  },
-];
-
-export function DataSourcesPage({
-  feedStatus: status,
-}: {
-  /**
-   * Which feeds have any data. Passed in rather than derived from a whole
-   * `HealthAnalytics` object: presence is all this page ever needed, and the
-   * GraphQL path answers it with counts instead of transferring the series.
-   */
-  feedStatus: Record<FeedKey, boolean>;
-}) {
-  const recordedCount = Object.values(status).filter(Boolean).length;
+/** `/data-sources`: a live, documentation-style map from every Health
+ * Connect record type to what is stored and what the dashboard does with it. */
+export function DataSourcesPage({ status }: { status: DataSourceStatus }) {
+  const day = dayFormatter(status.timeZone);
+  const collected = status.rows.filter((row) => row.collected);
+  const withData = status.rows.filter((row) => row.records > 0);
 
   return (
-    <main className="min-h-screen bg-[#090d17] px-4 py-10 text-white">
-      <div className="mx-auto max-w-7xl">
-        <header className="flex flex-wrap items-end justify-between gap-6">
-          <div className="max-w-3xl">
-            <p className="text-xs font-bold tracking-[0.24em] text-cyan-300 uppercase">
-              Signal inventory
-            </p>
-            <h1 className="mt-3 text-4xl font-extrabold tracking-tight sm:text-5xl">
-              Data sources
-            </h1>
-            <p className="mt-4 max-w-2xl text-sm leading-6 text-slate-300">
-              A traceable map from physical sensors, through Android Health
-              Connect, into this dashboard’s processing models.
-            </p>
-          </div>
-          <div className="rounded-2xl border border-white/10 bg-white/5 px-5 py-4">
-            <p className="text-xs text-slate-400">Database coverage</p>
-            <p className="mt-1 text-2xl font-bold">
-              {recordedCount} / {feeds.length}{" "}
-              <span className="text-sm font-normal text-slate-300">
-                implemented feeds
-              </span>
-            </p>
-          </div>
-        </header>
+    <PageShell maxWidth="max-w-6xl" className="flex flex-col gap-4">
+      <Card className="flex flex-col gap-4">
+        <div className="flex flex-wrap items-baseline gap-3">
+          <h1 className="font-display text-ink-0 text-2xl tracking-[.12em]">
+            DATA SOURCES
+          </h1>
+          <Label>LIVE INVENTORY · {status.timeZone.toUpperCase()}</Label>
+        </div>
+        <p className="text-ink-100 max-w-3xl text-sm leading-6">
+          Devices write to Android Health Connect. The HCGateway phone app reads
+          the record types it has permission for and uploads them, and the
+          backend stores each type in its own collection and builds the
+          dashboard&apos;s analytics from some of them. Below is every record
+          type, whether the app collects it, what has actually landed, and which
+          pages use it.
+        </p>
+        <dl className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+          <Stat
+            label="RECORDS STORED"
+            value={numberFormat.format(status.totalRecords)}
+          />
+          <Stat
+            label="TYPES WITH DATA"
+            value={`${withData.length} / ${collected.length} collected`}
+          />
+          <Stat
+            label="SPAN"
+            value={
+              status.earliest && status.latest
+                ? `${day(status.earliest)} → ${day(status.latest)}`
+                : "—"
+            }
+          />
+          <Stat
+            label="LAST PHONE UPLOAD"
+            value={
+              status.lastPhoneUpload ? day(status.lastPhoneUpload) : "never"
+            }
+          />
+        </dl>
+      </Card>
 
-        <section
-          className="mt-10 grid gap-4 lg:grid-cols-2"
-          aria-label="Source devices"
-        >
-          {devices.map((device) => (
-            <article
-              key={device.name}
-              className="grid gap-5 rounded-3xl border border-white/10 bg-white/[0.035] p-5 sm:grid-cols-[12rem_1fr]"
+      <Card className="flex flex-col gap-3">
+        <h2 className="font-display text-ink-0 text-lg tracking-[.1em]">
+          SOURCES
+        </h2>
+        <p className="text-ink-100 text-sm">
+          The apps that wrote the stored records, and when each last wrote
+          anything. A source silent for more than {STALE_AFTER_DAYS} days has
+          probably stopped syncing to Health Connect.
+        </p>
+        <ul className="divide-ink-600 divide-y">
+          {status.sources.map((source) => (
+            <li
+              key={source.label}
+              className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1 py-2"
             >
-              <div>
-                <DeviceIllustration kind={device.kind} />
-                <h2 className="mt-4 text-xl font-bold">{device.name}</h2>
-                <p className="text-sm text-slate-400">{device.caption}</p>
-              </div>
-              <div className="grid gap-4">
-                <DeviceList
-                  title="Hardware sensor array"
-                  values={device.sensors}
-                  color={device.accent}
-                />
-                <DeviceList
-                  title="Companion app / Health Connect signals"
-                  values={device.exposure}
-                  color={device.accent}
-                />
-              </div>
-            </article>
+              <span className="text-ink-0 text-sm">{source.label}</span>
+              <span className="text-ink-100 flex items-baseline gap-3 font-mono text-xs">
+                {numberFormat.format(source.records)} records · last{" "}
+                {source.latest ? day(source.latest) : "—"}
+                {source.stale ? (
+                  <StatusChip className={STATUS.stalled.className}>
+                    STOPPED
+                  </StatusChip>
+                ) : null}
+              </span>
+            </li>
           ))}
-        </section>
+        </ul>
+      </Card>
 
-        <section className="mt-12" aria-labelledby="flow-title">
-          <div className="mb-5 flex flex-wrap items-end justify-between gap-3">
-            <div>
-              <p className="text-xs font-bold tracking-[0.2em] text-violet-300 uppercase">
-                Live pipeline map
-              </p>
-              <h2 id="flow-title" className="mt-2 text-2xl font-bold">
-                Health Connect → database → algorithms
-              </h2>
-            </div>
-            <div className="flex gap-4 text-xs text-slate-300">
-              <Key color="bg-emerald-400" label="Recorded" />
-              <Key color="bg-rose-400" label="Not recorded" />
-            </div>
-          </div>
-          <div className="overflow-hidden rounded-3xl border border-white/10 bg-[#0d1320]">
-            <div className="grid grid-cols-[1fr_auto_1fr] border-b border-white/10 bg-white/[0.03] px-4 py-3 text-xs font-bold tracking-wider text-slate-400 uppercase sm:grid-cols-[1fr_5rem_1fr_5rem_1fr]">
-              <span>Health Connect record</span>
-              <span />
-              <span>Database intake</span>
-              <span className="hidden sm:block" />
-              <span className="hidden sm:block">Processing outputs</span>
-            </div>
-            <div className="divide-y divide-white/[0.06]">
-              {feeds.map((feed) => (
-                <div
-                  key={feed.key}
-                  className="grid grid-cols-[1fr_auto_1fr] items-center gap-2 px-4 py-4 sm:grid-cols-[1fr_5rem_1fr_5rem_1fr]"
-                >
-                  <div>
-                    <p className="font-semibold">{feed.label}</p>
-                    <p className="mt-1 font-mono text-[10px] text-slate-400">
-                      {feed.record}
-                    </p>
-                  </div>
-                  <FlowLine active={status[feed.key]} />
-                  <div
-                    className={`rounded-xl border px-3 py-2 ${status[feed.key] ? "border-emerald-400/25 bg-emerald-400/10" : "border-rose-400/25 bg-rose-400/10"}`}
-                  >
-                    <p
-                      className={`text-xs font-bold ${status[feed.key] ? "text-emerald-300" : "text-rose-300"}`}
-                    >
-                      {status[feed.key] ? "● Recorded" : "● No records"}
-                    </p>
-                    <p className="mt-1 text-xs text-slate-300">
-                      Mapper + analytics schema ready
-                    </p>
-                  </div>
-                  <FlowLine
-                    active={status[feed.key]}
-                    className="hidden sm:flex"
-                  />
-                  <div className="col-span-3 mt-2 flex flex-wrap gap-1.5 sm:col-span-1 sm:mt-0">
-                    {feed.algorithms.map((algorithm) => (
-                      <span
-                        key={algorithm}
-                        className="rounded-md bg-violet-400/10 px-2 py-1 text-xs text-violet-200"
-                      >
-                        {algorithm}
-                      </span>
-                    ))}
-                  </div>
-                </div>
+      {CATEGORY_ORDER.map((category) => {
+        const rows = status.rows.filter((row) => row.category === category);
+        return (
+          <Card key={category} className="flex flex-col gap-1">
+            <h2 className="font-display text-ink-0 mb-1 text-lg tracking-[.1em]">
+              {category.toUpperCase()}
+            </h2>
+            <ul className="divide-ink-600 divide-y">
+              {rows.map((row) => (
+                <RecordRowItem key={row.type} row={row} day={day} />
               ))}
-            </div>
-          </div>
-        </section>
+            </ul>
+          </Card>
+        );
+      })}
 
-        <section className="mt-12 rounded-3xl border border-rose-400/15 bg-rose-400/[0.035] p-5 sm:p-7">
-          <p className="text-xs font-bold tracking-[0.2em] text-rose-300 uppercase">
-            Android + database backlog
+      <Card className="flex flex-col gap-2">
+        <h2 className="font-display text-ink-0 text-lg tracking-[.1em]">
+          OUTSIDE HEALTH CONNECT
+        </h2>
+        <p className="text-ink-100 text-sm">
+          WHOOP journal answers are imported from WHOOP&apos;s data export, not
+          Health Connect: {numberFormat.format(status.habitRecords)} habit
+          definitions and entries, used by Habits and Explore.
+        </p>
+      </Card>
+
+      <p className="text-ink-200 px-1 pb-4 text-xs leading-5">
+        Counts, dates and sources are live from HCGateway. Which types the app
+        collects mirrors the Android app&apos;s record type list, and &quot;used
+        by&quot; mirrors the backend&apos;s analytics mappers; both are noted in{" "}
+        <code className="font-mono">src/domain/dataSources.ts</code>. A device
+        capability doesn&apos;t guarantee its companion app writes that record
+        to Health Connect.
+      </p>
+    </PageShell>
+  );
+}
+
+function RecordRowItem({
+  row,
+  day,
+}: {
+  row: RecordRow;
+  day: (iso: string) => string;
+}) {
+  const status = STATUS[row.status];
+  return (
+    <li className="grid gap-x-4 gap-y-1.5 py-3 sm:grid-cols-[minmax(0,14rem)_minmax(0,1fr)]">
+      <div className="min-w-0">
+        <p className="text-ink-0 text-sm">{row.label}</p>
+        <p className="text-ink-200 font-mono text-[10px]">
+          {row.type}
+          {row.collected ? ` → ${collectionFor(row.type)}` : ""}
+        </p>
+      </div>
+      <div className="flex min-w-0 flex-col gap-1.5">
+        <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
+          <StatusChip className={status.className}>{status.label}</StatusChip>
+          {row.records > 0 ? (
+            <span className="text-ink-100 font-mono text-xs">
+              {numberFormat.format(row.records)} records
+              {row.earliest && row.latest
+                ? ` · ${day(row.earliest)} → ${day(row.latest)}`
+                : ""}
+            </span>
+          ) : null}
+        </div>
+        {row.sources.length > 0 ? (
+          <p className="text-ink-100 text-xs">
+            From{" "}
+            {row.sources
+              .map(
+                (source) =>
+                  `${source.label} (${numberFormat.format(source.records)})`,
+              )
+              .join(", ")}
           </p>
-          <h2 className="mt-2 text-2xl font-bold">
-            Available signals we are not storing
-          </h2>
-          <p className="mt-2 max-w-3xl text-sm leading-6 text-slate-300">
-            These require a Health Connect permission/read path in the Android
-            gateway, a raw observation model and repository mapper here, then
-            analytics persistence and UI treatment.
-          </p>
-          <div className="mt-6 grid gap-3 md:grid-cols-2">
-            {missingFeeds.map((feed) => (
-              <article
-                key={feed.record}
-                className="rounded-xl border border-white/8 bg-black/15 p-4"
+        ) : null}
+        <div className="flex flex-wrap items-center gap-1.5">
+          {row.usedBy.length > 0 ? (
+            row.usedBy.map((feature) => (
+              <span
+                key={feature}
+                className="bg-brand-950 text-brand-text px-1.5 py-0.5 text-[11px]"
               >
-                <div className="flex items-center justify-between gap-3">
-                  <h3 className="font-semibold">{feed.label}</h3>
-                  <span className="rounded-full bg-rose-400/10 px-2 py-1 text-[10px] font-bold text-rose-300">
-                    NOT IN DB
-                  </span>
-                </div>
-                <p className="mt-2 font-mono text-[10px] text-slate-400">
-                  {feed.record}
-                </p>
-                <p className="mt-2 text-xs text-slate-300">{feed.reason}</p>
-              </article>
-            ))}
-          </div>
-        </section>
-
-        <footer className="mt-8 text-xs leading-5 text-slate-400">
-          Device capabilities are modeled as WHOOP 4.0 and Pixel Watch 2. A
-          sensor indicates measurement hardware; Health Connect availability
-          still depends on the companion app, region, membership, permissions
-          and sync settings. Sources:{" "}
-          <a
-            className="text-slate-300 underline decoration-white/20 hover:text-white"
-            href="https://support.whoop.com/s/article/Google-Health-Integration-For-Android"
-          >
-            WHOOP Health Connect integration
-          </a>
-          ,{" "}
-          <a
-            className="text-slate-300 underline decoration-white/20 hover:text-white"
-            href="https://support.google.com/googlepixelwatch/answer/12651869"
-          >
-            Pixel Watch specifications
-          </a>
-          , and{" "}
-          <a
-            className="text-slate-300 underline decoration-white/20 hover:text-white"
-            href="https://developer.android.com/health-and-fitness/health-connect/data-types"
-          >
-            Android Health Connect data types
-          </a>
-          .
-        </footer>
+                {feature}
+              </span>
+            ))
+          ) : row.records > 0 ? (
+            <span className="text-ink-200 text-[11px]">
+              Stored, not used by any page yet
+            </span>
+          ) : null}
+        </div>
+        {row.note ? <p className="text-ink-200 text-xs">{row.note}</p> : null}
       </div>
-    </main>
+    </li>
   );
 }
 
-function DeviceList({
-  title,
-  values,
-  color,
+function StatusChip({
+  className,
+  children,
 }: {
-  title: string;
-  values: string[];
-  color: string;
-}) {
-  const colors =
-    color === "emerald"
-      ? "border-emerald-400/15 bg-emerald-400/5"
-      : "border-sky-400/15 bg-sky-400/5";
-  return (
-    <div>
-      <h3 className="text-xs font-bold tracking-wider text-slate-400 uppercase">
-        {title}
-      </h3>
-      <div className="mt-2 flex flex-wrap gap-1.5">
-        {values.map((value) => (
-          <span
-            key={value}
-            className={`rounded-md border px-2 py-1 text-xs text-slate-300 ${colors}`}
-          >
-            {value}
-          </span>
-        ))}
-      </div>
-    </div>
-  );
-}
-
-function FlowLine({
-  active,
-  className = "",
-}: {
-  active: boolean;
-  className?: string;
+  className: string;
+  children: React.ReactNode;
 }) {
   return (
-    <div className={`flex items-center ${className}`} aria-hidden="true">
-      <i
-        className={`h-px flex-1 ${active ? "bg-emerald-400/60" : "bg-rose-400/40"}`}
-      />
-      <i
-        className={`size-1.5 rotate-45 border-t border-r ${active ? "border-emerald-400" : "border-rose-400"}`}
-      />
-    </div>
-  );
-}
-
-function Key({ color, label }: { color: string; label: string }) {
-  return (
-    <span className="flex items-center gap-1.5">
-      <i className={`size-2 rounded-full ${color}`} />
-      {label}
+    <span
+      className={clsx(
+        "border px-1.5 py-px font-mono text-[9.5px] tracking-[.08em]",
+        className,
+      )}
+    >
+      {children}
     </span>
   );
+}
+
+function Stat({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="bg-ink-850 border-ink-600 border px-3 py-2">
+      <dt>
+        <Label>{label}</Label>
+      </dt>
+      <dd className="text-ink-0 mt-1 font-mono text-sm">{value}</dd>
+    </div>
+  );
+}
+
+/** Formats an instant as YYYY-MM-DD in the home time zone. */
+function dayFormatter(timeZone: string) {
+  const format = new Intl.DateTimeFormat("en-CA", {
+    timeZone,
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  });
+  return (iso: string) => format.format(new Date(iso));
 }

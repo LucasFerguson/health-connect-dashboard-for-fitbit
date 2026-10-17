@@ -1,55 +1,60 @@
 import { graphql } from "~/types/__generated__";
+import { DataSourcesPageDocument } from "~/types/__generated__/graphql";
 
 /**
- * Data-sources page query.
+ * Data-sources page query: the live per-collection inventory and the source
+ * devices behind it, plus the phone's last upload.
  *
- * The page only needs to know *whether* each feed has any data, so this selects
- * counts rather than the series themselves: `overview.sampleCount` per metric,
- * and `sleepDebt.latest` (non-null only when sleep exists) for the sleep feed.
- *
- * Deliberately avoids two heavier alternatives: selecting each series' `daily`
- * array just to read its length would transfer thousands of rows to compute six
- * booleans, and `viewer.sources.inventory` takes ~2s because it aggregates the
- * raw collections live. This query is ~1 KB.
+ * `sources.inventory` aggregates the raw collections live, so this is slow
+ * (seconds, mostly counting heart-rate records). That's acceptable for a
+ * reference page nobody polls; don't reuse it on a hot path.
  */
-export const DATA_SOURCES_QUERY = graphql(`
+graphql(`
   query DataSourcesPage {
     viewer {
-      analytics {
-        id
-        timeZone
-        sleepDebt {
-          latest {
+      config {
+        homeTimeZone
+      }
+      ingestion {
+        phoneSync {
+          lastUploadAt
+        }
+      }
+      sources {
+        inventory {
+          totalRecords
+          earliest
+          latest
+          signals {
+            collection
+            records
+            earliest
+            latest
+            bySource {
+              source
+              count
+            }
+          }
+          sources {
+            source
+            label
+            records
+          }
+        }
+        devices {
+          devices {
             id
-            date
-          }
-        }
-        steps {
-          overview {
-            sampleCount
-          }
-        }
-        activeCalories {
-          overview {
-            sampleCount
-          }
-        }
-        totalCalories {
-          overview {
-            sampleCount
-          }
-        }
-        restingHeartRate {
-          overview {
-            sampleCount
-          }
-        }
-        weight {
-          overview {
-            sampleCount
+            sourceLabel
+            records
+            latest
           }
         }
       }
     }
   }
 `);
+
+/** The generated document rather than `graphql()`'s return value, as
+ * `overviewQuery.ts` does: the string-literal lookup failed for this query at
+ * runtime. The call above stays so codegen still discovers the operation. */
+export const DATA_SOURCES_QUERY = DataSourcesPageDocument;

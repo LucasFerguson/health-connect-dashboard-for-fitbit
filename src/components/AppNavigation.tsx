@@ -114,7 +114,11 @@ export function AppNavigation() {
         {sync ? (
           <span
             title={syncStatus?.note}
-            className={clsx(sync.label === "RECEIVING" && "text-recovery")}
+            // Hidden on phones, where it pushed the nav wider than the screen.
+            className={clsx(
+              "hidden md:inline",
+              sync.label === "RECEIVING" && "text-recovery",
+            )}
           >
             SYNC {sync.label}
             {sync.detail ? ` · ${sync.detail}` : ""}
