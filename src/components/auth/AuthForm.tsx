@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState } from "react";
+import { useActionState, type ReactNode } from "react";
 import Link from "next/link";
 import { notchStyle } from "~/components/ui/notch";
 import type { AuthFormState } from "~/server/auth/actions";
@@ -16,6 +16,8 @@ interface AuthFormProps {
   /** Where to go after signing in (login only). */
   next?: string;
   notice?: string;
+  /** Rendered below the sign-in card, e.g. the Android app download. */
+  footer?: ReactNode;
 }
 
 export const authInputClass =
@@ -23,7 +25,13 @@ export const authInputClass =
 
 /** Shared sign-in / create-account card. One browser session lasts until
  * SIGN OUT, so this is rarely seen twice on the same device. */
-export function AuthForm({ mode, action, next, notice }: AuthFormProps) {
+export function AuthForm({
+  mode,
+  action,
+  next,
+  notice,
+  footer,
+}: AuthFormProps) {
   const [state, formAction, pending] = useActionState(action, {
     error: null,
     username: "",
@@ -31,7 +39,7 @@ export function AuthForm({ mode, action, next, notice }: AuthFormProps) {
   const signup = mode === "signup";
 
   return (
-    <main className="flex min-h-dvh items-center justify-center px-4 py-10">
+    <main className="flex min-h-dvh flex-col items-center justify-center gap-4 px-4 py-10">
       <div className="bg-ink-800 border-ink-600 w-full max-w-sm border p-6">
         <div className="mb-6 flex items-center gap-2">
           <span
@@ -120,6 +128,7 @@ export function AuthForm({ mode, action, next, notice }: AuthFormProps) {
           </Link>
         </p>
       </div>
+      {footer}
     </main>
   );
 }

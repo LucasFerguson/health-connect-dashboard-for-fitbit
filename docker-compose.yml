@@ -34,6 +34,11 @@ services:
       # Optional: point at the GraphQL API explicitly. Defaults to API_URL
       # with the port swapped to 6645.
       GRAPHQL_URL: ${GRAPHQL_URL:-}
+      APK_RELEASES_DIR: /releases
+    volumes:
+      # Android APKs published by HCGateway's scripts/publish-apk.sh, served
+      # at /download/android. Read-only: the dashboard never writes here.
+      - ${APK_RELEASES_HOST_DIR:-/root/HCGateway/releases}:/releases:ro
     restart: unless-stopped
 
   dashboard-dev:
@@ -52,10 +57,12 @@ services:
       # breaks it with ENOENT build-manifest errors.
       - dev-node-modules:/app/node_modules
       - dev-next:/app/.next
+      - ${APK_RELEASES_HOST_DIR:-/root/HCGateway/releases}:/releases:ro
     environment:
       NODE_ENV: development
       API_URL: ${API_URL:-}
       GRAPHQL_URL: ${GRAPHQL_URL:-}
+      APK_RELEASES_DIR: /releases
       # Unlike prod, a missing API_URL doesn't stop the container from
       # starting, so the dev server can come up to work on code. There is no
       # fixture fallback, though: every page renders the "Couldn't load health

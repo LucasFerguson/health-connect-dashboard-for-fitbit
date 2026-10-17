@@ -1,10 +1,12 @@
 import { redirect } from "next/navigation";
+import { AndroidAppCard } from "~/components/auth/AndroidAppCard";
 import { PasswordForm } from "~/components/auth/PasswordForm";
 import { Card } from "~/components/ui/Card";
 import { Label } from "~/components/ui/Label";
 import { PageShell } from "~/components/ui/PageShell";
 import { backendAccount } from "~/server/auth/hcgateway";
 import { getSessionToken } from "~/server/auth/session";
+import { getLatestRelease } from "~/server/releases";
 
 export const dynamic = "force-dynamic";
 export const metadata = { title: "Account · Health Dashboard" };
@@ -12,7 +14,10 @@ export const metadata = { title: "Account · Health Dashboard" };
 export default async function SettingsPage() {
   const token = await getSessionToken();
   if (!token) redirect("/login");
-  const account = await backendAccount(token);
+  const [account, published] = await Promise.all([
+    backendAccount(token),
+    getLatestRelease(),
+  ]);
 
   return (
     <PageShell maxWidth="max-w-3xl" className="flex flex-col gap-4">
@@ -35,6 +40,7 @@ export default async function SettingsPage() {
         </h2>
         <PasswordForm />
       </Card>
+      <AndroidAppCard published={published} now={new Date()} />
     </PageShell>
   );
 }

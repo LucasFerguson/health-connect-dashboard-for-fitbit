@@ -10,6 +10,7 @@ export const env = createEnv({
     NODE_ENV: z.enum(["development", "test", "production"]),
     API_URL: z.string().url().optional(),
     DEV_ALLOWED_ORIGINS: z.string().min(1).optional(),
+    APK_RELEASES_DIR: z.string().min(1).optional(),
   },
 
   /**
@@ -29,6 +30,7 @@ export const env = createEnv({
     NODE_ENV: process.env.NODE_ENV,
     API_URL: process.env.API_URL,
     DEV_ALLOWED_ORIGINS: process.env.DEV_ALLOWED_ORIGINS,
+    APK_RELEASES_DIR: process.env.APK_RELEASES_DIR,
     // NEXT_PUBLIC_CLIENTVAR: process.env.NEXT_PUBLIC_CLIENTVAR,
   },
   /**
