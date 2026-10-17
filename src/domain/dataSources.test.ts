@@ -65,7 +65,10 @@ void describe("data sources", () => {
     // Weigh-ins are occasional, so an old one isn't a stalled source.
     assert.equal(status("Weight"), "receiving");
     assert.equal(status("BloodPressure"), "no-data");
-    assert.equal(status("HeartRateVariabilityRmssd"), "not-collected");
+    assert.equal(status("ExerciseRoute"), "not-collected");
+    // Requested since app v2.3.0 but nothing synced yet: empty, not uncollected.
+    assert.equal(status("HeartRateVariabilityRmssd"), "no-data");
+    assert.equal(status("SkinTemperature"), "no-data");
     assert.deepEqual(rows.find((row) => row.type === "Steps")?.sources, [
       { label: "Phone", records: 7 },
       { label: "WHOOP", records: 3 },
