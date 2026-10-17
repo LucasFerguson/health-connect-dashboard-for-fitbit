@@ -1,4 +1,5 @@
 import Link from "next/link";
+import type { ReactNode } from "react";
 import type { MetricAnalytics } from "~/domain/analytics";
 import { healthSourceLabel } from "~/features/health/sourceLabels";
 import type { MetricKind } from "~/features/health/metricPresentation";
@@ -12,11 +13,14 @@ export function MetricDetailPage({
   analytics,
   secondaryAnalytics,
   selectedDate,
+  children,
 }: {
   kind: MetricKind;
   analytics: MetricAnalytics;
   secondaryAnalytics?: MetricAnalytics;
   selectedDate?: string;
+  /** Extra sections below the charts, e.g. the raw source records. */
+  children?: ReactNode;
 }) {
   const presentation = metricPresentation(kind);
   const { latest, average7Day, average30Day, changeFromPrevious, sampleCount } =
@@ -140,6 +144,8 @@ export function MetricDetailPage({
             {presentation.emptyMessage}
           </div>
         )}
+
+        {children}
       </div>
     </main>
   );

@@ -1,3 +1,4 @@
+import type { ReactNode } from "react";
 import { BackendErrorPanel } from "~/components/BackendErrorPanel";
 import { isDateKey } from "~/domain/health";
 import type { MetricKind } from "~/features/health/metricPresentation";
@@ -10,9 +11,12 @@ import { settle } from "~/server/health/backendDiagnostics";
 export async function HealthMetricPage({
   kind,
   selectedDate,
+  children,
 }: {
   kind: MetricKind;
   selectedDate?: string;
+  /** Rendered below the charts; see `MetricDetailPage`. */
+  children?: ReactNode;
 }) {
   const result = await settle(getMetricSeries(kind));
   if (!result.ok) return <BackendErrorPanel diagnostics={result.diagnostics} />;
@@ -24,6 +28,8 @@ export async function HealthMetricPage({
       // Only /calories has one: it charts active against total energy.
       secondaryAnalytics={result.data.secondary}
       selectedDate={isDateKey(selectedDate) ? selectedDate : undefined}
-    />
+    >
+      {children}
+    </MetricDetailPage>
   );
 }
