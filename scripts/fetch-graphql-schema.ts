@@ -2,9 +2,10 @@
  * Refreshes `graphql-introspection.json` from the live HCGateway GraphQL API.
  *
  * `/graphql` requires a bearer token, so this logs in with API_USERNAME /
- * API_PASSWORD from .env.local (same credentials the REST paths use) and
- * writes the introspection result to disk. `codegen.ts` then reads that file,
- * which keeps credentials out of the tracked codegen config.
+ * API_PASSWORD from .env.local (a developer-only credential; the dashboard
+ * itself signs people in on /login), writes the introspection result to disk,
+ * and signs that session out again. `codegen.ts` then reads that file, which
+ * keeps credentials out of the tracked codegen config.
  *
  * Run with: npm run codegen:schema
  */
@@ -42,6 +43,22 @@ async function main(): Promise<void> {
   const { token } = (await loginResponse.json()) as { token?: string };
   if (!token) throw new Error("Login response contained no token");
 
+  try {
+    await writeIntrospection(graphqlUrl, token);
+  } finally {
+    // Every login is its own backend session; don't leave one behind per run.
+    await fetch(`${baseUrl}/api/v2/revoke`, {
+      method: "DELETE",
+      headers: { Authorization: `Bearer ${token}` },
+      signal: AbortSignal.timeout(15_000),
+    }).catch(() => undefined);
+  }
+}
+
+async function writeIntrospection(
+  graphqlUrl: string,
+  token: string,
+): Promise<void> {
   const introspection = await fetch(graphqlUrl, {
     method: "POST",
     headers: {

@@ -11,8 +11,8 @@
  * `BackendRequestError`, pages catch it with `settle()`, and the diagnosis
  * travels as plain serializable data.
  *
- * Never put a secret in here. The report names the username and whether a
- * password is set, never the password or the bearer token; upstream bodies
+ * Never put a secret in here. The report never includes the bearer token;
+ * upstream bodies
  * are truncated snippets of what the server sent back, which never contains
  * our own request headers.
  */
@@ -31,8 +31,6 @@ import { ZodError } from "zod";
 
 export type FailureKind =
   | "not-configured"
-  | "login-rejected"
-  | "login-failed"
   | "unreachable"
   | "timeout"
   | "http-error"
@@ -53,15 +51,12 @@ export interface RequestContext {
   selections: string[];
   /** Absolute URL the data request goes to, or null if it couldn't be derived. */
   endpoint: string | null;
-  loginUrl: string | null;
   config: ConfigSnapshot;
   startedAt: number;
 }
 
 export interface ConfigSnapshot {
   apiUrl: string | null;
-  username: string | null;
-  passwordSet: boolean;
   /** Set when GRAPHQL_URL overrides the derived `:6645/graphql` endpoint. */
   graphqlUrlOverride: string | null;
 }
@@ -97,27 +92,6 @@ export class BackendRequestError extends Error {
   constructor(public readonly diagnostics: BackendDiagnostics) {
     super(`${diagnostics.request.label}: ${diagnostics.title}`);
     this.name = "BackendRequestError";
-  }
-}
-
-/**
- * Thrown by the login in `graphqlAuth.ts`, so a credential problem is never
- * mistaken for the data endpoint being down.
- */
-export class LoginError extends Error {
-  constructor(
-    public readonly url: string,
-    public readonly status: number | null,
-    public readonly bodySnippet: string,
-    options?: { cause?: unknown },
-  ) {
-    super(
-      status === null
-        ? `HCGateway login at ${url} failed before a response arrived`
-        : `HCGateway login at ${url} returned ${status}`,
-      options,
-    );
-    this.name = "LoginError";
   }
 }
 
@@ -166,25 +140,15 @@ export function snippet(text: string): string {
     : compact;
 }
 
-export function configSnapshot(env: {
-  API_URL?: string;
-  API_USERNAME?: string;
-  API_PASSWORD?: string;
-}): ConfigSnapshot {
+export function configSnapshot(env: { API_URL?: string }): ConfigSnapshot {
   return {
     apiUrl: env.API_URL ?? null,
-    username: env.API_USERNAME ?? null,
-    passwordSet: Boolean(env.API_PASSWORD),
     graphqlUrlOverride: process.env.GRAPHQL_URL ?? null,
   };
 }
 
 export function missingConfig(config: ConfigSnapshot): string[] {
-  return [
-    config.apiUrl ? null : "API_URL",
-    config.username ? null : "API_USERNAME",
-    config.passwordSet ? null : "API_PASSWORD",
-  ].filter((key): key is string => key !== null);
+  return config.apiUrl ? [] : ["API_URL"];
 }
 
 /** Operation name and `viewer.analytics.*`-style paths a document selects. */
@@ -300,65 +264,10 @@ export function diagnose(
       auth: "not-attempted",
       title: `Not configured: ${error.missing.join(", ")} missing`,
       explanation:
-        "The dashboard has no demo mode — it needs HCGateway credentials to show anything. No request was sent.",
+        "The dashboard has no demo mode — it needs to know where HCGateway is to show anything. No request was sent.",
       checks: [
         `Set ${error.missing.join(", ")} in .env (Docker) or .env.local (npm run dev).`,
         "Redeploy so the container picks them up: scripts/deploy.sh up prod",
-      ],
-    };
-  }
-
-  if (error instanceof LoginError) {
-    const code = networkCode(causes);
-    if (error.status === 401 || error.status === 403) {
-      return {
-        ...base,
-        kind: "login-rejected",
-        auth: "rejected",
-        title: `Login rejected (${error.status}) for user "${config.username ?? "?"}"`,
-        explanation: `HCGateway's login endpoint answered but refused the credentials, so no data request was attempted. The GraphQL endpoint itself was never reached.`,
-        checks: [
-          "Check API_USERNAME and API_PASSWORD in .env — the password is the HCGateway account password.",
-          "Confirm the account works: POST {API_URL}/api/v2/login with the same JSON body.",
-        ],
-        http: {
-          status: error.status,
-          contentType: null,
-          bodySnippet: error.bodySnippet,
-        },
-      };
-    }
-    if (error.status !== null) {
-      return {
-        ...base,
-        kind: "login-failed",
-        auth: "failed",
-        title: `Login endpoint returned ${error.status}`,
-        explanation:
-          error.status === 404
-            ? "Nothing answers /api/v2/login at API_URL — it probably doesn't point at HCGateway's REST API."
-            : "The login endpoint errored before it could check the credentials.",
-        checks: [
-          `API_URL is ${config.apiUrl ?? "unset"}; it should be the REST API origin (usually port 6644), not the GraphQL one.`,
-          "Check the `hcgateway_api` container logs for the failing login.",
-        ],
-        http: {
-          status: error.status,
-          contentType: null,
-          bodySnippet: error.bodySnippet,
-        },
-      };
-    }
-    return {
-      ...base,
-      kind: isTimeout(causes) ? "timeout" : "unreachable",
-      auth: "failed",
-      title: `Couldn't reach the login endpoint at ${hostOf(error.url)}${code ? ` (${code})` : ""}`,
-      explanation:
-        "Authentication happens against the REST API before any data request, and that connection failed — so this is a network/host problem, not a credentials problem.",
-      checks: [
-        `Is anything listening at ${hostOf(error.url)}? Is the \`hcgateway_api\` container up?`,
-        "If the dashboard runs in Docker, API_URL must be reachable from inside the container (a LAN IP, not localhost).",
       ],
     };
   }

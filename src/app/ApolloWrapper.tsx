@@ -16,6 +16,7 @@ import {
   ApolloNextAppProvider,
   InMemoryCache,
 } from "@apollo/client-integration-nextjs";
+import { SESSION_EXPIRED_PATH } from "~/domain/auth";
 import { typePolicies } from "~/server/health/graphql/typePolicies";
 
 function makeClient() {
@@ -38,6 +39,14 @@ function makeClient() {
       // let the framework serve a stale poll result for live health data.
       // Matches the RSC client's transport-level opt-out.
       fetchOptions: { cache: "no-store" },
+      // The proxy answers 401 when HCGateway no longer knows this browser's
+      // session; send the person to sign in again rather than show an error.
+      fetch: async (input, init) => {
+        const response = await fetch(input, init);
+        if (response.status === 401)
+          window.location.assign(SESSION_EXPIRED_PATH);
+        return response;
+      },
     }),
   });
 }

@@ -2,12 +2,11 @@
  * Same-origin GraphQL proxy for the browser.
  *
  * Client components can't talk to HCGateway's `/graphql` directly: the endpoint
- * needs a bearer token minted from API_USERNAME/API_PASSWORD, and anything the
- * browser can send is a credential the browser has. So the client Apollo Client
+ * needs the session's bearer token, which lives in an httpOnly cookie that
+ * browser JavaScript can't read. So the client Apollo Client
  * (`src/app/ApolloWrapper.tsx`) posts here instead, and this handler — which
- * runs server-side — is the only place the token is attached. Nothing is
- * exposed as `NEXT_PUBLIC_*`; the browser never sees a credential, only a
- * relative URL on its own origin.
+ * runs server-side — reads the cookie and attaches the token. Page scripts
+ * never see the credential, only a relative URL on their own origin.
  *
  * Deliberately not a transparent proxy:
  *
@@ -19,18 +18,15 @@
  *   echoed to the client.
  *
  * Note this grants the browser the same read scope as the server pages already
- * render — the token belongs to the single self-hosted account, and HCGateway
- * derives the user from it, so the proxy can't be pointed at another user's
- * data. It does not narrow to an operation allowlist; if this dashboard ever
- * becomes multi-user, that allowlist is the next thing to add.
+ * render — HCGateway derives the user from the session token, so the proxy
+ * can't be pointed at another user's data.
  */
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { env } from "~/env";
+import { getSessionToken } from "~/server/auth/session";
 import {
-  fetchGraphQLToken,
   graphqlEndpoint,
-  invalidateGraphQLToken,
   isGraphQLConfigured,
 } from "~/server/health/graphqlAuth";
 
@@ -77,33 +73,30 @@ export async function POST(request: Request) {
     );
   }
 
-  try {
-    const send = async () =>
-      fetch(graphqlEndpoint(baseUrl), {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${await fetchGraphQLToken(baseUrl)}`,
-        },
-        body: JSON.stringify({
-          query: body.query,
-          variables: body.variables ?? undefined,
-          operationName: body.operationName ?? undefined,
-        }),
-        cache: "no-store",
-        // The overview query is the widest one the dashboard issues (~321 KB
-        // over the wire); a minute is generous but the poll is only every 60s.
-        signal: AbortSignal.timeout(60_000),
-      });
+  const token = await getSessionToken();
+  if (!token) return unauthenticated();
 
-    let upstream = await send();
-    if (upstream.status === 401) {
-      // HCGateway keeps one token per account and every login replaces it, so
-      // another client signing in as the same user revokes ours. Log in again
-      // and retry once, as `withViewer` does; a second 401 is passed on.
-      invalidateGraphQLToken();
-      upstream = await send();
-    }
+  try {
+    const upstream = await fetch(graphqlEndpoint(baseUrl), {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({
+        query: body.query,
+        variables: body.variables ?? undefined,
+        operationName: body.operationName ?? undefined,
+      }),
+      cache: "no-store",
+      // The overview query is the widest one the dashboard issues (~321 KB
+      // over the wire); a minute is generous but the poll is only every 60s.
+      signal: AbortSignal.timeout(60_000),
+    });
+
+    // HCGateway no longer knows this session. `ApolloWrapper` sends the
+    // browser to sign in again on this 401.
+    if (upstream.status === 401) return unauthenticated();
 
     if (!upstream.ok) {
       console.error(`GraphQL proxy: upstream returned ${upstream.status}`);
@@ -146,4 +139,15 @@ export async function POST(request: Request) {
       { status: 502 },
     );
   }
+}
+
+function unauthenticated() {
+  return NextResponse.json(
+    {
+      errors: [
+        { message: "Not signed in", extensions: { code: "UNAUTHENTICATED" } },
+      ],
+    },
+    { status: 401 },
+  );
 }

@@ -46,13 +46,19 @@ HCGateway GraphQL (:6645)
   domain types in `src/domain/`. The larger mappings live in
   `src/server/health/adapters/`. Adapters never invent a value: a row missing a
   required field is dropped rather than rendered as `0`.
-- **The browser never holds a credential.** Client components that refresh
+- **Sign-in uses HCGateway accounts.** `/login` exchanges a username and
+  password for a session token at `POST $API_URL/api/v2/login` (`/signup`
+  creates the account at `POST /api/v2/signup`; the phone app can't). The
+  token lives in an httpOnly `hc_session` cookie that `src/middleware.ts`
+  renews on every page load, so a browser stays signed in until SIGN OUT.
+  Each browser and phone has its own backend session, so signing out of one
+  leaves the others alone.
+- **Page scripts never see the token.** Client components that refresh
   (the overview polls every 60 seconds with Apollo `useQuery`'s
   `pollInterval`, see `src/features/health/HealthDataProvider.tsx`) talk to the
-  same-origin `/api/graphql` route. That route runs server-side, exchanges
-  `API_USERNAME`/`API_PASSWORD` for a bearer token at
-  `POST $API_URL/api/v2/login`, and forwards only `query`, `variables` and
-  `operationName` upstream.
+  same-origin `/api/graphql` route. That route runs server-side, attaches the
+  cookie's token, and forwards only `query`, `variables` and `operationName`
+  upstream.
 - **Sleep-stage timelines load on demand.** They are left out of the bulk
   overview query (selecting them for every sleep event made that payload
   5.5 MB instead of 321 KB), so `SleepStagesGraph` fetches the selected day's
@@ -121,8 +127,6 @@ npm run check                # lint + typecheck
 | Variable              | Required | Purpose                                                                             |
 | --------------------- | -------- | ----------------------------------------------------------------------------------- |
 | `API_URL`             | yes      | HCGateway REST origin, e.g. `http://192.168.8.239:6644`                             |
-| `API_USERNAME`        | yes      | HCGateway account, exchanged for a bearer token at login                            |
-| `API_PASSWORD`        | yes      |                                                                                     |
 | `GRAPHQL_URL`         | no       | GraphQL endpoint. Defaults to `API_URL` with the port swapped to `6645`             |
 | `DEV_ALLOWED_ORIGINS` | no       | Extra origins allowed to reach the dev server over the LAN                          |
 | `PROD_PORT`           | no       | Host port for the prod container (default `3000`); also read by `scripts/deploy.sh` |
@@ -138,7 +142,8 @@ bare `docker compose up` starts nothing:
 
 - **`prod`** (`dashboard`, port 3000): the multi-stage `Dockerfile` builds a
   Next.js standalone server, tagged `health-connect-dashboard:local`. It
-  refuses to start unless `API_URL`, `API_USERNAME` and `API_PASSWORD` are set.
+  refuses to start unless `API_URL` is set. Its healthcheck is `/api/health`,
+  the one route that needs no session.
 - **`dev`** (`dashboard-dev`, port 3001): `next dev` with Turbopack and hot
   reload in a `node:20-alpine` container, with the repo bind-mounted.
   `node_modules` and `.next` live in named volumes so a host-side

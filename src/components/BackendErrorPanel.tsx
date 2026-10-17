@@ -25,8 +25,6 @@ const STEPS = [
 function failedStep(diagnostics: BackendDiagnostics): number | null {
   const byKind: Record<FailureKind, number | null> = {
     "not-configured": 0,
-    "login-rejected": 1,
-    "login-failed": 1,
     unreachable: 2,
     timeout: 2,
     "token-rejected": 2,
@@ -137,7 +135,6 @@ export function BackendErrorPanel({
                 "Endpoint",
                 request.endpoint ?? "(could not derive — API_URL unset)",
               ],
-              ["Login endpoint", request.loginUrl],
               ["Authentication", diagnostics.auth],
               ["Elapsed", `${diagnostics.elapsedMs} ms`],
               ["Occurred at", diagnostics.occurredAt],
@@ -212,8 +209,6 @@ export function BackendErrorPanel({
           <Facts
             rows={[
               ["API_URL", config.apiUrl ?? "unset"],
-              ["API_USERNAME", config.username ?? "unset"],
-              ["API_PASSWORD", config.passwordSet ? "set (hidden)" : "unset"],
               [
                 "GRAPHQL_URL",
                 config.graphqlUrlOverride ??

@@ -10,22 +10,18 @@
  * Client components do NOT use this — RSC queries don't update in the browser.
  * They go through `src/app/ApolloWrapper.tsx` and the `/api/graphql` proxy.
  *
- * Auth: log in with API_USERNAME/API_PASSWORD against the REST login endpoint,
- * attach `Authorization: Bearer <token>`. HCGateway derives the user from the
- * token alone — never pass a user ID as a query argument. The token fetch and
- * endpoint derivation live in `graphqlAuth.ts` so the proxy route can reuse
- * them; this module is only importable under the `react-server` condition.
+ * Auth: attach the signed-in browser's session token from its cookie as
+ * `Authorization: Bearer <token>`. HCGateway derives the user from the token
+ * alone — never pass a user ID as a query argument. Endpoint derivation lives
+ * in `graphqlAuth.ts` so the proxy route can reuse it; this module is only
+ * importable under the `react-server` condition.
  *
  * The cache normalizes by the backend's run-scoped `id`s, with the shared
  * `typePolicies` from `graphql/typePolicies.ts`. The cache is per request, so
  * this mostly matters when one request runs several queries (and for the
  * browser client, which lives for the whole session).
  *
- * Still open:
- *
- * - A `RetryLink` for transient 5xx, plus an `ErrorLink` calling
- *   `invalidateGraphQLToken()` on 401. The proxy route already does the 401
- *   half; this path still relies on the next request re-logging in.
+ * Still open: a `RetryLink` for transient 5xx.
  */
 import { HttpLink } from "@apollo/client";
 import { SetContextLink } from "@apollo/client/link/context";
@@ -35,18 +31,19 @@ import {
   registerApolloClient,
 } from "@apollo/client-integration-nextjs";
 import { env } from "~/env";
-import { fetchGraphQLToken, graphqlEndpoint } from "./graphqlAuth";
+import { getSessionToken } from "~/server/auth/session";
+import { graphqlEndpoint } from "./graphqlAuth";
 import { typePolicies } from "./graphql/typePolicies";
 
-// Re-exported so existing importers (`graphql/fetchAnalytics.ts`) keep a single
-// entrypoint even though the credential handling moved to `graphqlAuth.ts`.
-export { invalidateGraphQLToken, isGraphQLConfigured } from "./graphqlAuth";
+export { isGraphQLConfigured } from "./graphqlAuth";
 
 export const { getClient, query, PreloadQuery } = registerApolloClient(() => {
   const baseUrl = env.API_URL;
   const authLink = new SetContextLink(async (prevContext) => {
     if (!baseUrl) throw new Error("API_URL is not configured");
-    const token = await fetchGraphQLToken(baseUrl);
+    // `withViewer` redirects to /login before querying without a session.
+    const token = await getSessionToken();
+    if (!token) throw new Error("Not signed in");
     // `OperationContext.headers` is typed `any` by Apollo; narrow it before
     // spreading so the lint rule against unsafe `any` assignment holds.
     const previousHeaders = (prevContext.headers ?? {}) as Record<

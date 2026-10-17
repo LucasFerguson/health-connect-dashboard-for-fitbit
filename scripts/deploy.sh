@@ -75,7 +75,7 @@ wait_dev() {
   log "waiting for dev server on :$DEV_PORT (timeout ${DEV_TIMEOUT}s; first compile is slow)"
   local deadline=$((SECONDS + DEV_TIMEOUT))
   while ((SECONDS < deadline)); do
-    if curl -fs -o /dev/null --max-time 60 "http://localhost:$DEV_PORT/api/sync-status"; then
+    if curl -fs -o /dev/null --max-time 60 "http://localhost:$DEV_PORT/api/health"; then
       log "dev ready on http://localhost:$DEV_PORT"
       return 0
     fi
@@ -153,8 +153,8 @@ cmd_status() {
   docker ps -a --filter "name=^$PROD_CONTAINER\$" --filter "name=^$DEV_CONTAINER\$" \
     --format 'table {{.Names}}\t{{.Status}}\t{{.Image}}'
   for port in "$PROD_PORT" "$DEV_PORT"; do
-    code=$(curl -s -o /dev/null -w '%{http_code}' --max-time 10 "http://localhost:$port/api/sync-status" || true)
-    echo ":$port /api/sync-status -> ${code:-no response}"
+    code=$(curl -s -o /dev/null -w '%{http_code}' --max-time 10 "http://localhost:$port/api/health" || true)
+    echo ":$port /api/health -> ${code:-no response}"
   done
 }
 

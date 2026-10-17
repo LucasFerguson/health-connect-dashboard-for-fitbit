@@ -29,7 +29,10 @@ import {
   missingConfig,
   type RequestContext,
 } from "../backendDiagnostics";
-import { graphqlEndpoint, invalidateGraphQLToken } from "../graphqlAuth";
+import { redirect } from "next/navigation";
+import { SESSION_EXPIRED_PATH } from "~/domain/auth";
+import { getSessionToken } from "~/server/auth/session";
+import { graphqlEndpoint } from "../graphqlAuth";
 import { getClient } from "../graphqlClient";
 
 interface ViewerQueryResult {
@@ -88,10 +91,13 @@ export async function withViewer<
     label,
     ...describeDocument(document),
     endpoint: config.apiUrl ? graphqlEndpoint(config.apiUrl) : null,
-    loginUrl: config.apiUrl ? `${config.apiUrl}/api/v2/login` : null,
     config,
     startedAt: Date.now(),
   };
+
+  // The middleware already sends cookieless requests to /login; this covers
+  // a cookie that vanished mid-request.
+  if (!(await getSessionToken())) redirect("/login");
 
   try {
     const missing = missingConfig(config);
@@ -109,20 +115,7 @@ export async function withViewer<
     const options = { query: document, variables } as Parameters<
       typeof client.query<TResult, TVariables>
     >[0];
-    const run = () => client.query<TResult, TVariables>(options);
-    let result: Awaited<ReturnType<typeof run>>;
-    try {
-      result = await run();
-    } catch (error) {
-      if (!isTokenRejection(error)) throw error;
-      // HCGateway keeps one token per account and every login replaces it, so
-      // any other client signing in as the same user (the other dashboard
-      // container, a dev server, the phone app) revokes ours. Log in again
-      // and retry once; a second 401 is a real credential problem.
-      invalidateGraphQLToken();
-      result = await run();
-    }
-    const { data } = result;
+    const { data } = await client.query<TResult, TVariables>(options);
     // Apollo types `data` as possibly undefined: a query can resolve carrying
     // only errors.
     if (!data) throw new EmptyResponseError();
@@ -132,11 +125,10 @@ export async function withViewer<
       throw new FrontendMappingError(error);
     }
   } catch (error) {
-    // Still rejected after a fresh login; drop the token anyway so the next
-    // request doesn't reuse it.
-    if (isTokenRejection(error)) {
-      invalidateGraphQLToken();
-    }
+    // HCGateway no longer knows this browser's session (signed out, or the
+    // database was reset). Sessions don't expire, so this is rare; send the
+    // browser to sign in again. `redirect` throws past `settle()`.
+    if (isTokenRejection(error)) redirect(SESSION_EXPIRED_PATH);
     const diagnostics = diagnose(error, context);
     console.error(
       `GraphQL ${label} failed: ${diagnostics.title}`,

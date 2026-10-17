@@ -6,7 +6,9 @@ import { usePathname } from "next/navigation";
 import { clsx } from "clsx";
 import { notchStyle } from "~/components/ui/notch";
 import { Spinner } from "~/components/ui/Spinner";
+import { PUBLIC_PAGES } from "~/domain/auth";
 import { describeSyncStatus } from "~/domain/dayViewPresentation";
+import { signOut } from "~/server/auth/actions";
 import type { SyncStatus } from "~/domain/dayView";
 
 const links = [
@@ -36,7 +38,8 @@ const links = [
  */
 export function AppNavigation() {
   const pathname = usePathname();
-  const syncStatus = useSyncStatus();
+  const signedOutPage = PUBLIC_PAGES.includes(pathname);
+  const syncStatus = useSyncStatus(!signedOutPage);
   const sync = syncStatus ? describeSyncStatus(syncStatus, new Date()) : null;
   const linksRef = useRef<HTMLDivElement>(null);
 
@@ -62,6 +65,8 @@ export function AppNavigation() {
     observer.observe(row);
     return () => observer.disconnect();
   }, [pathname]);
+
+  if (signedOutPage) return null;
 
   return (
     <nav
@@ -115,6 +120,14 @@ export function AppNavigation() {
             {sync.detail ? ` · ${sync.detail}` : ""}
           </span>
         ) : null}
+        <form action={signOut}>
+          <button
+            type="submit"
+            className="hover:text-ink-0 cursor-pointer tracking-[.08em] transition-colors duration-[120ms] ease-out"
+          >
+            SIGN OUT
+          </button>
+        </form>
       </div>
     </nav>
   );
@@ -137,10 +150,11 @@ const SYNC_POLL_MS = 60_000;
  * scoped to that one route). Mirrors `HealthDataProvider`'s polling
  * pattern: skip a beat and keep the last good value on failure rather than
  * ever showing a stale value as fresh or throwing. */
-function useSyncStatus(): SyncStatus | null {
+function useSyncStatus(enabled: boolean): SyncStatus | null {
   const [status, setStatus] = useState<SyncStatus | null>(null);
 
   useEffect(() => {
+    if (!enabled) return;
     let cancelled = false;
 
     const refresh = async () => {
@@ -148,6 +162,12 @@ function useSyncStatus(): SyncStatus | null {
         const response = await fetch("/api/sync-status", {
           cache: "no-store",
         });
+        // Signed out: either the middleware's 401 (no cookie) or a redirect
+        // through /auth/expired (HCGateway rejected the session).
+        if (response.status === 401 || response.redirected) {
+          window.location.assign("/login");
+          return;
+        }
         if (!response.ok || cancelled) return;
         const data = (await response.json()) as SyncStatus;
         if (!cancelled) setStatus(data);
@@ -165,7 +185,7 @@ function useSyncStatus(): SyncStatus | null {
       cancelled = true;
       window.clearInterval(interval);
     };
-  }, []);
+  }, [enabled]);
 
   return status;
 }
