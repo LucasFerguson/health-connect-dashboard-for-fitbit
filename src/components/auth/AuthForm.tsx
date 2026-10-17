@@ -18,7 +18,7 @@ interface AuthFormProps {
   notice?: string;
 }
 
-const inputClass =
+export const authInputClass =
   "border-ink-500 bg-ink-850 text-ink-0 focus:border-brand-400 w-full border px-3 py-2 text-sm outline-none transition-colors duration-[120ms]";
 
 /** Shared sign-in / create-account card. One browser session lasts until
@@ -68,7 +68,7 @@ export function AuthForm({ mode, action, next, notice }: AuthFormProps) {
               autoCapitalize="none"
               defaultValue={state.username}
               required
-              className={inputClass}
+              className={authInputClass}
             />
           </label>
           <label className="text-ink-100 flex flex-col gap-1 text-xs tracking-[.06em]">
@@ -79,7 +79,7 @@ export function AuthForm({ mode, action, next, notice }: AuthFormProps) {
               autoComplete={signup ? "new-password" : "current-password"}
               minLength={signup ? 8 : undefined}
               required
-              className={inputClass}
+              className={authInputClass}
             />
           </label>
           {signup ? (
@@ -90,7 +90,7 @@ export function AuthForm({ mode, action, next, notice }: AuthFormProps) {
                 type="password"
                 autoComplete="new-password"
                 required
-                className={inputClass}
+                className={authInputClass}
               />
             </label>
           ) : null}

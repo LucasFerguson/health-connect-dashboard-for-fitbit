@@ -2,7 +2,12 @@
 
 import { redirect } from "next/navigation";
 import { safeNextPath } from "~/domain/auth";
-import { backendLogin, backendRevoke, backendSignup } from "./hcgateway";
+import {
+  backendChangePassword,
+  backendLogin,
+  backendRevoke,
+  backendSignup,
+} from "./hcgateway";
 import {
   clearSessionCookie,
   getSessionToken,
@@ -58,4 +63,34 @@ export async function signOut(): Promise<void> {
   if (token) await backendRevoke(token);
   await clearSessionCookie();
   redirect("/login");
+}
+
+export interface PasswordFormState {
+  error: string | null;
+  changed: boolean;
+}
+
+export async function changePassword(
+  _previous: PasswordFormState,
+  formData: FormData,
+): Promise<PasswordFormState> {
+  const token = await getSessionToken();
+  if (!token) redirect("/login");
+  const current = field(formData, "current");
+  const next = field(formData, "password");
+  if (!current)
+    return { error: "Enter your current password.", changed: false };
+  if (next.length < 8) {
+    return {
+      error: "Use a new password of at least 8 characters.",
+      changed: false,
+    };
+  }
+  if (next !== field(formData, "confirm")) {
+    return { error: "The new passwords don't match.", changed: false };
+  }
+  const result = await backendChangePassword(token, current, next);
+  return result.ok
+    ? { error: null, changed: true }
+    : { error: result.error, changed: false };
 }

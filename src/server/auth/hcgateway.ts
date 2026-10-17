@@ -82,3 +82,61 @@ export async function backendRevoke(token: string): Promise<void> {
     );
   }
 }
+
+/** The signed-in account's username, or null if HCGateway can't say. */
+export async function backendAccount(
+  token: string,
+): Promise<{ username: string } | null> {
+  if (!env.API_URL) return null;
+  try {
+    const response = await fetch(`${env.API_URL}/api/v2/account`, {
+      headers: { Authorization: `Bearer ${token}` },
+      cache: "no-store",
+      signal: AbortSignal.timeout(10_000),
+    });
+    if (!response.ok) return null;
+    const parsed = z
+      .object({ username: z.string() })
+      .safeParse(await response.json());
+    return parsed.success ? parsed.data : null;
+  } catch {
+    return null;
+  }
+}
+
+export async function backendChangePassword(
+  token: string,
+  currentPassword: string,
+  newPassword: string,
+): Promise<{ ok: true } | { ok: false; error: string }> {
+  if (!env.API_URL) return { ok: false, error: "API_URL is not configured." };
+  let response: Response;
+  try {
+    response = await fetch(`${env.API_URL}/api/v2/account/password`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({ currentPassword, newPassword }),
+      cache: "no-store",
+      signal: AbortSignal.timeout(10_000),
+    });
+  } catch {
+    return {
+      ok: false,
+      error: "Couldn't reach HCGateway. Is the backend running?",
+    };
+  }
+  if (response.ok) return { ok: true };
+  if (response.status === 403) {
+    return { ok: false, error: "Your current password is wrong." };
+  }
+  const body = errorBody.safeParse(await response.json().catch(() => null));
+  return {
+    ok: false,
+    error: body.success
+      ? body.data.error
+      : `HCGateway answered ${response.status}.`,
+  };
+}

@@ -120,6 +120,16 @@ export function AppNavigation() {
             {sync.detail ? ` · ${sync.detail}` : ""}
           </span>
         ) : null}
+        <Link
+          href="/settings"
+          aria-current={pathname === "/settings" ? "page" : undefined}
+          className={clsx(
+            "hover:text-ink-0 tracking-[.08em] transition-colors duration-[120ms] ease-out",
+            pathname === "/settings" && "text-ink-0",
+          )}
+        >
+          ACCOUNT
+        </Link>
         <form action={signOut}>
           <button
             type="submit"
