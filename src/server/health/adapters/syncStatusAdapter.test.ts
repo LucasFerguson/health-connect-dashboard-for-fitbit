@@ -129,6 +129,24 @@ void describe("adaptSyncStatus", () => {
     assert.equal(status.analytics?.error, "TimeoutError: mongo timed out");
   });
 
+  void it("reports a completed job newer than the unchanged current run", () => {
+    // A run whose output matched the previous one (persistence=unchanged)
+    // leaves current.completedAt behind; the job still says it just finished.
+    const status = adaptSyncStatus(
+      ingestion(
+        {},
+        {
+          analyticsJob: job({
+            status: "completed",
+            completedAt: "2026-01-15T12:05:00.000Z",
+          }),
+        },
+      ),
+    );
+    assert.equal(status.analytics?.state, "idle");
+    assert.equal(status.analytics?.lastCompletedAt, "2026-01-15T12:05:00.000Z");
+  });
+
   void it("treats no job and no run (a new account) as idle", () => {
     const status = adaptSyncStatus(ingestion({}, { current: null }));
     assert.deepEqual(status.analytics, {

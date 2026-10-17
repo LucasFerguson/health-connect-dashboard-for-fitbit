@@ -44,9 +44,10 @@ export function adaptSyncStatus(ingestion: Ingestion): SyncStatus {
   };
 }
 
-/** No job document (a new account) reads as idle; the current run, not the
- * job, says when served analytics last finished, since enqueueing a job
- * clears its own `completedAt`. */
+/** No job document (a new account) reads as idle. "Last finished" is the
+ * later of the job's and the current run's completion: enqueueing a job
+ * clears the job's `completedAt`, while a run whose output didn't change
+ * (`persistence=unchanged`) leaves the current run's timestamp behind. */
 export function adaptAnalyticsStatus({
   analyticsJob: job,
   current,
@@ -60,7 +61,13 @@ export function adaptAnalyticsStatus({
         : state === "queued"
           ? (job?.requestedAt ?? null)
           : null,
-    lastCompletedAt: current?.completedAt ?? job?.completedAt ?? null,
+    lastCompletedAt: latest(current?.completedAt, job?.completedAt),
     error: analyticsErrorMessage(job?.error),
   };
+}
+
+function latest(...instants: (string | null | undefined)[]): string | null {
+  const present = instants.filter((value): value is string => Boolean(value));
+  if (present.length === 0) return null;
+  return present.reduce((a, b) => (Date.parse(b) > Date.parse(a) ? b : a));
 }
