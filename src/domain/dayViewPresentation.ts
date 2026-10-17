@@ -2,6 +2,7 @@ import type {
   HeartRateHour,
   MetricStatus,
   NearbyDay,
+  NumericMetric,
   NumericMetricValue,
   SyncStatus,
 } from "~/domain/dayView";
@@ -51,6 +52,20 @@ export function absenceReason(
     default:
       return "Not available.";
   }
+}
+
+/** A supporting metric (HRV, skin temperature, …) as a pillar-card footer
+ * value: `format(value)` when its status is displayable and the value is a
+ * real number, otherwise the em-dash — never a zero. */
+export function supportingMetricDisplay(
+  metric: NumericMetric,
+  format: (value: number) => string,
+): string {
+  if (!isDisplayableStatus(metric.status)) return ABSENT_VALUE_DISPLAY;
+  if (metric.value === null || !Number.isFinite(metric.value)) {
+    return ABSENT_VALUE_DISPLAY;
+  }
+  return format(metric.value);
 }
 
 // ---------------------------------------------------------------------------

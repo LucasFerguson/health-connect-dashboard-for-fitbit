@@ -9,6 +9,7 @@ import {
   formatRelativeTime,
   hrRampColorForMean,
   isDisplayableStatus,
+  supportingMetricDisplay,
 } from "./dayViewPresentation";
 
 void describe("isDisplayableStatus", () => {
@@ -24,6 +25,58 @@ void describe("isDisplayableStatus", () => {
     assert.equal(isDisplayableStatus("blocked"), false);
     assert.equal(isDisplayableStatus("unavailable"), false);
     assert.equal(isDisplayableStatus("sample_time_only"), false);
+  });
+});
+
+void describe("supportingMetricDisplay", () => {
+  const format = (value: number) => `${value > 0 ? "+" : ""}${value} °C`;
+
+  void it("formats a displayable value, including a signed one and zero", () => {
+    assert.equal(
+      supportingMetricDisplay(
+        { status: "available", value: 0.3, note: null },
+        format,
+      ),
+      "+0.3 °C",
+    );
+    assert.equal(
+      supportingMetricDisplay(
+        { status: "partial", value: -0.2, note: null },
+        format,
+      ),
+      "-0.2 °C",
+    );
+    assert.equal(
+      supportingMetricDisplay(
+        { status: "available", value: 0, note: null },
+        format,
+      ),
+      "0 °C",
+    );
+  });
+
+  void it("shows an em-dash, never zero, when there is no real value", () => {
+    assert.equal(
+      supportingMetricDisplay(
+        { status: "missing", value: null, note: null },
+        format,
+      ),
+      "—",
+    );
+    assert.equal(
+      supportingMetricDisplay(
+        { status: "available", value: null, note: null },
+        format,
+      ),
+      "—",
+    );
+    assert.equal(
+      supportingMetricDisplay(
+        { status: "missing", value: 0, note: null },
+        format,
+      ),
+      "—",
+    );
   });
 });
 

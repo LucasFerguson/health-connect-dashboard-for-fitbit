@@ -21,7 +21,7 @@ import type { MetricStatus } from "~/domain/dayView";
 export function PlaceholderPillarCard({
   label,
   hue,
-  footerLabels,
+  footer,
   status,
   note,
   value,
@@ -29,7 +29,9 @@ export function PlaceholderPillarCard({
 }: {
   label: string;
   hue: string;
-  footerLabels: string[];
+  /** Supporting-metric label/value pairs, already formatted (em-dash for a
+   * missing value; see `supportingMetricDisplay`). */
+  footer: Array<[string, string]>;
   status: MetricStatus;
   note?: string | null;
   /** A real numeric value to render instead of the placeholder shell —
@@ -54,9 +56,7 @@ export function PlaceholderPillarCard({
           fillColor={hue}
           heightPx={7}
         />
-        <SectionFooter
-          items={footerLabels.map((item): [string, string] => [item, "—"])}
-        />
+        <SectionFooter items={footer} />
       </Card>
     );
   }
@@ -75,9 +75,7 @@ export function PlaceholderPillarCard({
         className="my-[7px]"
       />
       <Track fillPercent={0} fillColor={hue} heightPx={7} />
-      <SectionFooter
-        items={footerLabels.map((item): [string, string] => [item, "—"])}
-      />
+      <SectionFooter items={footer} />
     </Card>
   );
 }
