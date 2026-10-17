@@ -33,8 +33,14 @@ a stale install and would silently use the old Health Connect library), then
 - [ ] Create an account on `/signup`, then log into the phone app with it.
 - [ ] Logging in with a username that doesn't exist fails in both the app and the website instead of creating an account.
 
-### Android app download page (in progress)
-- [ ] (Details added when the feature ships.)
+### Android app download page (added 2026-10-17)
+Publish a build first, from your PC:
+`scp app-release.apk root@192.168.8.239:/root/HCGateway/releases/incoming.apk && ssh root@192.168.8.239 /root/HCGateway/scripts/publish-apk.sh /root/HCGateway/releases/incoming.apk`
+(bump `expo.version`/`versionCode` in `app/app.json` and pull it on the server first; the script reads the version from the server's checkout).
+- [ ] The login page shows the "Get the Android app" card with the right version, "updated …" time and size.
+- [ ] On your phone, DOWNLOAD APK downloads the file, and opening it starts Android's installer (allow installs from your browser if asked).
+- [ ] The installed app reports the version the card showed.
+- [ ] Signed-out, the download link still works (it needs no account).
 
 ## Confirmed
 

@@ -3,6 +3,7 @@
 import { useActionState, type ReactNode } from "react";
 import Link from "next/link";
 import { notchStyle } from "~/components/ui/notch";
+import { EmbeddedFrameNotice } from "./EmbeddedFrameNotice";
 import type { AuthFormState } from "~/server/auth/actions";
 
 type AuthAction = (
@@ -59,6 +60,8 @@ export function AuthForm({
             ? "This account also signs in the HCGateway phone app."
             : "Use your HCGateway account, the same one the phone app uses."}
         </p>
+
+        <EmbeddedFrameNotice />
 
         {notice ? (
           <p className="border-caution text-caution-text mb-4 border-l-2 pl-3 text-sm">

@@ -21,6 +21,9 @@ export function middleware(request: NextRequest) {
     if (
       publicPage ||
       pathname.startsWith("/auth/") ||
+      // The Android app download, so someone can install it before they
+      // have an account (accounts are made on /signup).
+      pathname.startsWith("/download/") ||
       pathname === "/api/health"
     ) {
       return NextResponse.next();
