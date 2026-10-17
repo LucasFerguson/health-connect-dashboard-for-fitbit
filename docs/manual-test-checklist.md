@@ -12,7 +12,6 @@ Dashboard: http://192.168.8.239:3000 (prod), http://192.168.8.239:3001 (dev).
 Built on the server and published 2026-10-17: on your phone, open
 http://192.168.8.239:3000/login and tap DOWNLOAD APK (v2.3.0, 69 MB), then
 open the file to install it over the current app (same signing key).
-- [ ] Android → Apps → HCGateway shows version 2.3.0.
 - [ ] The permission prompt includes **Heart rate variability** and **Skin temperature**; allow both.
 - [ ] Health Connect → App permissions → HCGateway shows both enabled.
 - [ ] After a sync, the in-app status list shows a count for `HeartRateVariabilityRmssd` and `SkinTemperature` (not "no access" or "failed"), and the toast says "Sync completed".
@@ -38,12 +37,13 @@ v2.3.0 is already published (built on the server). To publish a build from your 
 `scp app-release.apk root@192.168.8.239:/root/HCGateway/releases/incoming.apk && ssh root@192.168.8.239 /root/HCGateway/scripts/publish-apk.sh /root/HCGateway/releases/incoming.apk`
 (bump `expo.version`/`versionCode` in `app/app.json` and pull it on the server first; the script reads the version from the server's checkout).
 - [ ] The login page shows the "Get the Android app" card with the right version, "updated …" time and size.
-- [ ] On your phone, DOWNLOAD APK downloads the file, and opening it starts Android's installer (allow installs from your browser if asked).
 - [ ] The installed app reports the version the card showed.
 - [ ] Signed-out, the download link still works (it needs no account).
 
 ## Confirmed
 
+- [x] Downloading v2.3.0 from the login page's DOWNLOAD APK and installing it over the old app (2026-10-17)
+- [x] Syncing on v2.3.0: the app reported skin temperature data points; the server has 31 skin temperature and 1,550 HRV records (2026-10-17)
 - [x] Website login with your HCGateway account (2026-10-17)
 - [x] Staying signed in across browser restarts (2026-10-17)
 - [x] Changing your password on ACCOUNT, signing out, signing in with the new password (2026-10-17)
