@@ -3,8 +3,34 @@ import { describe, it } from "node:test";
 import type { SyncStatusQuery } from "~/types/__generated__/graphql";
 import { adaptSyncStatus } from "./syncStatusAdapter";
 
-/** Synthetic `viewer.ingestion.phoneSync` payloads, shaped like live ones. */
-type PhoneSync = SyncStatusQuery["viewer"]["ingestion"]["phoneSync"];
+/** Synthetic `viewer.ingestion` payloads, shaped like live ones. */
+type Ingestion = SyncStatusQuery["viewer"]["ingestion"];
+type PhoneSync = Ingestion["phoneSync"];
+type Job = NonNullable<Ingestion["analyticsJob"]>;
+
+function ingestion(
+  sync: Partial<PhoneSync> = {},
+  rest: Partial<Omit<Ingestion, "phoneSync">> = {},
+): Ingestion {
+  return {
+    phoneSync: phoneSync(sync),
+    analyticsJob: null,
+    current: { completedAt: "2026-01-15T11:00:00.000Z" },
+    ...rest,
+  };
+}
+
+function job(overrides: Partial<Job> = {}): Job {
+  return {
+    status: "completed",
+    reason: "sync",
+    requestedAt: "2026-01-15T12:00:00.000Z",
+    startedAt: null,
+    completedAt: null,
+    error: null,
+    ...overrides,
+  };
+}
 
 function phoneSync(overrides: Partial<PhoneSync> = {}): PhoneSync {
   return {
@@ -25,7 +51,7 @@ function phoneSync(overrides: Partial<PhoneSync> = {}): PhoneSync {
 
 void describe("adaptSyncStatus", () => {
   void it("keeps the REST route's JSON shape, with a lowercase state", () => {
-    assert.deepEqual(adaptSyncStatus(phoneSync()), {
+    assert.deepEqual(adaptSyncStatus(ingestion()), {
       observedActive: false,
       state: "idle",
       lastUploadAt: "2026-01-15T12:00:00.000Z",
@@ -37,17 +63,23 @@ void describe("adaptSyncStatus", () => {
       totalRecordsReceived: 5000,
       activityWindowSeconds: 120,
       note: "Synthetic note.",
+      analytics: {
+        state: "idle",
+        since: null,
+        lastCompletedAt: "2026-01-15T11:00:00.000Z",
+        error: null,
+      },
     });
   });
 
   void it("maps every sync state", () => {
     assert.equal(
-      adaptSyncStatus(phoneSync({ state: "RECEIVING" })).state,
+      adaptSyncStatus(ingestion({ state: "RECEIVING" })).state,
       "receiving",
     );
     assert.equal(
       adaptSyncStatus(
-        phoneSync({
+        ingestion({
           state: "NEVER_OBSERVED",
           lastUploadAt: null,
           activeUntil: null,
@@ -58,5 +90,52 @@ void describe("adaptSyncStatus", () => {
       ).state,
       "never_observed",
     );
+  });
+
+  void it("reads a running job's start as `since`", () => {
+    const status = adaptSyncStatus(
+      ingestion(
+        {},
+        {
+          analyticsJob: job({
+            status: "running",
+            startedAt: "2026-01-15T12:00:20.000Z",
+          }),
+        },
+      ),
+    );
+    assert.deepEqual(status.analytics, {
+      state: "running",
+      since: "2026-01-15T12:00:20.000Z",
+      lastCompletedAt: "2026-01-15T11:00:00.000Z",
+      error: null,
+    });
+  });
+
+  void it("reads a queued job's request time and retry error", () => {
+    const status = adaptSyncStatus(
+      ingestion(
+        {},
+        {
+          analyticsJob: job({
+            status: "queued",
+            error: { type: "TimeoutError", message: "mongo timed out" },
+          }),
+        },
+      ),
+    );
+    assert.equal(status.analytics?.state, "queued");
+    assert.equal(status.analytics?.since, "2026-01-15T12:00:00.000Z");
+    assert.equal(status.analytics?.error, "TimeoutError: mongo timed out");
+  });
+
+  void it("treats no job and no run (a new account) as idle", () => {
+    const status = adaptSyncStatus(ingestion({}, { current: null }));
+    assert.deepEqual(status.analytics, {
+      state: "idle",
+      since: null,
+      lastCompletedAt: null,
+      error: null,
+    });
   });
 });

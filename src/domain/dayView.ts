@@ -1,3 +1,4 @@
+import type { AnalyticsStatus } from "./analyticsStatus";
 import type { DateKey, ISODateTime, SleepStageKind } from "./health";
 
 /**
@@ -204,4 +205,8 @@ export interface SyncStatus {
   totalRecordsReceived: number;
   activityWindowSeconds: number;
   note: string;
+  /** The analytics recompute job, for the nav's "analyzing" indicator.
+   * Optional so the phone-sync contract (and the Docker HEALTHCHECK) is
+   * unchanged. */
+  analytics?: AnalyticsStatus;
 }

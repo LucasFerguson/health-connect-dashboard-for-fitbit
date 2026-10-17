@@ -2,10 +2,16 @@
 
 import { useEffect, useRef, useState } from "react";
 import Link, { useLinkStatus } from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { clsx } from "clsx";
 import { notchStyle } from "~/components/ui/notch";
 import { Spinner } from "~/components/ui/Spinner";
+import {
+  analyticsRunCompleted,
+  describeAnalyticsStatus,
+  syncPollInterval,
+  type AnalyticsStatusDisplay,
+} from "~/domain/analyticsStatus";
 import { PUBLIC_PAGES } from "~/domain/auth";
 import { describeSyncStatus } from "~/domain/dayViewPresentation";
 import { signOut } from "~/server/auth/actions";
@@ -42,7 +48,11 @@ export function AppNavigation() {
   const pathname = usePathname();
   const signedOutPage = PUBLIC_PAGES.includes(pathname);
   const syncStatus = useSyncStatus(!signedOutPage);
-  const sync = syncStatus ? describeSyncStatus(syncStatus, new Date()) : null;
+  const now = new Date();
+  const sync = syncStatus ? describeSyncStatus(syncStatus, now) : null;
+  const analytics = syncStatus?.analytics
+    ? describeAnalyticsStatus(syncStatus.analytics, now)
+    : null;
   const linksRef = useRef<HTMLDivElement>(null);
 
   // On a narrow screen the link row scrolls horizontally, and the active
@@ -126,6 +136,7 @@ export function AppNavigation() {
             {sync.detail ? ` · ${sync.detail}` : ""}
           </span>
         ) : null}
+        {analytics ? <AnalyticsIndicator display={analytics} /> : null}
         <Link
           href="/settings"
           aria-current={pathname === "/settings" ? "page" : undefined}
@@ -159,19 +170,69 @@ function NavLinkIndicator() {
   return <Spinner size={9} color="currentColor" />;
 }
 
-const SYNC_POLL_MS = 60_000;
+/** The analytics job next to the SYNC label. From `md` up it's a text label
+ * (with a pulsing square while running); on phones, where the nav has no
+ * room for text, only the square shows, and only while running or failed. */
+function AnalyticsIndicator({ display }: { display: AnalyticsStatusDisplay }) {
+  const dot =
+    display.animated || display.tone === "alert" ? (
+      <span
+        aria-hidden
+        className={clsx(
+          "block size-[6px] shrink-0",
+          display.tone === "alert" ? "bg-alert" : "bg-brand-400",
+          display.animated && "animate-pulse",
+        )}
+      />
+    ) : null;
+  return (
+    <span
+      role="status"
+      aria-label={display.title}
+      title={display.title}
+      className={clsx(
+        "items-center gap-1.5",
+        display.showOnPhone ? "flex" : "hidden md:flex",
+        display.tone === "active" && "text-brand-400",
+        display.tone === "alert" && "text-alert",
+        display.tone === "dim" && "text-ink-200/70",
+      )}
+    >
+      {dot}
+      <span className="hidden md:inline" aria-hidden>
+        {display.label}
+      </span>
+    </span>
+  );
+}
 
 /** Polls `/api/sync-status` client-side so the heartbeat is visible from
  * every page, not just the day view (which used to fetch it server-side,
  * scoped to that one route). Mirrors `HealthDataProvider`'s polling
  * pattern: skip a beat and keep the last good value on failure rather than
- * ever showing a stale value as fresh or throwing. */
+ * ever showing a stale value as fresh or throwing.
+ *
+ * Polls every 10s while an analytics job is queued or running, else every
+ * 60s. When a run completes while the page is open it refreshes the route
+ * once, so server-rendered analytics catch up without a manual reload. */
 function useSyncStatus(enabled: boolean): SyncStatus | null {
   const [status, setStatus] = useState<SyncStatus | null>(null);
+  const router = useRouter();
 
   useEffect(() => {
     if (!enabled) return;
     let cancelled = false;
+    let timer: number | undefined;
+    // Undefined until the first good response: that one sets the baseline.
+    let previous: SyncStatus | undefined;
+
+    const schedule = () => {
+      if (cancelled) return;
+      timer = window.setTimeout(
+        () => void refresh(),
+        syncPollInterval(previous?.analytics),
+      );
+    };
 
     const refresh = async () => {
       try {
@@ -184,24 +245,31 @@ function useSyncStatus(enabled: boolean): SyncStatus | null {
           window.location.assign("/login");
           return;
         }
-        if (!response.ok || cancelled) return;
-        const data = (await response.json()) as SyncStatus;
-        if (!cancelled) setStatus(data);
+        if (response.ok && !cancelled) {
+          const data = (await response.json()) as SyncStatus;
+          if (!cancelled) {
+            if (analyticsRunCompleted(previous?.analytics, data.analytics)) {
+              router.refresh();
+            }
+            previous = data;
+            setStatus(data);
+          }
+        }
       } catch (error) {
         console.error(
           "Unable to refresh sync status",
           error instanceof Error ? error.message : String(error),
         );
       }
+      schedule();
     };
 
     void refresh();
-    const interval = window.setInterval(() => void refresh(), SYNC_POLL_MS);
     return () => {
       cancelled = true;
-      window.clearInterval(interval);
+      window.clearTimeout(timer);
     };
-  }, [enabled]);
+  }, [enabled, router]);
 
   return status;
 }
