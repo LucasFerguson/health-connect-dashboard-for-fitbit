@@ -8,6 +8,13 @@ Dashboard: http://192.168.8.239:3000 (prod), http://192.168.8.239:3001 (dev).
 
 ## Waiting on you
 
+### Nav analysis indicator and raw records (added 2026-10-17, on dev until deployed)
+- [ ] After a phone sync, the nav shows ANALYZING · Nm (purple) while the server recomputes (about 5 minutes), then a dim ANALYZED · just now; open pages refresh with the new numbers.
+- [ ] On your phone, only a small purple pulsing square appears while analysis runs, and the nav doesn't scroll sideways.
+- [ ] `/skin-temperature` → Source records lists all your nightly records with delta, baseline (°C and °F), location and source.
+- [ ] `/hrv` → Source records groups readings by night; expanding a night shows every 5-minute reading; the 30d / 90d / All selector works.
+- [ ] Spot-check one night's HRV against the Google Health app.
+
 ### Android app v2.3.0: HRV and skin temperature (added 2026-10-17)
 Built on the server and published 2026-10-17: on your phone, open
 http://192.168.8.239:3000/login and tap DOWNLOAD APK (v2.3.0, 69 MB), then
