@@ -20,16 +20,49 @@ export const PUBLIC_PAGES = ["/login", "/signup"];
  * here instead. */
 export const SESSION_EXPIRED_PATH = "/auth/expired";
 
+/**
+ * Over HTTPS the cookie is `SameSite=None; Secure; Partitioned`, so signing
+ * in also works when the dashboard is embedded in an iframe on another site.
+ * Browsers refuse to store or send a `Lax` cookie in a cross-site frame, and
+ * only accept `None` on `Secure` cookies; `Partitioned` (CHIPS) keys the
+ * cookie to the embedding site, so it survives third-party cookie blocking.
+ *
+ * Over plain HTTP (the LAN today) none of that is allowed, so it stays
+ * `Lax` without `Secure`, and embedding works only from the same site (the
+ * same host on any port).
+ */
 export function sessionCookieOptions(secure: boolean) {
-  return {
-    httpOnly: true,
-    sameSite: "lax",
-    // Only over HTTPS: the dashboard is usually reached over plain HTTP on the
-    // LAN, where a Secure cookie would never be sent back.
-    secure,
-    path: "/",
-    maxAge: SESSION_MAX_AGE_SECONDS,
-  } as const;
+  return secure
+    ? ({
+        httpOnly: true,
+        sameSite: "none",
+        secure: true,
+        partitioned: true,
+        path: "/",
+        maxAge: SESSION_MAX_AGE_SECONDS,
+      } as const)
+    : ({
+        httpOnly: true,
+        sameSite: "lax",
+        secure: false,
+        path: "/",
+        maxAge: SESSION_MAX_AGE_SECONDS,
+      } as const);
+}
+
+/** Options that delete the cookie. A partitioned cookie is only removed by a
+ * Set-Cookie with the same attributes, so a bare delete would leave it. */
+export function clearedSessionCookieOptions(secure: boolean) {
+  return { ...sessionCookieOptions(secure), maxAge: 0 };
+}
+
+/** Whether the browser reached us over HTTPS, directly or through a proxy
+ * such as a Cloudflare tunnel that terminates TLS. */
+export function isHttpsRequest(headers: Headers, protocol?: string): boolean {
+  return (
+    protocol === "https:" ||
+    headers.get("x-forwarded-proto")?.split(",")[0]?.trim() === "https"
+  );
 }
 
 /** Only same-site paths, so `?next=` can't bounce the browser elsewhere. */

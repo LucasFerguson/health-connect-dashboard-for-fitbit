@@ -4,20 +4,35 @@
  * writing works only in the latter two.
  */
 import { cookies, headers } from "next/headers";
-import { SESSION_COOKIE, sessionCookieOptions } from "~/domain/auth";
+import {
+  SESSION_COOKIE,
+  clearedSessionCookieOptions,
+  isHttpsRequest,
+  sessionCookieOptions,
+} from "~/domain/auth";
 
 export async function getSessionToken(): Promise<string | null> {
   return (await cookies()).get(SESSION_COOKIE)?.value ?? null;
 }
 
-export async function setSessionCookie(token: string): Promise<void> {
+async function secureRequest(): Promise<boolean> {
   const requestHeaders = await headers();
-  const secure =
-    requestHeaders.get("x-forwarded-proto") === "https" ||
-    (requestHeaders.get("origin") ?? "").startsWith("https:");
+  return (
+    isHttpsRequest(requestHeaders) ||
+    (requestHeaders.get("origin") ?? "").startsWith("https:")
+  );
+}
+
+export async function setSessionCookie(token: string): Promise<void> {
+  const secure = await secureRequest();
   (await cookies()).set(SESSION_COOKIE, token, sessionCookieOptions(secure));
 }
 
 export async function clearSessionCookie(): Promise<void> {
-  (await cookies()).delete(SESSION_COOKIE);
+  const secure = await secureRequest();
+  (await cookies()).set(
+    SESSION_COOKIE,
+    "",
+    clearedSessionCookieOptions(secure),
+  );
 }

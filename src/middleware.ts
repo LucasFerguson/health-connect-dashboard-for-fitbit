@@ -2,6 +2,7 @@ import { NextResponse, type NextRequest } from "next/server";
 import {
   PUBLIC_PAGES,
   SESSION_COOKIE,
+  isHttpsRequest,
   sessionCookieOptions,
 } from "~/domain/auth";
 
@@ -48,9 +49,7 @@ export function middleware(request: NextRequest) {
   // Slide the cookie's expiry forward. GET only: sign-out is a POST server
   // action that deletes the cookie, and re-setting it here would race that.
   if (request.method === "GET" && !pathname.startsWith("/auth/")) {
-    const secure =
-      request.nextUrl.protocol === "https:" ||
-      request.headers.get("x-forwarded-proto") === "https";
+    const secure = isHttpsRequest(request.headers, request.nextUrl.protocol);
     response.cookies.set(SESSION_COOKIE, token, sessionCookieOptions(secure));
   }
   return response;
