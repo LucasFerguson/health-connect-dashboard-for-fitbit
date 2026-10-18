@@ -46,12 +46,19 @@ export function buildSleepStagesChartOption(
     grid: { left: 72, right: 24, top: combinedMode ? 52 : 24, bottom: 48 },
     xAxis: {
       type: "time",
+      // Short labels, and drop any that would collide (they piled up on
+      // phones: "08:00 PM" every hour doesn't fit 300px).
       axisLabel: {
-        formatter: (value: number) =>
-          new Date(value).toLocaleTimeString([], {
-            hour: "2-digit",
-            minute: "2-digit",
-          }),
+        hideOverlap: true,
+        formatter: (value: number) => {
+          const date = new Date(value);
+          return date.getMinutes() === 0
+            ? date.toLocaleTimeString([], { hour: "numeric" })
+            : date.toLocaleTimeString([], {
+                hour: "numeric",
+                minute: "2-digit",
+              });
+        },
       },
     },
     yAxis: {
