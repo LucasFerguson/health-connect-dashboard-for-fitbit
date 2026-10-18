@@ -4,6 +4,7 @@
  * request that an admin has to approve before the account exists.
  */
 import { z } from "zod";
+import type { ApiKeySummary } from "~/domain/apiKeys";
 import { env } from "~/env";
 
 export type AuthResult =
@@ -173,4 +174,96 @@ export async function backendChangePassword(
       ? body.data.error
       : `HCGateway answered ${response.status}.`,
   };
+}
+
+const apiKeySummary = z.object({
+  id: z.string(),
+  name: z.string(),
+  prefix: z.string(),
+  createdAt: z.string(),
+  lastUsedAt: z.string().nullable(),
+});
+
+/** A signed-in request to HCGateway's API-key routes, or null if it
+ * couldn't be made. */
+async function keysRequest(
+  token: string,
+  path: string,
+  init: { method?: string; body?: unknown } = {},
+): Promise<Response | null> {
+  if (!env.API_URL) return null;
+  try {
+    return await fetch(`${env.API_URL}/api/v2/api-keys${path}`, {
+      method: init.method ?? "GET",
+      headers: {
+        Authorization: `Bearer ${token}`,
+        ...(init.body === undefined
+          ? {}
+          : { "Content-Type": "application/json" }),
+      },
+      body: init.body === undefined ? undefined : JSON.stringify(init.body),
+      cache: "no-store",
+      signal: AbortSignal.timeout(10_000),
+    });
+  } catch {
+    return null;
+  }
+}
+
+/** The account's read-only API keys, or null if HCGateway can't say. */
+export async function backendListApiKeys(
+  token: string,
+): Promise<ApiKeySummary[] | null> {
+  const response = await keysRequest(token, "");
+  if (!response?.ok) return null;
+  const parsed = z
+    .object({ keys: z.array(apiKeySummary) })
+    .safeParse(await response.json().catch(() => null));
+  return parsed.success ? parsed.data.keys : null;
+}
+
+export async function backendCreateApiKey(
+  token: string,
+  name: string,
+): Promise<
+  | { ok: true; key: string; summary: ApiKeySummary }
+  | { ok: false; error: string }
+> {
+  const response = await keysRequest(token, "", {
+    method: "POST",
+    body: { name },
+  });
+  if (!response) {
+    return {
+      ok: false,
+      error: "Couldn't reach HCGateway. Is the backend running?",
+    };
+  }
+  const body: unknown = await response.json().catch(() => null);
+  if (response.status === 201) {
+    const parsed = apiKeySummary.extend({ key: z.string() }).safeParse(body);
+    if (parsed.success) {
+      const { key, ...summary } = parsed.data;
+      return { ok: true, key, summary };
+    }
+  }
+  const backendError = errorBody.safeParse(body);
+  return {
+    ok: false,
+    error: backendError.success
+      ? backendError.data.error
+      : `HCGateway answered ${response.status}.`,
+  };
+}
+
+/** Revokes one of the account's keys. False if it wasn't theirs or the
+ * backend couldn't be reached. */
+export async function backendRevokeApiKey(
+  token: string,
+  id: string,
+): Promise<boolean> {
+  const response = await keysRequest(token, `/${encodeURIComponent(id)}`, {
+    method: "DELETE",
+  });
+  return response?.ok ?? false;
 }

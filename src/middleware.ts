@@ -1,4 +1,5 @@
 import { NextResponse, type NextRequest } from "next/server";
+import { apiKeyFromAuthorization } from "~/domain/apiKeys";
 import {
   PUBLIC_PAGES,
   SESSION_COOKIE,
@@ -24,7 +25,11 @@ export function middleware(request: NextRequest) {
       // The Android app download, so someone can install it before they
       // have an account (accounts are requested on /signup).
       pathname.startsWith("/download/") ||
-      pathname === "/api/health"
+      pathname === "/api/health" ||
+      // A script reading with a read-only API key instead of a cookie. The
+      // proxy forwards the key, and HCGateway decides whether it's valid.
+      (pathname === "/api/graphql" &&
+        apiKeyFromAuthorization(request.headers.get("authorization")) !== null)
     ) {
       return NextResponse.next();
     }

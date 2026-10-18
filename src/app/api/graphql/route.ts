@@ -20,11 +20,19 @@
  * Note this grants the browser the same read scope as the server pages already
  * render — HCGateway derives the user from the session token, so the proxy
  * can't be pointed at another user's data.
+ *
+ * Scripts can call it too, with a read-only API key (`Authorization: Bearer
+ * hcg_...`, made in Settings) in place of the cookie. Only an exactly
+ * well-formed key is forwarded, each visitor gets `apiKeyLimiter`'s budget,
+ * and the key reaches only the GraphQL API, which has no mutations.
  */
 import { NextResponse } from "next/server";
 import { z } from "zod";
+import { apiKeyFromAuthorization } from "~/domain/apiKeys";
+import { clientAddress } from "~/domain/rateLimit";
 import { env } from "~/env";
 import { getSessionToken } from "~/server/auth/session";
+import { apiKeyLimiter } from "~/server/auth/throttle";
 import {
   graphqlEndpoint,
   isGraphQLConfigured,
@@ -73,7 +81,26 @@ export async function POST(request: Request) {
     );
   }
 
-  const token = await getSessionToken();
+  // An explicit key wins over a cookie the same client might also carry.
+  const apiKey = apiKeyFromAuthorization(request.headers.get("authorization"));
+  if (apiKey) {
+    const client = clientAddress(request.headers);
+    if (apiKeyLimiter.isLimited(client)) {
+      return NextResponse.json(
+        {
+          errors: [
+            {
+              message: "Too many requests. Wait a minute and try again.",
+              extensions: { code: "RATE_LIMITED" },
+            },
+          ],
+        },
+        { status: 429, headers: { "Retry-After": "60" } },
+      );
+    }
+    apiKeyLimiter.record(client);
+  }
+  const token = apiKey ?? (await getSessionToken());
   if (!token) return unauthenticated();
 
   try {
@@ -96,9 +123,15 @@ export async function POST(request: Request) {
 
     // HCGateway no longer knows this session. `ApolloWrapper` sends the
     // browser to sign in again on this 401.
-    if (upstream.status === 401) return unauthenticated();
+    if (upstream.status === 401) {
+      return apiKey ? invalidApiKey() : unauthenticated();
+    }
 
-    if (!upstream.ok) {
+    // A 400 is GraphQL saying what's wrong with the query itself: a typo'd
+    // field, a syntax error, a read-only refusal. It describes what the
+    // caller sent, never the token, so it goes through for them to fix.
+    // Anything else stays behind the fixed message.
+    if (!upstream.ok && upstream.status !== 400) {
       console.error(`GraphQL proxy: upstream returned ${upstream.status}`);
       return NextResponse.json(
         { errors: [{ message: "The GraphQL API could not be reached" }] },
@@ -146,6 +179,22 @@ function unauthenticated() {
     {
       errors: [
         { message: "Not signed in", extensions: { code: "UNAUTHENTICATED" } },
+      ],
+    },
+    { status: 401 },
+  );
+}
+
+/** A key that's malformed upstream, revoked, or never existed. Scripts get
+ * this instead of the browser's sign-in signal. */
+function invalidApiKey() {
+  return NextResponse.json(
+    {
+      errors: [
+        {
+          message: "Invalid or revoked API key",
+          extensions: { code: "UNAUTHENTICATED" },
+        },
       ],
     },
     { status: 401 },

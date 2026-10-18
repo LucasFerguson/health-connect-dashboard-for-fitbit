@@ -93,6 +93,19 @@ Home time zone, sleep target, birth date, and heart-rate-zone thresholds are
 not set in this repo. They are part of HCGateway's analytics config
 (`PUT /api/v2/analytics/config` on the REST API) and apply to every page.
 
+## Accounts and API keys
+
+Accounts are requested on `/signup` and approved by hand on the HCGateway
+host (`docker exec hcgateway_api python manage_accounts.py list|approve|reject`).
+
+Settings has **API keys**: read-only keys for pulling your own data into
+scripts. A key goes to `/api/graphql` as `Authorization: Bearer hcg_...`
+instead of the session cookie; the proxy forwards only a well-formed key,
+allows 120 requests a minute per visitor, and passes GraphQL's own 400
+errors through so query mistakes are readable. Keys work only against the
+GraphQL API, which refuses anything but queries, so they can't change data,
+sign in or make more keys. Settings shows a ready-to-run `curl` example.
+
 ## GraphQL types (codegen)
 
 Queries are written inline with the generated `graphql()` function and typed by

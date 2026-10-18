@@ -1,5 +1,6 @@
 "use server";
 
+import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import {
   PASSWORD_MAX,
@@ -10,8 +11,10 @@ import {
 } from "~/domain/auth";
 import {
   backendChangePassword,
+  backendCreateApiKey,
   backendLogin,
   backendRevoke,
+  backendRevokeApiKey,
   backendSignup,
 } from "./hcgateway";
 import {
@@ -125,4 +128,39 @@ export async function changePassword(
   return result.ok
     ? { error: null, changed: true }
     : { error: result.error, changed: false };
+}
+
+export interface ApiKeyFormState {
+  error: string | null;
+  /** The key just made: shown once, then gone. */
+  created: { name: string; key: string } | null;
+}
+
+export async function createApiKey(
+  _previous: ApiKeyFormState,
+  formData: FormData,
+): Promise<ApiKeyFormState> {
+  const token = await getSessionToken();
+  if (!token) redirect("/login");
+  const name = field(formData, "name").trim();
+  if (!name) {
+    return {
+      error: 'Give the key a name, like "laptop export".',
+      created: null,
+    };
+  }
+  const result = await backendCreateApiKey(token, name);
+  if (!result.ok) return { error: result.error, created: null };
+  revalidatePath("/settings");
+  return {
+    error: null,
+    created: { name: result.summary.name, key: result.key },
+  };
+}
+
+export async function revokeApiKey(formData: FormData): Promise<void> {
+  const token = await getSessionToken();
+  if (!token) redirect("/login");
+  await backendRevokeApiKey(token, field(formData, "id"));
+  revalidatePath("/settings");
 }
