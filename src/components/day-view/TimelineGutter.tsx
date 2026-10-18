@@ -34,8 +34,8 @@ export function TimelineGutter() {
           />
         </div>
       ))}
-      <div className="mt-1 flex h-[22px] items-center justify-end text-[7.5px] tracking-[.08em] max-sm:text-[11px]">
-        MOVE
+      <div className="mt-1 flex h-[44px] items-center justify-end text-[7.5px] tracking-[.08em] max-sm:text-[11px]">
+        STEPS
       </div>
       <div className="mt-2 flex h-[46px] items-center justify-end text-[7.5px] tracking-[.08em] max-sm:text-[11px]">
         PLAN

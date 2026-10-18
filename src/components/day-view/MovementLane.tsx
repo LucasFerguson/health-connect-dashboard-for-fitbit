@@ -13,7 +13,7 @@ const MINUTES_PER_DAY = 24 * 60;
 const MIN_BAR_MINUTES = 0.75;
 
 /**
- * Movement lane (22px). With `source` (the day's raw step records from one
+ * Movement lane (44px). With `source` (the day's raw step records from one
  * app, see `~/domain/stepDetail`) every record is drawn at its own start and
  * end, as fine or coarse as the app wrote it; height is the record's steps
  * per minute against the day's fastest record, so a bar's area is its step
@@ -39,7 +39,7 @@ function StepRecordsLane({ source }: { source: StepSource }) {
   const peakRecord = source.records[peakIndex];
 
   return (
-    <div className="border-ink-500 bg-ink-850 relative mt-1 h-[22px] shrink-0 border-l">
+    <div className="border-ink-500 bg-ink-850 relative mt-1 h-[44px] shrink-0 border-l">
       <svg
         className="absolute inset-0 h-full w-full"
         viewBox={`0 0 ${MINUTES_PER_DAY} 100`}
@@ -106,7 +106,7 @@ function HourlyStepsLane({
   );
 
   return (
-    <div className="border-ink-500 bg-ink-850 relative mt-1 flex h-[22px] shrink-0 items-end gap-0.5 border-l">
+    <div className="border-ink-500 bg-ink-850 relative mt-1 flex h-[44px] shrink-0 items-end gap-0.5 border-l">
       {buckets.map((bucket, index) => {
         if (!bucket || bucket.status !== "available") {
           return <div key={index} className="bg-ink-500 h-px flex-1" />;
