@@ -43,7 +43,9 @@ export function DataSourcesPage({ status }: { status: DataSourceStatus }) {
           <h1 className="font-display text-ink-0 text-2xl tracking-[.12em]">
             DATA SOURCES
           </h1>
-          <Label>LIVE INVENTORY · {status.timeZone.toUpperCase()}</Label>
+          <Label className="max-sm:text-[11px]">
+            LIVE INVENTORY · {status.timeZone.toUpperCase()}
+          </Label>
         </div>
         <p className="text-ink-100 max-w-3xl text-sm leading-6">
           Devices write to Android Health Connect. The HCGateway phone app reads
@@ -112,15 +114,32 @@ export function DataSourcesPage({ status }: { status: DataSourceStatus }) {
       {CATEGORY_ORDER.map((category) => {
         const rows = status.rows.filter((row) => row.category === category);
         return (
-          <Card key={category} className="flex flex-col gap-1">
-            <h2 className="font-display text-ink-0 mb-1 text-lg tracking-[.1em]">
-              {category.toUpperCase()}
-            </h2>
-            <ul className="divide-ink-600 divide-y">
-              {rows.map((row) => (
-                <RecordRowItem key={row.type} row={row} day={day} />
-              ))}
-            </ul>
+          <Card key={category} padding="p-0">
+            {/* A disclosure on phones, where the six categories' rows run
+                to several thousand pixels; from `sm` up the rows are always
+                shown (`::details-content` forced visible) and the summary
+                is just the heading. */}
+            <details className="group sm:[&::details-content]:[content-visibility:visible]">
+              <summary className="flex min-h-11 cursor-pointer list-none flex-wrap items-center gap-x-3 gap-y-1 px-[17px] py-3 sm:cursor-default sm:pb-1 [&::-webkit-details-marker]:hidden">
+                <span
+                  aria-hidden
+                  className="text-ink-200 font-mono text-sm transition-transform duration-[120ms] group-open:rotate-90 sm:hidden"
+                >
+                  ›
+                </span>
+                <h2 className="font-display text-ink-0 text-lg tracking-[.1em]">
+                  {category.toUpperCase()}
+                </h2>
+                <span className="text-ink-200 font-mono text-[11px] tracking-[.04em]">
+                  {categorySummary(rows)}
+                </span>
+              </summary>
+              <ul className="divide-ink-600 divide-y px-[17px] pb-[13px]">
+                {rows.map((row) => (
+                  <RecordRowItem key={row.type} row={row} day={day} />
+                ))}
+              </ul>
+            </details>
           </Card>
         );
       })}
@@ -160,7 +179,7 @@ function RecordRowItem({
     <li className="grid gap-x-4 gap-y-1.5 py-3 sm:grid-cols-[minmax(0,14rem)_minmax(0,1fr)]">
       <div className="min-w-0">
         <p className="text-ink-0 text-sm">{row.label}</p>
-        <p className="text-ink-200 font-mono text-[10px]">
+        <p className="text-ink-200 font-mono text-[10px] break-all max-sm:text-[11px]">
           {row.type}
           {row.collected ? ` → ${collectionFor(row.type)}` : ""}
         </p>
@@ -210,6 +229,21 @@ function RecordRowItem({
   );
 }
 
+/** "8 types · 5 receiving · 1 stalled" — the counts behind a category's
+ * rows, so a collapsed category still says what is in it. */
+function categorySummary(rows: RecordRow[]): string {
+  const counts = new Map<RecordStatus, number>();
+  for (const row of rows) {
+    counts.set(row.status, (counts.get(row.status) ?? 0) + 1);
+  }
+  const parts = [`${rows.length} type${rows.length === 1 ? "" : "s"}`];
+  for (const status of Object.keys(STATUS) as RecordStatus[]) {
+    const count = counts.get(status);
+    if (count) parts.push(`${count} ${STATUS[status].label.toLowerCase()}`);
+  }
+  return parts.join(" · ");
+}
+
 function StatusChip({
   className,
   children,
@@ -220,7 +254,7 @@ function StatusChip({
   return (
     <span
       className={clsx(
-        "border px-1.5 py-px font-mono text-[9.5px] tracking-[.08em]",
+        "border px-1.5 py-px font-mono text-[9.5px] tracking-[.08em] max-sm:text-[11px]",
         className,
       )}
     >
@@ -233,7 +267,7 @@ function Stat({ label, value }: { label: string; value: string }) {
   return (
     <div className="bg-ink-850 border-ink-600 border px-3 py-2">
       <dt>
-        <Label>{label}</Label>
+        <Label className="max-sm:text-[11px]">{label}</Label>
       </dt>
       <dd className="text-ink-0 mt-1 font-mono text-sm">{value}</dd>
     </div>
