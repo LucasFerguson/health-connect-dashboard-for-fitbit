@@ -51,11 +51,11 @@ export function DayView({ data }: { data: DayViewData }) {
       : null;
 
   return (
-    <div className="bg-ink-900 text-ink-0 flex h-screen min-h-[720px] flex-col overflow-hidden">
+    <div className="bg-ink-900 text-ink-0 flex flex-col md:h-screen md:min-h-[720px] md:overflow-hidden">
       <AutoRefresh active={isToday} />
       <ContextBar selectedDate={date} dayState={dayState} />
       <DayStrip cells={stripCells} />
-      <div className="flex min-h-0 flex-1 flex-col gap-3 overflow-y-auto p-4 pt-3.5 md:overflow-y-hidden">
+      <div className="flex flex-col gap-3 p-4 pt-3.5 md:min-h-0 md:flex-1 md:overflow-y-hidden">
         <PillarRow day={day} timeZone={timeZone} />
         <DayViewTimeline
           day={day}

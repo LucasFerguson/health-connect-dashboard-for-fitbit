@@ -103,7 +103,7 @@ export function HeartRateLane({
               style={{ top: `${rhrPercent}%` }}
             />
             <span
-              className="text-brand-400 absolute right-1 -translate-y-full font-mono text-[8px] tracking-[.06em]"
+              className="text-brand-400 absolute right-1 -translate-y-full font-mono text-[8px] tracking-[.06em] max-sm:text-[11px]"
               style={{ top: `${rhrPercent}%` }}
             >
               RHR {Math.round(restingHeartRateBpm ?? 0)}
@@ -111,7 +111,7 @@ export function HeartRateLane({
           </>
         ) : null}
         {!hasAnyCandles ? (
-          <div className="text-ink-200 absolute inset-0 flex items-center justify-center px-4 text-center font-mono text-[9px] tracking-[.04em]">
+          <div className="text-ink-200 absolute inset-0 flex items-center justify-center px-4 text-center font-mono text-[9px] tracking-[.04em] max-sm:text-[11px]">
             {heartRate.note ?? "No hourly heart-rate data for this day."}
           </div>
         ) : (

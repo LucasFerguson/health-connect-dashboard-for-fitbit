@@ -3,6 +3,11 @@ import { SectionFooter } from "~/components/ui/SectionFooter";
 import { SectionHeader } from "~/components/ui/SectionHeader";
 import { SegmentedBar } from "~/components/ui/SegmentedBar";
 import { StatValue } from "~/components/ui/StatValue";
+import {
+  PILLAR_FOOTER_CLASS,
+  PILLAR_HEADER_CLASS,
+  PILLAR_STAT_CLASS,
+} from "./phoneText";
 import { formatClock } from "~/domain/dayViewTime";
 import {
   absenceReason,
@@ -43,14 +48,16 @@ export function SleepPillarCard({
           titleColor="var(--color-sleep)"
           right="NO DATA"
           size="md"
+          className={PILLAR_HEADER_CLASS}
         />
         <StatValue
           value="—"
           context={absenceReason(sleepDuration.status, sleepDuration.note)}
-          className="my-[7px]"
+          className={PILLAR_STAT_CLASS}
         />
         <SegmentedBar segments={[{ flex: 1, color: "var(--color-ink-500)" }]} />
         <SectionFooter
+          className={PILLAR_FOOTER_CLASS}
           items={[
             ["DEEP", "—"],
             ["REM", "—"],
@@ -84,13 +91,14 @@ export function SleepPillarCard({
         titleColor="var(--color-sleep)"
         right="RECORDED"
         size="md"
+        className={PILLAR_HEADER_CLASS}
       />
       <StatValue
         value={formatHm(sleepDuration.value)}
         delta={sleepNeedDisplay}
         deltaTone={sleepNeedDisplay ? "neutral" : undefined}
         context={window}
-        className="my-[7px]"
+        className={PILLAR_STAT_CLASS}
       />
       <SegmentedBar
         segments={[
@@ -107,6 +115,7 @@ export function SleepPillarCard({
         ]}
       />
       <SectionFooter
+        className={PILLAR_FOOTER_CLASS}
         items={[
           ["DEEP", formatHm(deepMinutes)],
           ["REM", formatHm(remMinutes)],

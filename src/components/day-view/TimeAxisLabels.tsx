@@ -6,7 +6,7 @@ import { X_AXIS_LABEL_SLOTS } from "./timelineConstants";
  * anchored to the right edge of the final cell. */
 export function TimeAxisLabels({ dayStartHour }: { dayStartHour: number }) {
   return (
-    <div className="text-ink-200 flex h-[14px] shrink-0 font-mono text-[8px] leading-[14px] whitespace-nowrap">
+    <div className="text-ink-200 flex h-[14px] shrink-0 font-mono text-[8px] leading-[14px] whitespace-nowrap max-sm:text-[11px]">
       {X_AXIS_LABEL_SLOTS.map((slot, index) => (
         <div key={slot} className="relative flex-1">
           {slotHourLabel(slot, dayStartHour)}

@@ -7,6 +7,7 @@ import {
   isDisplayableStatus,
 } from "~/domain/dayViewPresentation";
 import type { HealthDay } from "~/domain/dayView";
+import { PANEL_FOOTER_CLASS, PANEL_HEADER_CLASS } from "./phoneText";
 
 const ZONE_COLORS = [
   "var(--color-sleep)",
@@ -49,11 +50,16 @@ function TimeInZonePanel({ day }: { day: HealthDay }) {
   if (!thresholds) {
     return (
       <Card className="flex flex-col">
-        <SectionHeader title="TIME IN ZONE" right="SO FAR TODAY" />
+        <SectionHeader
+          title="TIME IN ZONE"
+          right="SO FAR TODAY"
+          className={PANEL_HEADER_CLASS}
+        />
         <EmptyState
+          className="max-sm:py-3 max-sm:text-[11px]"
           message={absenceReason(heartRateZones.status, heartRateZones.note)}
         />
-        <SectionFooter bordered>
+        <SectionFooter bordered className={PANEL_FOOTER_CLASS}>
           {heartRateZones.calibrated
             ? `ZONE 3+ TODAY: ${zone3PlusDisplay}`
             : "NO ZONE THRESHOLDS CONFIGURED"}
@@ -71,24 +77,30 @@ function TimeInZonePanel({ day }: { day: HealthDay }) {
 
   return (
     <Card className="flex flex-col">
-      <SectionHeader title="TIME IN ZONE" right="SO FAR TODAY" />
+      <SectionHeader
+        title="TIME IN ZONE"
+        right="SO FAR TODAY"
+        className={PANEL_HEADER_CLASS}
+      />
       <div className="flex flex-1 flex-col justify-center gap-[5px]">
         {zoneRows.map((zone) => (
           <div key={zone.label} className="flex items-center gap-2.5">
             <span
-              className="w-11 font-mono text-[8.5px]"
+              className="w-11 font-mono text-[8.5px] max-sm:w-16 max-sm:text-[11px]"
               style={{ color: zone.color }}
             >
               {zone.label}
             </span>
             <div className="bg-ink-850 h-2.5 flex-1" />
-            <span className="text-ink-200 w-[34px] text-right font-mono text-[9.5px] font-medium">
+            <span className="text-ink-200 w-[34px] text-right font-mono text-[9.5px] font-medium max-sm:text-[11px]">
               —
             </span>
           </div>
         ))}
       </div>
-      <SectionFooter bordered>ZONE 3+ TODAY: {zone3PlusDisplay}</SectionFooter>
+      <SectionFooter bordered className={PANEL_FOOTER_CLASS}>
+        ZONE 3+ TODAY: {zone3PlusDisplay}
+      </SectionFooter>
     </Card>
   );
 }
@@ -104,14 +116,16 @@ function RestOfDayPanel({ day }: { day: HealthDay }) {
         title="REST OF DAY"
         right="PLANNED"
         rightColor="var(--color-brand-500)"
+        className={PANEL_HEADER_CLASS}
       />
       <EmptyState
+        className="max-sm:py-3 max-sm:text-[11px]"
         message={absenceReason(
           day.timeline.schedule.status,
           day.timeline.schedule.note,
         )}
       />
-      <SectionFooter bordered>
+      <SectionFooter bordered className={PANEL_FOOTER_CLASS}>
         DRAG A BLOCK ON THE TIMELINE TO RESCHEDULE
       </SectionFooter>
     </Card>
@@ -128,7 +142,7 @@ function SignalsPanel({ day }: { day: HealthDay }) {
   return (
     <Card className="flex flex-col gap-2">
       <span className="font-display text-[15px] tracking-[.12em]">SIGNALS</span>
-      <div className="text-ink-200 font-prose flex flex-1 items-center text-[10px]">
+      <div className="text-ink-200 font-prose flex flex-1 items-center text-[10px] max-sm:text-[13px]">
         {firstNote?.note ?? "No signals yet — insight generation isn't built."}
       </div>
     </Card>

@@ -3,6 +3,11 @@ import { SectionFooter } from "~/components/ui/SectionFooter";
 import { SectionHeader } from "~/components/ui/SectionHeader";
 import { Track } from "~/components/ui/Track";
 import { StatValue } from "~/components/ui/StatValue";
+import {
+  PILLAR_FOOTER_CLASS,
+  PILLAR_HEADER_CLASS,
+  PILLAR_STAT_CLASS,
+} from "./phoneText";
 import { absenceReason } from "~/domain/dayViewPresentation";
 import type { MetricStatus } from "~/domain/dayView";
 
@@ -49,14 +54,15 @@ export function PlaceholderPillarCard({
           titleColor={hue}
           right={qualifier ?? "ESTIMATE"}
           size="md"
+          className={PILLAR_HEADER_CLASS}
         />
-        <StatValue value={value.toFixed(1)} className="my-[7px]" />
+        <StatValue value={value.toFixed(1)} className={PILLAR_STAT_CLASS} />
         <Track
           fillPercent={Math.min(100, (value / 21) * 100)}
           fillColor={hue}
           heightPx={7}
         />
-        <SectionFooter items={footer} />
+        <SectionFooter className={PILLAR_FOOTER_CLASS} items={footer} />
       </Card>
     );
   }
@@ -68,14 +74,15 @@ export function PlaceholderPillarCard({
         titleColor={hue}
         right="NOT AVAILABLE"
         size="md"
+        className={PILLAR_HEADER_CLASS}
       />
       <StatValue
         value="—"
         context={absenceReason(status, note)}
-        className="my-[7px]"
+        className={PILLAR_STAT_CLASS}
       />
       <Track fillPercent={0} fillColor={hue} heightPx={7} />
-      <SectionFooter items={footer} />
+      <SectionFooter className={PILLAR_FOOTER_CLASS} items={footer} />
     </Card>
   );
 }

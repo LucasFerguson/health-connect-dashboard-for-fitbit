@@ -48,15 +48,15 @@ export function DayViewTimeline({
       padding="px-5 pt-3.5 pb-3"
       className="flex min-h-[500px] flex-1 flex-col md:min-h-0"
     >
-      <div className="mb-[11px] flex items-baseline gap-3.5">
+      <div className="mb-[11px] flex flex-wrap items-baseline gap-x-3.5 gap-y-1">
         <span className="font-display text-[17px] tracking-[.12em]">
           24-HOUR TIMELINE
         </span>
-        <span className="text-ink-200 hidden font-mono text-[9px] tracking-[.08em] sm:inline">
+        <span className="text-ink-200 font-mono text-[11px] tracking-[.08em] sm:text-[9px]">
           {slotHourLabel(0, dayStartHour)} → {slotHourLabel(24, dayStartHour)} ·
           HR CANDLES · SLEEP STAGES · MOVEMENT · PLAN
         </span>
-        <div className="text-ink-200 ml-auto hidden items-center gap-2 font-mono text-[8.5px] sm:flex">
+        <div className="text-ink-200 flex items-center gap-2 font-mono text-[11px] sm:ml-auto sm:text-[8.5px]">
           <span>40</span>
           <div className="flex h-[7px] w-[120px]">
             {HR_RAMP.map((color) => (

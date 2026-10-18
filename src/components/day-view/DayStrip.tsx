@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useEffect, useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { clsx } from "clsx";
 import { Spinner } from "~/components/ui/Spinner";
@@ -30,6 +30,25 @@ export function DayStrip({ cells }: { cells: DayStripCellData[] }) {
   const [isPending, startTransition] = useTransition();
   const [pendingDate, setPendingDate] = useState<string | null>(null);
 
+  const scrollerRef = useRef<HTMLDivElement>(null);
+  const selectedDate = cells.find((cell) => cell.isSelected)?.date ?? null;
+
+  // On a phone the 15 cells don't fit, so the strip scrolls sideways;
+  // bring the selected day (today, on /day) into the middle of the visible
+  // part. The scroller is `relative`, so `offsetLeft` is measured from its
+  // own edge. Sets `scrollLeft` directly rather than `scrollIntoView`, which
+  // would also scroll the page vertically.
+  useEffect(() => {
+    const scroller = scrollerRef.current;
+    if (!scroller || scroller.scrollWidth <= scroller.clientWidth) return;
+    const selected = scroller.querySelector<HTMLElement>(
+      '[aria-current="date"]',
+    );
+    if (!selected) return;
+    scroller.scrollLeft =
+      selected.offsetLeft - (scroller.clientWidth - selected.offsetWidth) / 2;
+  }, [selectedDate]);
+
   const goTo = (date: string) => {
     setPendingDate(date);
     startTransition(() => {
@@ -38,16 +57,19 @@ export function DayStrip({ cells }: { cells: DayStripCellData[] }) {
   };
 
   return (
-    <div className="border-ink-600 bg-ink-950 flex h-[54px] shrink-0 items-stretch gap-0 border-b px-4">
+    <div className="border-ink-600 bg-ink-950 flex h-[54px] shrink-0 items-stretch gap-0 border-b px-4 max-sm:h-[60px]">
       <div className="border-ink-600 mr-[10px] flex shrink-0 flex-col justify-center gap-0.5 border-r pr-3">
-        <span className="text-ink-200 font-mono text-[8px] tracking-[.12em]">
+        <span className="text-ink-200 font-mono text-[8px] tracking-[.12em] max-sm:text-[11px]">
           RECORDED
         </span>
-        <span className="text-brand-500 font-mono text-[8px] tracking-[.12em]">
+        <span className="text-brand-500 font-mono text-[8px] tracking-[.12em] max-sm:text-[11px]">
           PLANNED
         </span>
       </div>
-      <div className="flex min-w-0 flex-1 gap-[3px] overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+      <div
+        ref={scrollerRef}
+        className="relative flex min-w-0 flex-1 gap-[3px] overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+      >
         {cells.map((cell) => {
           const isCellPending = isPending && pendingDate === cell.date;
           return (
@@ -55,9 +77,10 @@ export function DayStrip({ cells }: { cells: DayStripCellData[] }) {
               key={cell.date}
               type="button"
               onClick={() => goTo(cell.date)}
+              aria-current={cell.isSelected ? "date" : undefined}
               disabled={isPending}
               className={clsx(
-                "bg-ink-900 flex min-w-[64px] flex-col justify-center gap-1 px-1.5 text-left transition-colors duration-[120ms] ease-out disabled:pointer-events-none",
+                "bg-ink-900 flex min-w-[64px] flex-col justify-center gap-1 px-1.5 text-left transition-colors duration-[120ms] ease-out disabled:pointer-events-none max-sm:min-w-[80px]",
                 isPending && !isCellPending && "opacity-50",
                 cell.isSelected
                   ? "border-brand-400 bg-ink-800 flex-[1.35] border px-2"
@@ -68,7 +91,7 @@ export function DayStrip({ cells }: { cells: DayStripCellData[] }) {
             >
               <div
                 className={clsx(
-                  "flex justify-between font-mono text-[8.5px]",
+                  "flex justify-between gap-1 font-mono text-[8.5px] max-sm:text-[11px]",
                   cell.isSelected ? "text-ink-0 font-medium" : "text-ink-200",
                 )}
               >

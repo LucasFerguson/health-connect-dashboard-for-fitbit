@@ -151,7 +151,7 @@ export function HoverCrosshair({
             ref={cardRef}
             role="status"
             aria-live="polite"
-            className="bg-ink-500 border-ink-400 pointer-events-none absolute top-[38px] border px-2 py-[5px] font-mono text-[8.5px] leading-[1.6] tracking-[.04em] whitespace-nowrap shadow-[0_4px_14px_rgba(0,0,0,.45)]"
+            className="bg-ink-500 border-ink-400 pointer-events-none absolute top-[38px] border px-2 py-[5px] font-mono text-[8.5px] leading-[1.6] tracking-[.04em] whitespace-nowrap shadow-[0_4px_14px_rgba(0,0,0,.45)] max-sm:text-[11px]"
             style={{
               left: `${hover.percent}%`,
               transform: `translateX(${readout.offsetPx}px)`,
@@ -225,7 +225,7 @@ function ReadoutBody({
         {workout ? <Row label="WORKOUT">{workout}</Row> : null}
       </dl>
       {hourlyHour !== null ? (
-        <div className="text-ink-200 text-[7.5px]">
+        <div className="text-ink-200 text-[7.5px] max-sm:text-[10px]">
           HR/STEPS FOR {formatHourLabel(hourlyHour)}–
           {formatHourLabel((hourlyHour + 1) % 24)}
         </div>

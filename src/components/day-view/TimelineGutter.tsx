@@ -13,7 +13,7 @@ const HR_AXIS_LABELS = ["180", "145", "110", "75", "40"];
  * carries a small swatch in the stage's bar color, doubling as the legend. */
 export function TimelineGutter() {
   return (
-    <div className="text-ink-200 flex w-[36px] shrink-0 flex-col text-right font-mono text-[8.5px]">
+    <div className="text-ink-200 flex w-[36px] shrink-0 flex-col text-right font-mono text-[8.5px] max-sm:w-[44px] max-sm:text-[11px]">
       <div className="flex flex-1 flex-col justify-between py-px">
         {HR_AXIS_LABELS.map((label) => (
           <span key={label}>{label}</span>
@@ -23,7 +23,7 @@ export function TimelineGutter() {
       {SLEEP_STAGE_ROWS.map((kind) => (
         <div
           key={kind}
-          className="text-ink-100 flex items-center justify-end gap-[3px] text-[7.5px] tracking-[.06em]"
+          className="text-ink-100 flex items-center justify-end gap-[3px] text-[7.5px] tracking-[.06em] max-sm:text-[10px] max-sm:tracking-normal"
           style={{ height: SLEEP_STAGE_ROW_HEIGHT_PX }}
         >
           {SLEEP_STAGE_STYLE[kind].label}
@@ -34,10 +34,10 @@ export function TimelineGutter() {
           />
         </div>
       ))}
-      <div className="mt-1 flex h-[22px] items-center justify-end text-[7.5px] tracking-[.08em]">
+      <div className="mt-1 flex h-[22px] items-center justify-end text-[7.5px] tracking-[.08em] max-sm:text-[11px]">
         MOVE
       </div>
-      <div className="mt-2 flex h-[46px] items-center justify-end text-[7.5px] tracking-[.08em]">
+      <div className="mt-2 flex h-[46px] items-center justify-end text-[7.5px] tracking-[.08em] max-sm:text-[11px]">
         PLAN
       </div>
     </div>

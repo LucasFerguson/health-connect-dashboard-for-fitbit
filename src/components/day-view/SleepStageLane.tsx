@@ -131,7 +131,7 @@ export function SleepStageLane({
         />
       ))}
       {positioned.length === 0 ? (
-        <div className="text-ink-200 absolute inset-0 flex items-center justify-center font-mono text-[9px] tracking-[.04em]">
+        <div className="text-ink-200 absolute inset-0 flex items-center justify-center font-mono text-[9px] tracking-[.04em] max-sm:text-[11px]">
           No sleep recorded for this day
         </div>
       ) : null}

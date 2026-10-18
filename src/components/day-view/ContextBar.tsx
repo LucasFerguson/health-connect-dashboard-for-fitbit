@@ -31,6 +31,10 @@ const MONTHS = [
   "DEC",
 ];
 
+/** The shared 24px IconButton is too small to tap on a phone; below `sm`
+ * the stepper buttons grow to 44px and a larger chevron. */
+const STEP_BUTTON_PHONE_CLASS = "max-sm:size-11 max-sm:text-lg";
+
 function dayOfYear(date: string): number {
   const instant = Date.parse(`${date}T00:00:00Z`);
   const yearStart = Date.parse(`${date.slice(0, 4)}-01-01T00:00:00Z`);
@@ -38,7 +42,8 @@ function dayOfYear(date: string): number {
 }
 
 /**
- * Band 2 — the 40px context bar: date stepper, TODAY chip, and the DAY
+ * Band 2 — the 40px context bar (60px on phones, so the stepper and TODAY
+ * are 44px tap targets): date stepper, TODAY chip, and the DAY
  * START dropdown trigger (visual only — see TODO below).
  *
  * `dayStartHour` is accepted so the shell renders the correct chrome, but
@@ -99,7 +104,7 @@ export function ContextBar({
   }, [selectedDate]);
 
   return (
-    <div className="border-ink-600 bg-ink-900 flex h-10 shrink-0 items-center gap-3 overflow-x-auto border-b px-4 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+    <div className="border-ink-600 bg-ink-900 flex h-10 shrink-0 items-center gap-3 overflow-x-auto border-b px-4 [scrollbar-width:none] max-sm:h-[60px] max-sm:gap-2 [&::-webkit-scrollbar]:hidden">
       <div
         className={clsx(
           "flex shrink-0 items-center gap-px transition-opacity duration-[120ms] ease-out",
@@ -110,27 +115,29 @@ export function ContextBar({
           aria-label="Previous day"
           onClick={() => goTo(shiftDate(selectedDate, -1))}
           disabled={isPending}
+          className={STEP_BUTTON_PHONE_CLASS}
         >
           ‹
         </IconButton>
-        <div className="border-ink-500 bg-ink-800 flex h-6 items-center gap-[9px] border-y px-3">
-          <span className="font-display text-ink-0 text-lg tracking-[.1em]">
+        <div className="border-ink-500 bg-ink-800 flex h-6 items-center gap-[9px] border-y px-3 max-sm:h-11 max-sm:flex-col max-sm:items-start max-sm:justify-center max-sm:gap-0 max-sm:px-2.5">
+          <span className="font-display text-ink-0 text-lg tracking-[.1em] max-sm:leading-tight">
             {weekday} {day} {month}
           </span>
-          <span className="text-ink-200 font-mono text-[9px] tracking-[.08em]">
-            {year} · DAY {doy}
-          </span>
-          {isFuture ? (
-            <span className="text-brand-500 font-mono text-[9px] tracking-[.08em]">
-              PLANNED
+          {/* One row on desktop; on a phone this is the second line under
+              the date, so the block stays 44px tall. */}
+          <span className="flex items-center gap-[9px] font-mono text-[9px] tracking-[.08em] max-sm:text-[11px] max-sm:leading-tight">
+            <span className="text-ink-200">
+              {year} · DAY {doy}
             </span>
-          ) : null}
-          {isPending ? <Spinner size={10} /> : null}
+            {isFuture ? <span className="text-brand-500">PLANNED</span> : null}
+            {isPending ? <Spinner size={10} /> : null}
+          </span>
         </div>
         <IconButton
           aria-label="Next day"
           onClick={() => goTo(shiftDate(selectedDate, 1))}
           disabled={isPending}
+          className={STEP_BUTTON_PHONE_CLASS}
         >
           ›
         </IconButton>
@@ -144,7 +151,7 @@ export function ContextBar({
       >
         <Chip
           className={clsx(
-            "cursor-pointer transition-opacity duration-[120ms] ease-out",
+            "cursor-pointer transition-opacity duration-[120ms] ease-out max-sm:h-11 max-sm:px-3 max-sm:text-[11px]",
             isPending && "cursor-not-allowed opacity-40",
           )}
         >

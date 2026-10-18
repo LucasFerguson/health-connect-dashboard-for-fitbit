@@ -27,7 +27,7 @@ export function TimelineOverlays({
         style={{ left: `${nowPercent}%` }}
       />
       <div
-        className="text-ink-0 absolute top-0 z-[5] translate-x-1 font-mono text-[8px] leading-[1.4] font-medium tracking-[.06em] whitespace-nowrap"
+        className="text-ink-0 absolute top-0 z-[5] translate-x-1 font-mono text-[8px] leading-[1.4] font-medium tracking-[.06em] whitespace-nowrap max-sm:text-[11px]"
         style={{ left: `${nowPercent}%` }}
       >
         NOW
