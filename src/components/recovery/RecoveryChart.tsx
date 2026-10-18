@@ -3,6 +3,9 @@
 import { LazyECharts as ReactECharts } from "../ui/LazyECharts";
 import type { RecoveryDay } from "~/server/health/getRecoveryAnalytics";
 import { displayScore } from "~/domain/recovery";
+import { useNarrowScreen } from "./useNarrowScreen";
+
+const PHONE_WINDOW_DAYS = 90;
 
 /**
  * Recovery score over time. Only days with a numeric score are plotted; the
@@ -10,6 +13,7 @@ import { displayScore } from "~/domain/recovery";
  * between two scored days has no score, so missing days read as gaps.
  */
 export function RecoveryChart({ daily }: { daily: RecoveryDay[] }) {
+  const narrow = useNarrowScreen();
   const scored = daily
     .flatMap((day) => {
       // Insufficient days and null scores stay out of the numeric chart.
@@ -24,11 +28,19 @@ export function RecoveryChart({ daily }: { daily: RecoveryDay[] }) {
     data.push([day.date, day.score]);
   });
 
+  // On a phone, open on the last 90 days instead of squeezing all history
+  // into ~300px; the slider still reaches every scored day.
+  const last = scored.at(-1)?.date;
+  const windowStart =
+    narrow && last ? isoDaysBefore(last, PHONE_WINDOW_DAYS) : undefined;
   const option = {
     animation: false,
     grid: { top: 20, right: 18, bottom: 44, left: 44 },
-    tooltip: { trigger: "axis" },
-    dataZoom: [{ type: "inside" }, { type: "slider", height: 18, bottom: 4 }],
+    tooltip: { trigger: "axis", confine: true },
+    dataZoom: [
+      { type: "inside", startValue: windowStart },
+      { type: "slider", height: 18, bottom: 4, startValue: windowStart },
+    ],
     xAxis: {
       type: "time",
       axisLabel: { color: "#94a3b8", hideOverlap: true },
@@ -62,6 +74,12 @@ export function RecoveryChart({ daily }: { daily: RecoveryDay[] }) {
       <ReactECharts option={option} style={{ height: "100%", width: "100%" }} />
     </div>
   );
+}
+
+function isoDaysBefore(date: string, days: number) {
+  const time = Date.parse(date);
+  if (Number.isNaN(time)) return undefined;
+  return new Date(time - days * 86_400_000).toISOString().slice(0, 10);
 }
 
 function dayGap(from: string, to: string) {
