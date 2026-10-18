@@ -46,3 +46,7 @@ docs/inspo/*
 # vendored agent skills — reproducible from skills-lock.json via
 # `npx skills add`, so the content itself isn't tracked
 .agents/
+
+# Headless browser checks (scripts/browser-check.mjs, scripts/dev-session.sh)
+/screenshots/
+/.dev-session

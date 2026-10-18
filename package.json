@@ -16,7 +16,8 @@
     "preview": "next build && next start",
     "start": "next start",
     "test": "tsx --test \"src/**/*.test.ts\"",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "browser-check": "node scripts/browser-check.mjs"
   },
   "dependencies": {
     "@apollo/client": "^4.3.1",
@@ -48,6 +49,7 @@
     "@types/react-dom": "^19.0.0",
     "eslint": "^9.23.0",
     "eslint-config-next": "^15.2.3",
+    "playwright-core": "1.55.1",
     "postcss": "^8.5.3",
     "prettier": "^3.5.3",
     "prettier-plugin-tailwindcss": "^0.6.11",
