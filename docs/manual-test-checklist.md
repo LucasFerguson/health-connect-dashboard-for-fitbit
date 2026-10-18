@@ -8,7 +8,7 @@ Dashboard: http://192.168.8.239:3000 (prod), http://192.168.8.239:3001 (dev).
 
 ## Waiting on you
 
-### Nav analysis indicator and raw records (added 2026-10-17, on dev until deployed)
+### Nav analysis indicator and raw records (added 2026-10-17, deployed to prod 2026-10-18)
 - [ ] After a phone sync, the nav shows ANALYZING · Nm (purple) while the server recomputes (about 5 minutes), then a dim ANALYZED · just now; open pages refresh with the new numbers.
 - [ ] On your phone, only a small purple pulsing square appears while analysis runs, and the nav doesn't scroll sideways.
 - [ ] `/skin-temperature` → Source records lists all your nightly records with delta, baseline (°C and °F), location and source.
