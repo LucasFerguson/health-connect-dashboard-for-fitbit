@@ -53,7 +53,10 @@ export async function HrvSourceReadings({
         </>
       }
       actions={
-        <nav aria-label="Source records window" className="flex gap-1">
+        <nav
+          aria-label="Source records window"
+          className="flex flex-wrap gap-1"
+        >
           {HRV_RECORDS_WINDOWS.map((option) => (
             <Link
               key={option.value}
@@ -62,7 +65,7 @@ export async function HrvSourceReadings({
               }
               scroll={false}
               aria-current={option.value === window ? "page" : undefined}
-              className={`rounded-lg px-2.5 py-1 text-xs whitespace-nowrap ${
+              className={`inline-flex min-h-11 items-center rounded-lg px-3 py-1 text-sm whitespace-nowrap sm:min-h-0 sm:px-2.5 sm:text-xs ${
                 option.value === window
                   ? "bg-violet-300/25 text-white"
                   : "text-violet-200 hover:bg-white/10"
@@ -102,25 +105,25 @@ export async function HrvSourceReadings({
                       </span>
                     </span>
                     <span className="sm:text-right">
-                      <span className="block text-[10px] text-white/50 sm:hidden">
+                      <span className="block text-[11px] text-white/60 sm:hidden">
                         Readings
                       </span>
                       {night.count}
                     </span>
                     <span className="sm:text-right">
-                      <span className="block text-[10px] text-white/50 sm:hidden">
+                      <span className="block text-[11px] text-white/60 sm:hidden">
                         Min
                       </span>
                       {formatMilliseconds(night.min)}
                     </span>
                     <span className="sm:text-right">
-                      <span className="block text-[10px] text-white/50 sm:hidden">
+                      <span className="block text-[11px] text-white/60 sm:hidden">
                         Median
                       </span>
                       {formatMilliseconds(night.median)}
                     </span>
                     <span className="sm:text-right">
-                      <span className="block text-[10px] text-white/50 sm:hidden">
+                      <span className="block text-[11px] text-white/60 sm:hidden">
                         Max
                       </span>
                       {formatMilliseconds(night.max)}

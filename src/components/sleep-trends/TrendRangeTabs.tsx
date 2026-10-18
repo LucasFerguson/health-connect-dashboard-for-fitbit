@@ -23,7 +23,7 @@ export function TrendRangeTabs({
           type="button"
           onClick={() => onChange(range.days)}
           aria-pressed={value === range.days}
-          className={`min-w-12 rounded-lg px-4 py-2 text-xs font-bold transition ${
+          className={`min-h-11 min-w-12 rounded-lg px-4 py-2 text-sm font-bold transition sm:min-h-0 sm:text-xs ${
             value === range.days
               ? "bg-white/15 text-white"
               : "text-white/65 hover:text-white"
