@@ -1,7 +1,7 @@
 import { Card } from "~/components/ui/Card";
 import { SectionFooter } from "~/components/ui/SectionFooter";
 import { SectionHeader } from "~/components/ui/SectionHeader";
-import { Track } from "~/components/ui/Track";
+import { Track, type TrackZone } from "~/components/ui/Track";
 import { StatValue } from "~/components/ui/StatValue";
 import {
   PILLAR_FOOTER_CLASS,
@@ -33,6 +33,8 @@ export function PlaceholderPillarCard({
   qualifier,
   scaleMax = 21,
   formatValue = (number) => number.toFixed(1),
+  hueForValue,
+  zones,
 }: {
   label: string;
   hue: string;
@@ -50,6 +52,11 @@ export function PlaceholderPillarCard({
   /** The top of the value's scale, for the track fill (21 for strain). */
   scaleMax?: number;
   formatValue?: (value: number) => string;
+  /** Recolors the card (accent, title, fill) by the value, e.g. a recovery
+   * zone; `hue` is used when there's no value. */
+  hueForValue?: (value: number) => string;
+  /** Zones marked along the bar, in percent of the scale. */
+  zones?: TrackZone[];
 }) {
   if (
     isDisplayableStatus(status) &&
@@ -57,11 +64,12 @@ export function PlaceholderPillarCard({
     value !== undefined &&
     Number.isFinite(value)
   ) {
+    const valueHue = hueForValue?.(value) ?? hue;
     return (
-      <Card topAccent={hue}>
+      <Card topAccent={valueHue}>
         <SectionHeader
           title={label}
-          titleColor={hue}
+          titleColor={valueHue}
           right={qualifier ?? "ESTIMATE"}
           size="md"
           className={PILLAR_HEADER_CLASS}
@@ -69,8 +77,9 @@ export function PlaceholderPillarCard({
         <StatValue value={formatValue(value)} className={PILLAR_STAT_CLASS} />
         <Track
           fillPercent={Math.min(100, Math.max(0, (value / scaleMax) * 100))}
-          fillColor={hue}
+          fillColor={valueHue}
           heightPx={7}
+          zones={zones}
         />
         <SectionFooter className={PILLAR_FOOTER_CLASS} items={footer} />
       </Card>
@@ -91,7 +100,7 @@ export function PlaceholderPillarCard({
         context={absenceReason(status, note)}
         className={PILLAR_STAT_CLASS}
       />
-      <Track fillPercent={0} fillColor={hue} heightPx={7} />
+      <Track fillPercent={0} fillColor={hue} heightPx={7} zones={zones} />
       <SectionFooter className={PILLAR_FOOTER_CLASS} items={footer} />
     </Card>
   );

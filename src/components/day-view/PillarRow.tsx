@@ -1,5 +1,11 @@
 import type { HealthDay } from "~/domain/dayView";
-import { supportingMetricDisplay as show } from "~/domain/dayViewPresentation";
+import {
+  RECOVERY_GREEN_FROM,
+  RECOVERY_YELLOW_FROM,
+  RECOVERY_ZONE_COLOR,
+  recoveryZone,
+  supportingMetricDisplay as show,
+} from "~/domain/dayViewPresentation";
 import {
   formatHrv,
   formatTemperatureDeviation,
@@ -45,6 +51,8 @@ export function PillarRow({
         value={recovery.value}
         scaleMax={100}
         formatValue={formatWhole}
+        hueForValue={(score) => RECOVERY_ZONE_COLOR[recoveryZone(score)]}
+        zones={RECOVERY_ZONES}
         // The backend marks every recovery score provisional; `partial`
         // means some inputs were missing and the rest were reweighted.
         qualifier={
@@ -71,6 +79,17 @@ export function PillarRow({
     </div>
   );
 }
+
+/** WHOOP-style red/yellow/green bands along the recovery bar. */
+const RECOVERY_ZONES = [
+  { from: 0, to: RECOVERY_YELLOW_FROM, color: RECOVERY_ZONE_COLOR.red },
+  {
+    from: RECOVERY_YELLOW_FROM,
+    to: RECOVERY_GREEN_FROM,
+    color: RECOVERY_ZONE_COLOR.yellow,
+  },
+  { from: RECOVERY_GREEN_FROM, to: 100, color: RECOVERY_ZONE_COLOR.green },
+];
 
 const whole = new Intl.NumberFormat(undefined, { maximumFractionDigits: 0 });
 const tenths = new Intl.NumberFormat(undefined, { maximumFractionDigits: 1 });

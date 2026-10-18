@@ -9,8 +9,20 @@ import {
   formatRelativeTime,
   hrRampColorForMean,
   isDisplayableStatus,
+  recoveryZone,
   supportingMetricDisplay,
 } from "./dayViewPresentation";
+
+void describe("recoveryZone", () => {
+  void it("uses WHOOP's red/yellow/green cut points", () => {
+    assert.equal(recoveryZone(1), "red");
+    assert.equal(recoveryZone(33.9), "red");
+    assert.equal(recoveryZone(34), "yellow");
+    assert.equal(recoveryZone(66.9), "yellow");
+    assert.equal(recoveryZone(67), "green");
+    assert.equal(recoveryZone(100), "green");
+  });
+});
 
 void describe("isDisplayableStatus", () => {
   void it("treats available and partial as displayable", () => {
@@ -267,7 +279,9 @@ void describe("buildDayStripCells", () => {
       "2026-08-15",
     );
     assert.equal(cells[0]?.recoveryFraction, 0.64);
+    assert.equal(cells[0]?.recoveryZone, "yellow");
     assert.equal(cells[1]?.recoveryFraction, null);
+    assert.equal(cells[1]?.recoveryZone, null);
   });
 
   void it("draws no bars for a date the backend has no stored day for", () => {

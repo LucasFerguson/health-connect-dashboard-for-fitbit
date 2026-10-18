@@ -12,7 +12,8 @@ Dashboard: http://192.168.8.239:3000 (prod), http://192.168.8.239:3001 (dev).
 On `/day` at desktop width and on your phone:
 - [ ] The date strip never scrolls sideways: it shows only as many days as fit, with the selected day in the middle (about 5 on a phone, more as the window widens, up to 15). Narrow the desktop window and days drop off both ends evenly.
 - [ ] On a phone the RECORDED/PLANNED legend is gone and the date labels aren't cut off.
-- [ ] The middle (green) bar in each strip cell now shows recovery; days without a score show it faint.
+- [ ] The middle bar in each strip cell shows that day's recovery zone: red (1-33), yellow (34-66) or green (67-100); days without a score show it faint grey.
+- [ ] The RECOVERY card's bar has faint red/yellow/green bands with divider lines at 34 and 67, and the card's top accent, title and fill take the day's zone color.
 - [ ] The RECOVERY card shows the score (0-100) for a day that has one on `/recovery`, labelled PROVISIONAL (or PROVISIONAL · PARTIAL), and the bar fills to match. A day with no score still shows "—".
 - [ ] 24-hour timeline, HR dropdown: CANDLESTICK draws 5-minute candles; LINE draws every raw sample (about one every 2 seconds), colored by bpm. The choice sticks after a reload.
 - [ ] STEPS lane (renamed from MOVE, now twice as tall; on dev, not yet on prod): each bar is one step record at its real time (Fitbit's per-minute records by default), not 24 hourly bars. The STEPS dropdown switches between apps (Fitbit, phone, WHOOP...); WHOOP shows as one long flat bar because it writes one record per day.

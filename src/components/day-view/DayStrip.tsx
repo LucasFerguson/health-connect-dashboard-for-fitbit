@@ -4,7 +4,10 @@ import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { clsx } from "clsx";
 import { Spinner } from "~/components/ui/Spinner";
-import type { DayStripCellData } from "~/domain/dayViewPresentation";
+import {
+  RECOVERY_ZONE_COLOR,
+  type DayStripCellData,
+} from "~/domain/dayViewPresentation";
 
 const WEEKDAYS = ["SUN", "MON", "TUE", "WED", "THU", "FRI", "SAT"];
 
@@ -134,7 +137,9 @@ export function DayStrip({ cells }: { cells: DayStripCellData[] }) {
                   style={{
                     backgroundColor: cell.isFuture
                       ? "var(--color-ink-400)"
-                      : "var(--color-recovery)",
+                      : cell.recoveryZone
+                        ? RECOVERY_ZONE_COLOR[cell.recoveryZone]
+                        : "var(--color-ink-300)",
                     opacity:
                       cell.recoveryFraction === null
                         ? 0.2

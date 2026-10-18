@@ -127,6 +127,30 @@ export function hrRampColorForMean(
 }
 
 // ---------------------------------------------------------------------------
+// Recovery zones
+// ---------------------------------------------------------------------------
+
+export type RecoveryZone = "red" | "yellow" | "green";
+
+/** Lower bound of the yellow and green zones. The same cut points HCGateway
+ * uses for its recovery `band` (`_band` in `recovery.py`: low < 34 <=
+ * moderate < 67 <= high), which are WHOOP's red/yellow/green zones. */
+export const RECOVERY_YELLOW_FROM = 34;
+export const RECOVERY_GREEN_FROM = 67;
+
+export const RECOVERY_ZONE_COLOR: Record<RecoveryZone, string> = {
+  red: "var(--color-alert)",
+  yellow: "var(--color-caution)",
+  green: "var(--color-recovery)",
+};
+
+export function recoveryZone(score: number): RecoveryZone {
+  if (score < RECOVERY_YELLOW_FROM) return "red";
+  if (score < RECOVERY_GREEN_FROM) return "yellow";
+  return "green";
+}
+
+// ---------------------------------------------------------------------------
 // Day strip
 // ---------------------------------------------------------------------------
 
@@ -140,6 +164,8 @@ export interface DayStripCellData {
   /** Recovery score as a fraction of 100 (0-1), or null if recovery isn't
    * displayable for that day. */
   recoveryFraction: number | null;
+  /** The day's recovery zone, or null when recovery isn't displayable. */
+  recoveryZone: RecoveryZone | null;
   /** Strain fraction of the 0-21 scale (0-1), or null if strain isn't
    * displayable for that day. */
   strainFraction: number | null;
@@ -180,6 +206,8 @@ export function buildDayStripCells(
           sleepValue === null
             ? null
             : Math.min(1, sleepValue / SLEEP_REFERENCE_MINUTES),
+        recoveryZone:
+          recoveryValue === null ? null : recoveryZone(recoveryValue),
         recoveryFraction:
           recoveryValue === null
             ? null
