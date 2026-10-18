@@ -2,7 +2,7 @@ import { BackendErrorPanel } from "~/components/BackendErrorPanel";
 import { notFound } from "next/navigation";
 import { DayView } from "~/components/day-view/DayView";
 import { isDateKey } from "~/domain/health";
-import { getDayView } from "~/server/health/getDayView";
+import { getDayRawRecords, getDayView } from "~/server/health/getDayView";
 import { settle } from "~/server/health/backendDiagnostics";
 
 /**
@@ -26,5 +26,8 @@ export default async function DayViewPage({
   const result = await settle(getDayView(date));
   if (!result.ok) return <BackendErrorPanel diagnostics={result.diagnostics} />;
 
-  return <DayView data={result.data} />;
+  // Not awaited: the page renders as soon as the day itself is ready and
+  // the raw HR samples and step records stream in after (see DayViewTimeline).
+  const rawRecords = getDayRawRecords(date, result.data.day.timeZone);
+  return <DayView data={result.data} rawRecords={rawRecords} />;
 }

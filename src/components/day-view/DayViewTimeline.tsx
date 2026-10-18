@@ -1,10 +1,10 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { Suspense, use, useEffect, useRef, useState } from "react";
 import { Card } from "~/components/ui/Card";
-import type { HealthDay } from "~/domain/dayView";
-import type { HeartRateDetail } from "~/domain/heartRateDetail";
-import type { StepDetail, StepSource } from "~/domain/stepDetail";
+import { Spinner } from "~/components/ui/Spinner";
+import type { DayRawRecords, HealthDay } from "~/domain/dayView";
+import type { StepSource } from "~/domain/stepDetail";
 import { healthSourceLabel } from "~/features/health/sourceLabels";
 import { HeartRateLane, type HeartRateChartMode } from "./HeartRateLane";
 import { HoverCrosshair } from "./HoverCrosshair";
@@ -48,30 +48,8 @@ function stepResolutionLabel(source: StepSource): string {
 const selectClass =
   "border-ink-500 bg-ink-850 text-ink-0 hover:border-ink-300 focus-visible:outline-brand-400 max-w-[11rem] cursor-pointer border px-1.5 py-1 font-mono text-[11px] tracking-[.06em] disabled:cursor-not-allowed disabled:opacity-60 sm:py-0.5 sm:text-[9px]";
 
-/**
- * The 24-hour timeline — the core of the day view. Four lanes (HR, sleep
- * stages, movement, plan) share one time axis built from
- * `~/domain/dayViewTime`'s shared math, so a heart-rate bump can be read
- * straight down into "REM". The HR and movement lanes draw the day's raw
- * samples and step records when they could be read (`heartRateDetail`,
- * `stepDetail`), and otherwise the backend's hourly `day.timeline.*`
- * aggregates; the other lanes always come from `day.timeline.*`.
- */
-export function DayViewTimeline({
-  day,
-  heartRateDetail,
-  stepDetail,
-  dayStartHour,
-  isToday,
-  isPastDay,
-  nowIso,
-  nowPercent,
-  timeZone,
-  restingHeartRateBpm,
-}: {
+interface TimelineProps {
   day: HealthDay;
-  heartRateDetail: HeartRateDetail | null;
-  stepDetail: StepDetail | null;
   dayStartHour: number;
   isToday: boolean;
   isPastDay: boolean;
@@ -79,9 +57,81 @@ export function DayViewTimeline({
   nowPercent: number;
   timeZone: string;
   restingHeartRateBpm: number | null;
-}) {
-  const plotRef = useRef<HTMLDivElement>(null);
+}
+
+/** The viewer's dropdown choices, kept above the Suspense boundary so they
+ * survive the swap from the hourly placeholder to the detailed lanes. */
+interface TimelineChoices {
+  chosenMode: HeartRateChartMode;
+  setMode: (mode: HeartRateChartMode) => void;
+  chosenStepSource: string | null;
+  setStepSource: (source: string) => void;
+}
+
+/**
+ * The 24-hour timeline — the core of the day view. Four lanes (HR, sleep
+ * stages, movement, plan) share one time axis built from
+ * `~/domain/dayViewTime`'s shared math, so a heart-rate bump can be read
+ * straight down into "REM".
+ *
+ * The HR and steps lanes draw the day's raw samples and step records
+ * (`rawRecords`), which the page streams in after everything else: until
+ * they arrive (or if they can't be read) those lanes show the backend's
+ * hourly `day.timeline.*` aggregates. The other lanes always come from
+ * `day.timeline.*`. Auto-refreshes and other transitions keep the detailed
+ * lanes on screen rather than dropping back to the placeholder.
+ */
+export function DayViewTimeline({
+  rawRecords,
+  ...props
+}: TimelineProps & { rawRecords: Promise<DayRawRecords> }) {
   const [chosenMode, setMode] = useHeartRateChartMode();
+  const [chosenStepSource, setStepSource] = useState<string | null>(null);
+  const choices = { chosenMode, setMode, chosenStepSource, setStepSource };
+  return (
+    <Suspense
+      fallback={
+        <TimelineCard {...props} {...choices} raw={null} loadingDetail />
+      }
+    >
+      <DetailedTimeline {...props} {...choices} rawRecords={rawRecords} />
+    </Suspense>
+  );
+}
+
+function DetailedTimeline({
+  rawRecords,
+  ...props
+}: TimelineProps & TimelineChoices & { rawRecords: Promise<DayRawRecords> }) {
+  return (
+    <TimelineCard {...props} raw={use(rawRecords)} loadingDetail={false} />
+  );
+}
+
+function TimelineCard({
+  day,
+  raw,
+  loadingDetail,
+  chosenMode,
+  setMode,
+  chosenStepSource,
+  setStepSource,
+  dayStartHour,
+  isToday,
+  isPastDay,
+  nowIso,
+  nowPercent,
+  timeZone,
+  restingHeartRateBpm,
+}: TimelineProps &
+  TimelineChoices & {
+    raw: DayRawRecords | null;
+    /** The raw records are still on their way. */
+    loadingDetail: boolean;
+  }) {
+  const heartRateDetail = raw?.heartRateDetail ?? null;
+  const stepDetail = raw?.stepDetail ?? null;
+  const plotRef = useRef<HTMLDivElement>(null);
   // The line needs the raw samples; without them only hourly candles exist.
   const mode = heartRateDetail ? chosenMode : "candles";
   const hrLabel = !heartRateDetail
@@ -91,7 +141,6 @@ export function DayViewTimeline({
       : `${heartRateDetail.candleMinutes}-MIN CANDLES`;
   // Several apps count the same steps, so the lane shows one at a time;
   // the default is the finest-grained (`stepDetail.sources[0]`).
-  const [chosenStepSource, setStepSource] = useState<string | null>(null);
   const stepSource =
     stepDetail?.sources.find((item) => item.source === chosenStepSource) ??
     stepDetail?.sources[0] ??
@@ -119,7 +168,9 @@ export function DayViewTimeline({
             title={
               heartRateDetail
                 ? undefined
-                : "Raw heart-rate samples couldn't be read for this day, so only the hourly candles are available."
+                : loadingDetail
+                  ? "Loading this day's heart-rate samples…"
+                  : "Raw heart-rate samples couldn't be read for this day, so only the hourly candles are available."
             }
             className={selectClass}
           >
@@ -215,8 +266,14 @@ export function DayViewTimeline({
 
       {/* What resolution each lane is drawn at; the dropdowns above pick
           the HR view and the step app. */}
-      <p className="text-ink-200 mt-2 font-mono text-[11px] tracking-[.08em] sm:text-[9px]">
+      <p className="text-ink-200 mt-2 flex items-center gap-2 font-mono text-[11px] tracking-[.08em] sm:text-[9px]">
         HR {hrLabel} · STEPS {stepsLabel}
+        {loadingDetail ? (
+          <>
+            <Spinner size={9} />
+            LOADING EVERY SAMPLE…
+          </>
+        ) : null}
       </p>
     </Card>
   );

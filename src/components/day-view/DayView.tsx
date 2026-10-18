@@ -1,4 +1,4 @@
-import type { DayViewData } from "~/domain/dayView";
+import type { DayRawRecords, DayViewData } from "~/domain/dayView";
 import {
   buildDayStripCells,
   isDisplayableStatus,
@@ -26,7 +26,14 @@ const DAY_START_HOUR = 0;
  * explanatory string for an unavailable metric comes from the API's own
  * `note`/`availabilityNotes`, never a hardcoded frontend string.
  */
-export function DayView({ data }: { data: DayViewData }) {
+export function DayView({
+  data,
+  rawRecords,
+}: {
+  data: DayViewData;
+  /** Streams in after the page renders; see `DayViewTimeline`. */
+  rawRecords: Promise<DayRawRecords>;
+}) {
   const { day, nearbyDays } = data;
   const { date, timeZone, dayState } = day;
 
@@ -59,8 +66,7 @@ export function DayView({ data }: { data: DayViewData }) {
         <PillarRow day={day} timeZone={timeZone} />
         <DayViewTimeline
           day={day}
-          heartRateDetail={data.heartRateDetail ?? null}
-          stepDetail={data.stepDetail ?? null}
+          rawRecords={rawRecords}
           dayStartHour={DAY_START_HOUR}
           isToday={isToday}
           isPastDay={isPastDay}

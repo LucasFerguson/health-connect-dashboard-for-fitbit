@@ -180,17 +180,19 @@ export interface NumericMetricValue {
   value: number | null;
 }
 
+/** The day's raw records, bucketed for the timeline's HR and steps lanes.
+ * Each is null when it couldn't be read or there's nothing that day; the
+ * lanes then use the hourly `timeline.*` aggregates. */
+export interface DayRawRecords {
+  heartRateDetail: HeartRateDetail | null;
+  stepDetail: StepDetail | null;
+}
+
 export interface DayViewData {
   day: HealthDay;
   /** Always the full window around `day.date`, oldest first, focused day
    * included. */
   nearbyDays: NearbyDay[];
-  /** Fine-grained HR candles/points from the raw samples; null (or absent)
-   * when they couldn't be read, so the lane uses the hourly candles. */
-  heartRateDetail?: HeartRateDetail | null;
-  /** The day's raw step records by source; null (or absent) when they
-   * couldn't be read, so the movement lane uses the hourly bars. */
-  stepDetail?: StepDetail | null;
 }
 
 // ---------------------------------------------------------------------------

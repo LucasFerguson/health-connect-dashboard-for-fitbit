@@ -9,14 +9,10 @@
  * fresh, like every other page. `AutoRefresh` still re-renders the open day
  * every 30s.
  */
-import { unstable_rethrow } from "next/navigation";
-import type { DayViewData } from "~/domain/dayView";
+import type { DayRawRecords, DayViewData } from "~/domain/dayView";
 import { axisStartMs } from "~/domain/dayViewTime";
-import {
-  buildHeartRateDetail,
-  type HeartRateDetail,
-} from "~/domain/heartRateDetail";
-import { buildStepDetail, type StepDetail } from "~/domain/stepDetail";
+import { buildHeartRateDetail } from "~/domain/heartRateDetail";
+import { buildStepDetail } from "~/domain/stepDetail";
 import { adaptDayView, dayStripRange } from "./adapters/dayAdapter";
 import { withAnalytics, withViewer } from "./graphql/fetchAnalytics";
 import {
@@ -25,28 +21,29 @@ import {
   DAY_TIME_ZONE_QUERY,
 } from "./graphql/dayQuery";
 
-/** The day view model for `date`, with its 15-day strip and, when the raw
- * records can be read, the full-resolution HR and step series. Throws when
- * GraphQL can't serve the day itself; see `withAnalytics`. */
-export async function getDayView(date: string): Promise<DayViewData> {
-  const data = await withAnalytics(
+/** The day view model for `date`, with its 15-day strip. Throws when
+ * GraphQL can't serve it; see `withAnalytics`. */
+export function getDayView(date: string): Promise<DayViewData> {
+  return withAnalytics(
     "day",
     DAY_QUERY,
     (analytics) => adaptDayView(analytics, new Date()),
     { date, range: dayStripRange(date) },
   );
-  // Needs the day's time zone to find local midnight, so it runs after the
-  // day query rather than beside it.
-  const raw = await getRawRecords(axisStartMs(date, 0, data.day.timeZone));
-  return { ...data, ...raw };
 }
 
-/** Nulls when the records can't be read or there are none; the lanes then
- * fall back to the backend's hourly aggregates. */
-async function getRawRecords(startMs: number): Promise<{
-  heartRateDetail: HeartRateDetail | null;
-  stepDetail: StepDetail | null;
-}> {
+/**
+ * The day's raw HR samples and step records, bucketed for the timeline. The
+ * page streams this in after the rest of the day view (it's ~1.6 MB of
+ * samples a day from GraphQL), so it never rejects: any failure, including
+ * an expired session, resolves to nulls and the lanes keep the backend's
+ * hourly aggregates. The day query has already handled sign-in by then.
+ */
+export async function getDayRawRecords(
+  date: string,
+  timeZone: string,
+): Promise<DayRawRecords> {
+  const startMs = axisStartMs(date, 0, timeZone);
   const range = {
     start: new Date(startMs).toISOString(),
     endExclusive: new Date(startMs + 24 * 60 * 60 * 1000).toISOString(),
@@ -65,8 +62,6 @@ async function getRawRecords(startMs: number): Promise<{
       { range },
     );
   } catch (error) {
-    // Lets a sign-in redirect through instead of swallowing it.
-    unstable_rethrow(error);
     console.error("[day] raw records unavailable", error);
     return { heartRateDetail: null, stepDetail: null };
   }

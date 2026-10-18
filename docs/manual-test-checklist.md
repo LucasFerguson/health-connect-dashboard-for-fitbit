@@ -19,7 +19,8 @@ On `/day` at desktop width and on your phone:
 - [ ] 24-hour timeline, HR dropdown: CANDLESTICK draws 5-minute candles; LINE draws every raw sample (about one every 2 seconds), colored by bpm. The choice sticks after a reload.
 - [ ] STEPS lane (renamed from MOVE, now twice as tall; on dev, not yet on prod): each bar is one step record at its real time (Fitbit's per-minute records by default), not 24 hourly bars. The STEPS dropdown switches between apps (Fitbit, phone, WHOOP...); WHOOP shows as one long flat bar because it writes one record per day.
 - [ ] Hovering or tapping the timeline shows the exact BPM sample under the cursor and the step record(s) there with their start-end times.
-- [ ] The day page doesn't feel noticeably slower to load (it reads about 1.6 MB of raw samples per day on the server).
+- [ ] Picking a new date shows the page as soon as the day's scores are ready; the HR and STEPS lanes start hourly with "LOADING EVERY SAMPLE…" under the chart, then switch to every sample / per-record bars a moment later. Your HR mode and STEPS app choices carry over.
+- [ ] On today's page, the 30-second auto-refresh never flips the lanes back to hourly.
 ### Mobile cleanup (deployed 2026-10-18; checked in headless Chromium at 390px, not yet on your phone)
 On your phone, check each page looks right and nothing scrolls sideways:
 - [ ] Nav: the menu button opens every page grouped by topic; the bar shows the current page.
