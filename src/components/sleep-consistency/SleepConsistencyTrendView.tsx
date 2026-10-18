@@ -1,7 +1,6 @@
 "use client";
 
 import { LazyECharts as ReactECharts } from "../ui/LazyECharts";
-import Link from "next/link";
 import { useMemo, useState } from "react";
 import type {
   DailySleepConsistency,
@@ -40,13 +39,7 @@ export function SleepConsistencyTrendView({
   return (
     <main className="min-h-screen bg-gradient-to-b from-[#253038] to-[#101619] px-4 py-6 text-white">
       <div className="mx-auto max-w-6xl">
-        <Link
-          href="/"
-          className="inline-flex rounded-lg px-2 py-1 text-sm text-emerald-200 hover:bg-white/10 hover:text-white"
-        >
-          ← Health dashboard
-        </Link>
-        <header className="mt-6 rounded-2xl border border-white/10 bg-white/10 p-5 sm:p-7">
+        <header className="rounded-2xl border border-white/10 bg-white/10 p-5 sm:p-7">
           <div className="flex flex-wrap items-start justify-between gap-4">
             <div>
               <p className="text-xs font-semibold tracking-[0.2em] text-emerald-200 uppercase">

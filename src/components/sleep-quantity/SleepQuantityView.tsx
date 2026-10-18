@@ -1,7 +1,6 @@
 "use client";
 
 import { LazyECharts as ReactECharts } from "../ui/LazyECharts";
-import Link from "next/link";
 import type { DailySleepSummary } from "~/domain/analytics";
 import { formatDurationMinutes } from "~/features/health/metricFormatters";
 import { CalendarHeatmap } from "../heatmap/CalendarHeatmap";
@@ -26,13 +25,7 @@ export function SleepQuantityView({
   return (
     <main className="min-h-screen bg-gradient-to-b from-[#2e2651] to-[#11151f] px-4 py-6 text-white">
       <div className="mx-auto max-w-6xl">
-        <Link
-          href="/"
-          className="inline-flex rounded-lg px-2 py-1 text-sm text-violet-200 hover:bg-white/10 hover:text-white"
-        >
-          ← Health dashboard
-        </Link>
-        <header className="mt-6 flex flex-wrap items-end justify-between gap-4">
+        <header className="flex flex-wrap items-end justify-between gap-4">
           <div className="max-w-3xl">
             <p className="text-xs font-semibold tracking-[0.2em] text-violet-200 uppercase">
               Sleep analytics
