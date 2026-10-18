@@ -39,7 +39,7 @@ export function buildSleepStagesChartOption(
 
   return {
     backgroundColor: "#ffffff",
-    tooltip: { trigger: "axis" },
+    tooltip: { trigger: "axis", confine: true },
     legend: combinedMode
       ? { top: 12, textStyle: { color: "#334155" } }
       : undefined,

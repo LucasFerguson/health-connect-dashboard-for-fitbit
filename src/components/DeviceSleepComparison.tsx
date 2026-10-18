@@ -8,49 +8,39 @@ export function DeviceSleepComparison() {
   const { snapshot } = useHealthData();
   const summaries = selectDeviceSleepSummaries(snapshot);
 
+  // The heading and intro live in the overview's collapsible section.
   return (
-    <section aria-labelledby="device-comparison-heading">
-      <div className="mb-3">
-        <h2 id="device-comparison-heading" className="text-2xl font-bold">
-          Device sleep comparison
-        </h2>
-        <p className="mt-1 max-w-3xl text-sm text-white/75">
-          Average sleep reported by each source. Paired differences compare
-          devices only when they recorded the same sleep event.
-        </p>
-      </div>
-      <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
-        {summaries.map((summary) => (
-          <article
-            key={summary.source}
-            className="rounded-xl border border-white/10 bg-white/10 p-5"
-          >
-            <div className="flex items-start justify-between gap-3">
-              <div>
-                <h3 className="text-lg font-semibold">
-                  {healthSourceLabel(summary.source)}
-                </h3>
-                <p className="text-xs text-white/65">
-                  {summary.recordingCount} sleep recordings
-                </p>
-              </div>
-              <span className="rounded-full bg-white/10 px-2.5 py-1 text-xs text-white/80">
-                {formatDuration(summary.averageSleepMinutes)} avg
-              </span>
-            </div>
-            <div className="mt-5 border-t border-white/10 pt-4">
-              <p className="text-sm text-white/75">On matching sleep events</p>
-              <p className="mt-1 text-xl font-bold">
-                {formatDifference(summary.averageDifferenceMinutes)}
-              </p>
-              <p className="mt-1 text-xs text-white/60">
-                Across {summary.comparisonCount} paired comparisons
+    <div className="grid grid-cols-1 gap-3 sm:gap-4 md:grid-cols-2 xl:grid-cols-3">
+      {summaries.map((summary) => (
+        <article
+          key={summary.source}
+          className="rounded-xl border border-white/10 bg-white/10 p-4 sm:p-5"
+        >
+          <div className="flex items-start justify-between gap-3">
+            <div>
+              <h3 className="text-lg font-semibold">
+                {healthSourceLabel(summary.source)}
+              </h3>
+              <p className="text-xs text-white/65">
+                {summary.recordingCount} sleep recordings
               </p>
             </div>
-          </article>
-        ))}
-      </div>
-    </section>
+            <span className="rounded-full bg-white/10 px-2.5 py-1 text-xs text-white/80">
+              {formatDuration(summary.averageSleepMinutes)} avg
+            </span>
+          </div>
+          <div className="mt-4 border-t border-white/10 pt-3 sm:mt-5 sm:pt-4">
+            <p className="text-sm text-white/75">On matching sleep events</p>
+            <p className="mt-1 text-xl font-bold">
+              {formatDifference(summary.averageDifferenceMinutes)}
+            </p>
+            <p className="mt-1 text-xs text-white/60">
+              Across {summary.comparisonCount} paired comparisons
+            </p>
+          </div>
+        </article>
+      ))}
+    </div>
   );
 }
 

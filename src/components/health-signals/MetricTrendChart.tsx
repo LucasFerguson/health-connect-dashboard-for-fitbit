@@ -21,7 +21,7 @@ export function MetricTrendChart({
   const option = {
     animation: false,
     grid: { top: 12, right: 8, bottom: 28, left: 48 },
-    tooltip: { trigger: "axis" },
+    tooltip: { trigger: "axis", confine: true },
     xAxis: {
       type: "category",
       data: visible.map((item) => item.date),

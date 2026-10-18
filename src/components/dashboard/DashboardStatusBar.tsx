@@ -33,7 +33,7 @@ export function DashboardStatusBar({
           />
         )}
         <div>
-          <p className="font-mono text-[10px] font-medium tracking-[.12em] text-white/90 uppercase">
+          <p className="font-mono text-[11px] font-medium tracking-[.12em] text-white/90 uppercase">
             {loading
               ? "Assembling your overview"
               : stale
@@ -51,7 +51,7 @@ export function DashboardStatusBar({
       </div>
 
       <ol
-        className="flex items-center gap-2 font-mono text-[9px] tracking-[.08em] uppercase"
+        className="flex items-center gap-2 font-mono text-[11px] tracking-[.08em] uppercase"
         aria-label="Loading stages"
       >
         <Stage label="Frame" state="complete" />
@@ -65,7 +65,7 @@ export function DashboardStatusBar({
         <time
           dateTime={generatedAt}
           title={generatedAt}
-          className="w-full font-mono text-[9px] tracking-[.08em] text-white/50 uppercase sm:w-auto"
+          className="w-full font-mono text-[11px] tracking-[.08em] text-white/50 uppercase sm:w-auto"
         >
           Snapshot {formatUtcTimestamp(generatedAt)}
         </time>

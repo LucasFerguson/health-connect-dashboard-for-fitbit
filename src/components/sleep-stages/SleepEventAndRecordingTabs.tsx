@@ -33,7 +33,7 @@ export function SleepEventTabs({
               role="tab"
               aria-selected={active}
               onClick={() => onSelect(event)}
-              className={`rounded-lg border px-3 py-2 text-left text-sm transition ${active ? "border-violet-300 bg-violet-500 text-white" : "border-white/20 bg-white/5 text-white/85 hover:bg-white/10"}`}
+              className={`min-h-11 rounded-lg border px-3 py-2 text-left text-sm transition ${active ? "border-violet-300 bg-violet-500 text-white" : "border-white/20 bg-white/5 text-white/85 hover:bg-white/10"}`}
             >
               <span className="block font-semibold">
                 {`Sleep ${index + 1} · ${event.recordings
@@ -83,7 +83,7 @@ export function RecordingTabs({
             role="tab"
             aria-selected={combinedMode}
             onClick={onSelectCombined}
-            className={`rounded-full border px-3 py-1.5 text-sm transition ${combinedMode ? "border-violet-300 bg-violet-500 text-white" : "border-white/20 bg-white/5 text-white/85 hover:bg-white/10"}`}
+            className={`min-h-11 rounded-full border px-3 py-1.5 text-sm transition sm:min-h-0 ${combinedMode ? "border-violet-300 bg-violet-500 text-white" : "border-white/20 bg-white/5 text-white/85 hover:bg-white/10"}`}
           >
             Combined · {event.recordings.length} devices
           </button>
@@ -97,7 +97,7 @@ export function RecordingTabs({
               role="tab"
               aria-selected={active}
               onClick={() => onSelectRecording(recording)}
-              className={`rounded-full border px-3 py-1.5 text-sm transition ${active ? "border-violet-300 bg-violet-500 text-white" : "border-white/20 bg-white/5 text-white/85 hover:bg-white/10"}`}
+              className={`min-h-11 rounded-full border px-3 py-1.5 text-sm transition sm:min-h-0 ${active ? "border-violet-300 bg-violet-500 text-white" : "border-white/20 bg-white/5 text-white/85 hover:bg-white/10"}`}
             >
               {healthSourceLabel(recording.source)} ·{" "}
               {formatDuration(sleepMinutes(recording))}

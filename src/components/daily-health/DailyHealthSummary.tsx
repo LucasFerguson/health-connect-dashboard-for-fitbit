@@ -33,24 +33,27 @@ export function DailyHealthSummary() {
 
   return (
     <section aria-labelledby="daily-health-heading">
-      <div className="mb-4 flex flex-wrap items-end justify-between gap-4">
+      <div className="mb-3 flex flex-wrap items-end justify-between gap-3 sm:mb-4 sm:gap-4">
         <div>
           <p className="text-xs font-semibold tracking-[0.18em] text-violet-200 uppercase">
             Day at a glance
           </p>
-          <h2 id="daily-health-heading" className="mt-1 text-2xl font-bold">
+          <h2
+            id="daily-health-heading"
+            className="mt-1 text-xl font-bold sm:text-2xl"
+          >
             {format(parseISO(date), "EEEE, MMMM d, yyyy")}
           </h2>
           <p className="mt-1 text-sm text-white/70">
             Choose a date here or from the sleep calendar below.
           </p>
         </div>
-        <div className="flex items-center gap-2 rounded-xl border border-white/10 bg-white/10 p-2">
+        <div className="flex w-full items-center gap-2 rounded-xl border border-white/10 bg-white/10 p-1.5 sm:w-auto sm:p-2">
           <button
             type="button"
             aria-label="Previous day"
             onClick={() => shiftDate(-1)}
-            className="rounded-lg px-3 py-2 text-lg text-white/80 hover:bg-white/10 hover:text-white"
+            className="min-h-11 min-w-11 rounded-lg px-3 py-2 text-lg text-white/80 hover:bg-white/10 hover:text-white"
           >
             ←
           </button>
@@ -62,20 +65,20 @@ export function DailyHealthSummary() {
             type="date"
             value={date}
             onChange={(event) => selectDate(event.target.value || null)}
-            className="rounded-lg border border-white/15 bg-[#21154b] px-3 py-2 text-sm text-white [color-scheme:dark]"
+            className="min-h-11 min-w-0 flex-1 rounded-lg border border-white/15 bg-[#21154b] px-3 py-2 text-sm text-white [color-scheme:dark] sm:flex-none"
           />
           <button
             type="button"
             aria-label="Next day"
             onClick={() => shiftDate(1)}
-            className="rounded-lg px-3 py-2 text-lg text-white/80 hover:bg-white/10 hover:text-white"
+            className="min-h-11 min-w-11 rounded-lg px-3 py-2 text-lg text-white/80 hover:bg-white/10 hover:text-white"
           >
             →
           </button>
         </div>
       </div>
 
-      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="grid grid-cols-2 gap-2 sm:gap-3 lg:grid-cols-4">
         <DailyMetricTile
           title="Sleep"
           value={

@@ -29,10 +29,10 @@ export function MetricCard({
 
   const card = (
     <article
-      className="group rounded-xl border border-white/10 bg-white/10 p-5 transition hover:border-white/25 hover:bg-white/[0.13]"
+      className="group rounded-xl border border-white/10 bg-white/10 p-4 transition hover:border-white/25 hover:bg-white/[0.13] sm:p-5"
       aria-labelledby={`${id}-heading`}
     >
-      <div className="flex min-h-24 items-start justify-between gap-3">
+      <div className="flex items-start justify-between gap-3 sm:min-h-24">
         <div>
           <h3 id={`${id}-heading`} className="text-lg font-semibold">
             {title}

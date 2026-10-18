@@ -26,25 +26,25 @@ export function SleepCalendar() {
     return (
       <td
         {...cellProps}
-        className={`relative h-16 w-16 cursor-pointer align-top text-slate-900 ${styles?.background ?? ""}`}
+        className={`relative h-14 w-11 cursor-pointer align-top text-slate-900 sm:h-16 sm:w-16 ${styles?.background ?? ""}`}
         onClick={() => selectDate(modifiers.selected ? null : date)}
       >
         <div className="flex h-full flex-col items-center justify-center">
           <span
-            className={`rounded-full px-2 text-sm ${modifiers.selected ? "bg-violet-700 text-white" : ""} ${modifiers.today ? "font-bold text-blue-700" : ""}`}
+            className={`rounded-full px-1.5 text-sm sm:px-2 ${modifiers.selected ? "bg-violet-700 text-white" : ""} ${modifiers.today ? "font-bold text-blue-700" : ""}`}
           >
             {day.date.getDate()}
           </span>
           {summary ? (
             <span
-              className={`absolute right-2 bottom-1 text-[0.65rem] font-semibold ${styles?.text ?? ""}`}
+              className={`absolute right-0.5 bottom-0.5 text-[11px] leading-none font-semibold sm:right-2 sm:bottom-1 sm:text-[0.65rem] ${styles?.text ?? ""}`}
             >
               {(summary.sleepMinutes / 60).toFixed(1)}h
             </span>
           ) : null}
           {summary && summary.sessionCount > 1 ? (
             <span
-              className="absolute top-1 right-1 rounded-full bg-violet-700 px-1.5 py-0.5 text-[0.6rem] font-bold text-white"
+              className="absolute top-0.5 right-0.5 rounded-full bg-violet-700 px-1 text-[11px] leading-4 font-bold text-white sm:top-1 sm:right-1 sm:px-1.5 sm:py-0.5 sm:text-[0.6rem] sm:leading-normal"
               title={`${summary.sessionCount} sleep sessions`}
             >
               {summary.sessionCount}x
@@ -52,10 +52,14 @@ export function SleepCalendar() {
           ) : null}
           {summary && summary.recordingCount > summary.sessionCount ? (
             <span
-              className="absolute top-1 left-1 text-[0.55rem] font-semibold text-violet-700"
+              className="absolute top-0.5 left-0.5 text-[11px] leading-4 font-semibold text-violet-700 sm:top-1 sm:left-1 sm:text-[0.55rem] sm:leading-normal"
               title={`${summary.recordingCount} device recordings represented`}
             >
-              {summary.recordingCount} devices
+              {summary.recordingCount}
+              <span className="sr-only sm:not-sr-only"> devices</span>
+              <span aria-hidden className="sm:hidden">
+                d
+              </span>
             </span>
           ) : null}
         </div>
@@ -64,7 +68,7 @@ export function SleepCalendar() {
   };
 
   return (
-    <div className="rounded-lg border border-white/20 bg-white p-4 text-slate-950 shadow-md">
+    <div className="overflow-x-auto rounded-lg border border-white/20 bg-white p-2 text-slate-950 shadow-md sm:p-4">
       <DayPicker
         mode="single"
         selected={selected}
@@ -74,17 +78,29 @@ export function SleepCalendar() {
         components={{ Day }}
         defaultMonth={selected}
         footer={
-          <div className="mt-4 flex items-center justify-between gap-4 text-sm text-slate-400">
-            <button
-              type="button"
-              className="hover:text-slate-800"
-              onClick={() => selectDate(null)}
-            >
-              Clear selection
-            </button>
-            <span>
-              {selectedDate ? `Selected: ${selectedDate}` : "No date selected"}
-            </span>
+          <div className="mt-3 flex flex-col gap-2 sm:mt-4">
+            <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2 text-sm text-slate-500">
+              <button
+                type="button"
+                className="min-h-11 rounded-lg border border-slate-200 px-3 text-slate-600 hover:border-slate-400 hover:text-slate-800 sm:min-h-9"
+                onClick={() => selectDate(null)}
+              >
+                Clear selection
+              </button>
+              <span>
+                {selectedDate
+                  ? `Selected: ${selectedDate}`
+                  : "No date selected"}
+              </span>
+            </div>
+            <p className="text-xs text-slate-500">
+              Hours slept per night · <strong>2x</strong> sleep sessions ·{" "}
+              <strong className="text-violet-700">
+                3<span className="sm:hidden">d</span>
+                <span className="hidden sm:inline"> devices</span>
+              </strong>{" "}
+              device recordings
+            </p>
           </div>
         }
       />
