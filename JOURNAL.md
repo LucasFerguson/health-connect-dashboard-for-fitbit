@@ -175,6 +175,122 @@ against a rewrite; with the pipeline gone, most of what made this codebase
 confusing is gone too, which changes the argument. Ask him where it landed
 before doing anything large.
 
+## October 17–18, 2026 — Logins, new signals, a phone build, and the mobile pass
+
+Written by the Claude Code agent that ran the session, at Lucas's request.
+The code and commit messages say what changed; this is about what it was
+like, what fought back, and what the next agent should know.
+
+### The shape of it
+
+The session started as a status check ("check the containers and look at
+git") and turned into the biggest stretch of work this project has had: 42
+commits here and 17 in HCGateway, plus several subagents running in
+parallel. In rough order:
+
+- Per-device login sessions that never expire, website sign-in, account
+  creation on the website only, password changes, and an Android logout that
+  ends only the phone's session.
+- A data-sources page that tells the truth from the live inventory instead of
+  a hardcoded list.
+- HRV and skin temperature collected on the phone, stored, analysed and
+  shown end to end, with the raw readings visible.
+- The Android toolchain on the server, the first APK built here, and a
+  download card on the login page. Lucas downloaded it, installed it, synced,
+  and 31 skin-temperature records and 1,550 HRV readings showed up. That was
+  the best moment of the session.
+- A grouped nav with a phone menu, and a mobile pass across every page.
+
+### What fought back
+
+**Old notes read as current facts.** Early on I relayed "open threads" from a
+weeks-old handoff doc as if they were still open. Lucas pointed out that dated
+journal entries are snapshots. Now I check git and the code before calling
+anything open.
+
+**The embedded login that couldn't work.** Lucas embeds the dashboard in an
+iframe on another site, and sign-in silently bounced back to /login. I
+reproduced it exactly: the browser refuses to store a `SameSite=Lax` cookie in
+a cross-site frame, and the only alternative (`SameSite=None`) requires
+HTTPS. No app code could fix that over plain HTTP, and saying so plainly was
+better than pretending. The cookie now switches to `None; Secure; Partitioned`
+whenever a request arrives over HTTPS. The public domain later made that the
+normal case.
+
+**The host is fragile, and two things broke in one evening.** MongoDB crashed
+six times in two minutes while a subagent ran backend tests. The cause was a
+1,024 open-files limit against 400+ data files. Twenty minutes later, the
+Docker daemon itself segfaulted mid-build and took every container down,
+production included, and they didn't come back on their own. Restarting the
+database first and then everything else took about two minutes, but there was
+a real moment of "did I just break Lucas's homelab?" The likely root cause is
+the buggy host kernel the compose file already warns about. Both are written
+up in HCGateway's journal, and the open-files limit is fixed.
+
+**Numbers that lied.** Analytics runs looked like they took 70 seconds
+because the run's `startedAt` is written after the computation. Profiling the
+live worker with py-spy showed the truth: 18 minutes, spent clipping 6.3
+million heart-rate segments to each of 535 workouts. A binary search made it
+4 minutes 46 seconds with identical output. The first database backup also
+looked fine until its size (3.6 KB) gave it away: the connection string named
+one database, so only that one was dumped. Sanity-check sizes and durations
+before believing them.
+
+**HRV that wouldn't match Google.** Lucas's Google Health screenshot showed
+higher HRV than ours. I scored seven methods against his weekly averages and
+picked "mean inside the main sleep, filed by wake date". Then I found the
+part that settled it: on Sep 28 Google reports 225 ms, but every reading
+exported that night is below 195 ms. An exact match is impossible from this
+data, and proving that felt better than chasing it. Lucas also worried his
+screenshot didn't line up with our dates; it did, and its weekly averages
+turned out to be the best comparison target we had.
+
+**Show all the data.** Fitbit writes a skin-temperature "baseline" of about
+41.7 °C, which is impossible for skin. My instinct was to hide it. Lucas
+corrected me firmly: showing every field and letting the person interpret it
+is a core idea of this project. It's displayed now, and that rule now guides
+every page.
+
+**Agents that couldn't look.** The permission system blocked the mobile-pass
+subagents from creating test sessions, and twice from editing chart files.
+Three agents shipped careful work they had never seen in a browser. Doing
+the blocked steps on their behalf would have sidestepped a refusal, so I
+asked Lucas instead. With his yes I measured every page myself and found two
+real bugs the code review couldn't: sleep-stage time labels piling up, and
+the black strip.
+
+**The black strip.** Every page showed a dark band on the right on phones.
+The cause was a single 60-character Health Connect package ID with no break
+opportunity, on one card on the overview. It made phone browsers lay out the
+whole site about 540px wide and zoom out. A tiny cause with a sitewide
+effect; it now reads "Phone (Health Connect)".
+
+### Done in a parallel session
+
+While this session ran, Lucas and another agent took the dashboard public at
+`health.lucaslad.dev`. Signup now files a request that waits for approval,
+login gives one generic error and locks out after repeated failures, and
+GraphQL gained read-only API keys. That's in HCGateway's history and isn't
+this session's work.
+
+### For the next agent
+
+- `npm run browser-check` (with `scripts/dev-session.sh create` / `delete`)
+  measures pages on a phone-sized headless browser. Ask Lucas before creating
+  a session: it is a credential for his account.
+- `docs/manual-test-checklist.md` is Lucas's running list of things only he
+  can test. Keep it current, and only tick an item when he says he did it.
+- Still open:
+  - deep-sleep HRV as a second series
+  - the leaderboards plan (HCGateway `doc/leaderboards-plan.md`)
+  - WHOOP stopped writing to Health Connect on Oct 8
+  - the overview's step count only covers 136 days, which looks wrong
+  - GraphQL raw-record readers that turn a missing value into 0
+  - the shared `Label` component at 9px
+  - a `frame-ancestors` rule for the embed
+  - upgrading the host kernel
+  - pruning old backups in `/root/backups`
+
 ## Early project timeline
 
 - **April 24, 2025:** Initialized the T3 application, installed the calendar tools, created the first sleep calendar, and connected an initial Health Connect Gateway API client.
@@ -186,3 +302,4 @@ before doing anything large.
 - **August 22, 2026:** Returned to active development and completed a large Codex-assisted architectural refactor.
 - **September 19–21, 2026:** Migrated all ten routes from the in-repo analytics pipeline to HCGateway's new GraphQL API, wired Apollo Client on both the server and the client, and cut the overview payload from 5.5 MB to 321 KB.
 - **September 27, 2026:** Deleted the in-repo pipeline, the demo fixture and the fallbacks, making the app GraphQL-only, and added `scripts/deploy.sh`.
+- **October 17–18, 2026:** Per-device sessions and website login, HRV and skin temperature end to end, the first APK built on the server with a download card, a grouped nav with a phone menu, and a mobile pass across every page. In parallel, the dashboard went public at health.lucaslad.dev.
