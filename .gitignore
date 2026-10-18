@@ -50,3 +50,6 @@ docs/inspo/*
 # Headless browser checks (scripts/browser-check.mjs, scripts/dev-session.sh)
 /screenshots/
 /.dev-session
+
+# Personal Claude Code settings
+.claude/settings.local.json
