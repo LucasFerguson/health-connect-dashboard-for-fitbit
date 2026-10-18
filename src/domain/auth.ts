@@ -65,11 +65,46 @@ export function isHttpsRequest(headers: Headers, protocol?: string): boolean {
   );
 }
 
-/** Only same-site paths, so `?next=` can't bounce the browser elsewhere. */
+/** Stand-in origin for resolving `?next=`; never visited. */
+const NEXT_BASE = "http://dashboard.invalid";
+
+/**
+ * Only same-site paths, so `?next=` can't bounce the browser elsewhere.
+ * Checking the prefix alone isn't enough: browsers read `/\evil.example` as
+ * `//evil.example`, and drop tabs and newlines, so `/<tab>/evil.example`
+ * becomes one too. Those characters are refused outright, then the URL is
+ * resolved the way a browser would and must stay on this origin.
+ */
 export function safeNextPath(next: unknown): string {
-  return typeof next === "string" &&
-    next.startsWith("/") &&
-    !next.startsWith("//")
-    ? next
-    : "/";
+  if (
+    typeof next !== "string" ||
+    !next.startsWith("/") ||
+    /[\\\u0000-\u001f\u007f]/.test(next)
+  ) {
+    return "/";
+  }
+  try {
+    const url = new URL(next, NEXT_BASE);
+    return url.origin === NEXT_BASE
+      ? url.pathname + url.search + url.hash
+      : "/";
+  } catch {
+    return "/";
+  }
+}
+
+/** Mirrors HCGateway's `api/credentials.py`, which is what enforces it; the
+ * copy here only gives the form a quicker, friendlier answer. */
+export const USERNAME_PATTERN = "[a-z0-9][a-z0-9._-]{2,31}";
+export const USERNAME_RULE =
+  "Use 3-32 lowercase letters, digits, dots, dashes or underscores, starting with a letter or digit.";
+export const PASSWORD_MAX = 256;
+
+/** Usernames are lowercase; accept any case from the form. */
+export function normalizeUsername(value: string): string {
+  return value.trim().toLowerCase();
+}
+
+export function isValidUsername(username: string): boolean {
+  return new RegExp(`^${USERNAME_PATTERN}$`).test(username);
 }

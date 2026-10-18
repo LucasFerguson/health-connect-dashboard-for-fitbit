@@ -4,7 +4,7 @@ import { signUp } from "~/server/auth/actions";
 import { getLatestRelease } from "~/server/releases";
 
 export const dynamic = "force-dynamic";
-export const metadata = { title: "Create account · Health Dashboard" };
+export const metadata = { title: "Request account · Health Dashboard" };
 
 export default async function SignupPage() {
   const published = await getLatestRelease();

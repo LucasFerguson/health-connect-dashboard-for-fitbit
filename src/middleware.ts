@@ -22,7 +22,7 @@ export function middleware(request: NextRequest) {
       publicPage ||
       pathname.startsWith("/auth/") ||
       // The Android app download, so someone can install it before they
-      // have an account (accounts are made on /signup).
+      // have an account (accounts are requested on /signup).
       pathname.startsWith("/download/") ||
       pathname === "/api/health"
     ) {

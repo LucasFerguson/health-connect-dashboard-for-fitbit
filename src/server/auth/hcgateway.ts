@@ -1,6 +1,7 @@
 /**
- * HCGateway's REST account endpoints. Every login and signup starts a new
- * session of its own on the backend, independent of the phone app's.
+ * HCGateway's REST account endpoints. Every login starts a new session of its
+ * own on the backend, independent of the phone app's. Signup only files a
+ * request that an admin has to approve before the account exists.
  */
 import { z } from "zod";
 import { env } from "~/env";
@@ -9,22 +10,37 @@ export type AuthResult =
   | { ok: true; token: string }
   | { ok: false; error: string };
 
+export type SignupResult = { ok: true } | { ok: false; error: string };
+
+type Endpoint = "login" | "signup";
+
 const tokenBody = z.object({ token: z.string().min(1) });
 const errorBody = z.object({ error: z.string() });
+const pendingBody = z.object({ pending: z.literal(true) });
 
-/** Messages for the statuses a person can fix from the form. HCGateway's own
- * 404 text tells phone users to come here, which is wrong on this side. */
-const friendlyErrors: Record<string, Partial<Record<number, string>>> = {
-  login: { 403: "Wrong password.", 404: "No account with that username." },
+/** HCGateway says this only to someone who knows the password they asked
+ * for the account with. */
+const PENDING_APPROVAL =
+  "Your account is still waiting for approval. Contact Lucas to have it approved and created.";
+
+/** Messages for the statuses a person can act on from the form. Login's 403
+ * deliberately doesn't say whether the username or the password was wrong. */
+const friendlyErrors: Record<Endpoint, Partial<Record<number, string>>> = {
+  login: {
+    403: "Wrong username or password.",
+    429: "Too many failed sign-in attempts. Try again in 15 minutes.",
+  },
   signup: {},
 };
 
+type Answer = { status: number; body: unknown } | { error: string };
+
 async function post(
-  endpoint: "login" | "signup",
+  endpoint: Endpoint,
   username: string,
   password: string,
-): Promise<AuthResult> {
-  if (!env.API_URL) return { ok: false, error: "API_URL is not configured." };
+): Promise<Answer> {
+  if (!env.API_URL) return { error: "API_URL is not configured." };
   let response: Response;
   try {
     response = await fetch(`${env.API_URL}/api/v2/${endpoint}`, {
@@ -35,34 +51,52 @@ async function post(
       signal: AbortSignal.timeout(10_000),
     });
   } catch {
-    return {
-      ok: false,
-      error: "Couldn't reach HCGateway. Is the backend running?",
-    };
+    return { error: "Couldn't reach HCGateway. Is the backend running?" };
   }
-
   const body: unknown = await response.json().catch(() => null);
-  if (response.ok) {
-    const parsed = tokenBody.safeParse(body);
-    if (parsed.success) return { ok: true, token: parsed.data.token };
-  }
-  const friendly = friendlyErrors[endpoint]?.[response.status];
-  const backendError = errorBody.safeParse(body);
-  return {
-    ok: false,
-    error:
-      friendly ??
-      (backendError.success
-        ? backendError.data.error
-        : `HCGateway answered ${response.status}.`),
-  };
+  return { status: response.status, body };
 }
 
-export const backendLogin = (username: string, password: string) =>
-  post("login", username, password);
+function errorMessage(
+  endpoint: Endpoint,
+  { status, body }: { status: number; body: unknown },
+): string {
+  const backendError = errorBody.safeParse(body);
+  return (
+    friendlyErrors[endpoint][status] ??
+    (backendError.success
+      ? backendError.data.error
+      : `HCGateway answered ${status}.`)
+  );
+}
 
-export const backendSignup = (username: string, password: string) =>
-  post("signup", username, password);
+export async function backendLogin(
+  username: string,
+  password: string,
+): Promise<AuthResult> {
+  const answer = await post("login", username, password);
+  if ("error" in answer) return { ok: false, error: answer.error };
+  const token = tokenBody.safeParse(answer.body);
+  if (answer.status === 201 && token.success) {
+    return { ok: true, token: token.data.token };
+  }
+  if (pendingBody.safeParse(answer.body).success) {
+    return { ok: false, error: PENDING_APPROVAL };
+  }
+  return { ok: false, error: errorMessage("login", answer) };
+}
+
+/** Files an account request. HCGateway answers 202 whether or not it was
+ * queued, so a taken username looks the same as a new one here. */
+export async function backendSignup(
+  username: string,
+  password: string,
+): Promise<SignupResult> {
+  const answer = await post("signup", username, password);
+  if ("error" in answer) return { ok: false, error: answer.error };
+  if (answer.status === 202) return { ok: true };
+  return { ok: false, error: errorMessage("signup", answer) };
+}
 
 /** Ends this browser's session on HCGateway. Best effort: signing out locally
  * must still work when the backend is down. */

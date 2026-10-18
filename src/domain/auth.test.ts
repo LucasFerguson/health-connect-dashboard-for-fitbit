@@ -3,6 +3,8 @@ import { describe, it } from "node:test";
 import {
   clearedSessionCookieOptions,
   isHttpsRequest,
+  isValidUsername,
+  normalizeUsername,
   safeNextPath,
   sessionCookieOptions,
 } from "./auth";
@@ -48,5 +50,60 @@ void describe("session cookie", () => {
     assert.equal(safeNextPath("//evil.example"), "/");
     assert.equal(safeNextPath("https://evil.example"), "/");
     assert.equal(safeNextPath(undefined), "/");
+  });
+});
+
+void describe("safeNextPath", () => {
+  void it("keeps same-site paths with their query and hash", () => {
+    assert.equal(safeNextPath("/sleep"), "/sleep");
+    assert.equal(
+      safeNextPath("/explore?metric=hrv#chart"),
+      "/explore?metric=hrv#chart",
+    );
+    assert.equal(safeNextPath("/day/2026-10-17"), "/day/2026-10-17");
+  });
+
+  void it("refuses anything that leaves the site", () => {
+    for (const next of [
+      "//evil.example",
+      "/\\evil.example",
+      "/\\/evil.example",
+      "/\t/evil.example",
+      "/\n/evil.example",
+      "https://evil.example",
+      "javascript:alert(1)",
+      "evil.example",
+      "",
+    ]) {
+      assert.equal(safeNextPath(next), "/", JSON.stringify(next));
+    }
+  });
+
+  void it("refuses non-strings", () => {
+    assert.equal(safeNextPath(undefined), "/");
+    assert.equal(safeNextPath(["/sleep"]), "/");
+  });
+});
+
+void describe("usernames", () => {
+  void it("lowercases and trims", () => {
+    assert.equal(normalizeUsername("  Lucas "), "lucas");
+  });
+
+  void it("allows only the safe characters", () => {
+    for (const ok of ["lucas", "a.b-c_d", "abc", "x".repeat(32)]) {
+      assert.equal(isValidUsername(ok), true, ok);
+    }
+    for (const bad of [
+      "ab",
+      "x".repeat(33),
+      "has space",
+      '{"$ne":1}',
+      "lucаs",
+      ".dot",
+      "Upper",
+    ]) {
+      assert.equal(isValidUsername(bad), false, bad);
+    }
   });
 });

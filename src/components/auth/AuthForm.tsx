@@ -4,6 +4,7 @@ import { useActionState, type ReactNode } from "react";
 import Link from "next/link";
 import { notchStyle } from "~/components/ui/notch";
 import { EmbeddedFrameNotice } from "./EmbeddedFrameNotice";
+import { PASSWORD_MAX, USERNAME_PATTERN, USERNAME_RULE } from "~/domain/auth";
 import type { AuthFormState } from "~/server/auth/actions";
 
 type AuthAction = (
@@ -24,7 +25,7 @@ interface AuthFormProps {
 export const authInputClass =
   "border-ink-500 bg-ink-850 text-ink-0 focus:border-brand-400 w-full border px-3 py-2 text-sm outline-none transition-colors duration-[120ms]";
 
-/** Shared sign-in / create-account card. One browser session lasts until
+/** Shared sign-in / request-account card. One browser session lasts until
  * SIGN OUT, so this is rarely seen twice on the same device. */
 export function AuthForm({
   mode,
@@ -38,6 +39,7 @@ export function AuthForm({
     username: "",
   });
   const signup = mode === "signup";
+  const requested = signup && state.requested === true;
 
   return (
     <main className="flex min-h-dvh flex-col items-center justify-center gap-4 px-4 py-10">
@@ -53,13 +55,19 @@ export function AuthForm({
           </span>
         </div>
         <h1 className="font-display text-ink-0 mb-1 text-2xl tracking-[.06em]">
-          {signup ? "Create an account" : "Sign in"}
+          {requested
+            ? "Account requested"
+            : signup
+              ? "Request an account"
+              : "Sign in"}
         </h1>
-        <p className="text-ink-100 mb-5 text-sm">
-          {signup
-            ? "This account also signs in the HCGateway phone app."
-            : "Use your HCGateway account, the same one the phone app uses."}
-        </p>
+        {requested ? null : (
+          <p className="text-ink-100 mb-5 text-sm">
+            {signup
+              ? "Accounts are approved by hand. Once yours is, it also signs in the HCGateway phone app."
+              : "Use your HCGateway account, the same one the phone app uses."}
+          </p>
+        )}
 
         <EmbeddedFrameNotice />
 
@@ -69,57 +77,71 @@ export function AuthForm({
           </p>
         ) : null}
 
-        <form action={formAction} className="flex flex-col gap-3">
-          {next ? <input type="hidden" name="next" value={next} /> : null}
-          <label className="text-ink-100 flex flex-col gap-1 text-xs tracking-[.06em]">
-            USERNAME
-            <input
-              name="username"
-              autoComplete="username"
-              autoCapitalize="none"
-              defaultValue={state.username}
-              required
-              className={authInputClass}
-            />
-          </label>
-          <label className="text-ink-100 flex flex-col gap-1 text-xs tracking-[.06em]">
-            PASSWORD
-            <input
-              name="password"
-              type="password"
-              autoComplete={signup ? "new-password" : "current-password"}
-              minLength={signup ? 8 : undefined}
-              required
-              className={authInputClass}
-            />
-          </label>
-          {signup ? (
+        {requested ? (
+          <p
+            role="status"
+            className="border-brand-400 text-ink-0 mt-4 border-l-2 pl-3 text-sm"
+          >
+            Your account has been requested. Contact Lucas to have your account
+            approved and created.
+          </p>
+        ) : (
+          <form action={formAction} className="flex flex-col gap-3">
+            {next ? <input type="hidden" name="next" value={next} /> : null}
             <label className="text-ink-100 flex flex-col gap-1 text-xs tracking-[.06em]">
-              CONFIRM PASSWORD
+              USERNAME
               <input
-                name="confirm"
-                type="password"
-                autoComplete="new-password"
+                name="username"
+                autoComplete="username"
+                autoCapitalize="none"
+                maxLength={signup ? 32 : 64}
+                pattern={signup ? USERNAME_PATTERN : undefined}
+                title={signup ? USERNAME_RULE : undefined}
+                defaultValue={state.username}
                 required
                 className={authInputClass}
               />
             </label>
-          ) : null}
+            <label className="text-ink-100 flex flex-col gap-1 text-xs tracking-[.06em]">
+              PASSWORD
+              <input
+                name="password"
+                type="password"
+                autoComplete={signup ? "new-password" : "current-password"}
+                minLength={signup ? 8 : undefined}
+                maxLength={PASSWORD_MAX}
+                required
+                className={authInputClass}
+              />
+            </label>
+            {signup ? (
+              <label className="text-ink-100 flex flex-col gap-1 text-xs tracking-[.06em]">
+                CONFIRM PASSWORD
+                <input
+                  name="confirm"
+                  type="password"
+                  autoComplete="new-password"
+                  required
+                  className={authInputClass}
+                />
+              </label>
+            ) : null}
 
-          {state.error ? (
-            <p role="alert" className="text-alert text-sm">
-              {state.error}
-            </p>
-          ) : null}
+            {state.error ? (
+              <p role="alert" className="text-alert text-sm">
+                {state.error}
+              </p>
+            ) : null}
 
-          <button
-            type="submit"
-            disabled={pending}
-            className="bg-brand-500 text-ink-0 font-display mt-2 cursor-pointer py-2 tracking-[.1em] transition-opacity duration-[120ms] hover:opacity-90 disabled:cursor-wait disabled:opacity-60"
-          >
-            {pending ? "…" : signup ? "CREATE ACCOUNT" : "SIGN IN"}
-          </button>
-        </form>
+            <button
+              type="submit"
+              disabled={pending}
+              className="bg-brand-500 text-ink-0 font-display mt-2 cursor-pointer py-2 tracking-[.1em] transition-opacity duration-[120ms] hover:opacity-90 disabled:cursor-wait disabled:opacity-60"
+            >
+              {pending ? "…" : signup ? "REQUEST ACCOUNT" : "SIGN IN"}
+            </button>
+          </form>
+        )}
 
         <p className="text-ink-200 mt-5 text-sm">
           {signup ? "Already have an account? " : "No account yet? "}
@@ -127,7 +149,7 @@ export function AuthForm({
             href={signup ? "/login" : "/signup"}
             className="text-brand-text hover:text-ink-0 underline-offset-2 hover:underline"
           >
-            {signup ? "Sign in" : "Create one"}
+            {signup ? "Sign in" : "Request one"}
           </Link>
         </p>
       </div>
