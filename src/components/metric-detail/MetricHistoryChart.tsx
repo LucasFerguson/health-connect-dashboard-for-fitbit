@@ -4,6 +4,8 @@ import { LazyECharts as ReactECharts } from "../ui/LazyECharts";
 import type { MetricAnalytics } from "~/domain/analytics";
 import type { MetricKind } from "~/features/health/metricPresentation";
 import { metricPresentation } from "~/features/health/metricPresentation";
+import { dailyChartViewport } from "./dailyChartOptions";
+import { useNarrowChart } from "./useNarrowChart";
 
 export function MetricHistoryChart({
   analytics,
@@ -15,6 +17,7 @@ export function MetricHistoryChart({
   secondary?: MetricAnalytics;
 }) {
   const presentation = metricPresentation(kind);
+  const narrow = useNarrowChart();
   const rolling = new Map(
     analytics.rolling7Day.map((point) => [point.date, point.value]),
   );
@@ -22,6 +25,7 @@ export function MetricHistoryChart({
     secondary?.daily.map((point) => [point.date, point.value]) ?? [],
   );
   const dates = analytics.daily.map((day) => day.date);
+  const viewport = dailyChartViewport(dates, narrow);
   const { diverging, formatValue } = presentation;
   // A deviation metric (skin temperature) is charted around its zero
   // baseline: each day colored by sign, with the baseline drawn in.
@@ -35,10 +39,20 @@ export function MetricHistoryChart({
     : analytics.daily.map((day) => day.value);
   const option = {
     animation: false,
-    grid: { top: 46, right: 18, bottom: 44, left: 64 },
-    legend: { top: 4, textStyle: { color: "#cbd5e1" } },
+    grid: {
+      top: 46,
+      right: narrow ? 12 : 18,
+      bottom: viewport.gridBottom ?? 44,
+      left: viewport.gridLeft ?? 64,
+    },
+    legend: {
+      top: 4,
+      textStyle: { color: "#cbd5e1" },
+      ...(narrow ? { itemGap: 8, itemWidth: 18 } : {}),
+    },
     tooltip: {
       trigger: "axis",
+      ...viewport.tooltip,
       ...(diverging
         ? {
             valueFormatter: (value: unknown) =>
@@ -46,17 +60,18 @@ export function MetricHistoryChart({
           }
         : {}),
     },
-    dataZoom: [{ type: "inside" }, { type: "slider", height: 18, bottom: 4 }],
+    dataZoom: viewport.dataZoom,
     xAxis: {
       type: "category",
       data: dates,
-      axisLabel: { color: "#94a3b8", hideOverlap: true },
+      axisLabel: viewport.xAxisLabel,
       axisLine: { lineStyle: { color: "rgba(255,255,255,0.15)" } },
     },
     yAxis: {
       type: "value",
       axisLabel: {
         color: "#94a3b8",
+        ...viewport.yAxisLabelSize,
         ...(diverging ? { formatter: diverging.formatTick } : {}),
       },
       splitLine: { lineStyle: { color: "rgba(255,255,255,0.08)" } },
@@ -112,15 +127,18 @@ export function MetricHistoryChart({
   };
 
   return (
-    <section className="rounded-xl border border-white/10 bg-white/10 p-5">
+    <section className="rounded-xl border border-white/10 bg-white/10 p-4 sm:p-5">
       <h2 className="text-xl font-semibold">Progress and trend</h2>
       <p className="mt-1 text-sm text-white/70">
         {diverging
           ? "Each night's deviation from your baseline (0), with a calendar-based seven-day average. Drag the range control to focus on a period."
           : "Daily readings with a calendar-based seven-day average. Drag the range control to focus on a period."}
+        {viewport.windowed
+          ? " Opens on the last 90 days; drag the control's left handle to see the full history."
+          : null}
       </p>
       <div
-        className="mt-4 h-96"
+        className="mt-4 h-80 sm:h-96"
         role="img"
         aria-label={`${presentation.title} daily history and seven-day trend`}
       >

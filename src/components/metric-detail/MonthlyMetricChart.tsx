@@ -4,6 +4,8 @@ import { LazyECharts as ReactECharts } from "../ui/LazyECharts";
 import type { MonthlyMetricSummary } from "~/domain/analytics";
 import type { MetricKind } from "~/features/health/metricPresentation";
 import { metricPresentation } from "~/features/health/metricPresentation";
+import { monthlyChartViewport } from "./dailyChartOptions";
+import { useNarrowChart } from "./useNarrowChart";
 
 export function MonthlyMetricChart({
   data,
@@ -14,6 +16,8 @@ export function MonthlyMetricChart({
 }) {
   const presentation = metricPresentation(kind);
   const { diverging, formatValue } = presentation;
+  const narrow = useNarrowChart();
+  const viewport = monthlyChartViewport(narrow);
   // Deviation months grow up or down from the zero baseline, colored by sign.
   const barData = diverging
     ? data.map((month) => ({
@@ -26,9 +30,15 @@ export function MonthlyMetricChart({
     : data.map((month) => month.value);
   const option = {
     animation: false,
-    grid: { top: 20, right: 16, bottom: 32, left: 64 },
+    grid: {
+      top: 20,
+      right: narrow ? 12 : 16,
+      bottom: 32,
+      left: viewport.gridLeft ?? 64,
+    },
     tooltip: {
       trigger: "axis",
+      ...viewport.tooltip,
       ...(diverging
         ? {
             valueFormatter: (value: unknown) =>
@@ -39,13 +49,14 @@ export function MonthlyMetricChart({
     xAxis: {
       type: "category",
       data: data.map((month) => month.month),
-      axisLabel: { color: "#94a3b8", hideOverlap: true },
+      axisLabel: viewport.xAxisLabel,
       axisLine: { lineStyle: { color: "rgba(255,255,255,0.15)" } },
     },
     yAxis: {
       type: "value",
       axisLabel: {
         color: "#94a3b8",
+        ...viewport.yAxisLabelSize,
         ...(diverging ? { formatter: diverging.formatTick } : {}),
       },
       splitLine: { lineStyle: { color: "rgba(255,255,255,0.08)" } },
@@ -61,7 +72,7 @@ export function MonthlyMetricChart({
   };
 
   return (
-    <section className="rounded-xl border border-white/10 bg-white/10 p-5">
+    <section className="rounded-xl border border-white/10 bg-white/10 p-4 sm:p-5">
       <h2 className="text-xl font-semibold">Monthly direction</h2>
       <p className="mt-1 text-sm text-white/70">
         Average per recorded day. Missing days are excluded rather than treated
