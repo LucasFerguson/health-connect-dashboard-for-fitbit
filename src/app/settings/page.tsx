@@ -46,7 +46,7 @@ export default async function SettingsPage() {
           <h1 className="font-display text-ink-0 text-2xl tracking-[.12em]">
             ACCOUNT
           </h1>
-          <Label>
+          <Label className="max-sm:text-[11px]">
             SIGNED IN AS {account ? account.username.toUpperCase() : "?"}
           </Label>
         </div>

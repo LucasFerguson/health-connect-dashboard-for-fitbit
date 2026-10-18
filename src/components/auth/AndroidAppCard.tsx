@@ -41,7 +41,10 @@ export function AndroidAppCard({
   return (
     <section
       aria-labelledby="android-app-heading"
-      className={clsx("bg-ink-800 border-ink-600 border p-6", className)}
+      className={clsx(
+        "bg-ink-800 border-ink-600 border p-6 max-sm:p-5",
+        className,
+      )}
     >
       <div className="flex flex-wrap items-baseline justify-between gap-x-3 gap-y-1">
         <h2
@@ -77,7 +80,7 @@ export function AndroidAppCard({
           </p>
           <a
             href="/download/android"
-            className="border-brand-400 text-brand-text font-display hover:bg-brand-500 hover:text-ink-0 mt-4 flex h-10 items-center justify-center border tracking-[.1em] transition-colors duration-[120ms]"
+            className="border-brand-400 text-brand-text font-display hover:bg-brand-500 hover:text-ink-0 mt-4 flex h-10 items-center justify-center border tracking-[.1em] transition-colors duration-[120ms] max-sm:h-11"
           >
             DOWNLOAD APK
           </a>

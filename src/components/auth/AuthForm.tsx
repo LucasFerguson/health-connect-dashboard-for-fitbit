@@ -23,7 +23,7 @@ interface AuthFormProps {
 }
 
 export const authInputClass =
-  "border-ink-500 bg-ink-850 text-ink-0 focus:border-brand-400 w-full border px-3 py-2 text-sm outline-none transition-colors duration-[120ms]";
+  "border-ink-500 bg-ink-850 text-ink-0 focus:border-brand-400 w-full border px-3 py-2 text-sm outline-none transition-colors duration-[120ms] max-sm:min-h-11 max-sm:text-base";
 
 /** Shared sign-in / request-account card. One browser session lasts until
  * SIGN OUT, so this is rarely seen twice on the same device. */
@@ -136,7 +136,7 @@ export function AuthForm({
             <button
               type="submit"
               disabled={pending}
-              className="bg-brand-500 text-ink-0 font-display mt-2 cursor-pointer py-2 tracking-[.1em] transition-opacity duration-[120ms] hover:opacity-90 disabled:cursor-wait disabled:opacity-60"
+              className="bg-brand-500 text-ink-0 font-display mt-2 cursor-pointer py-2 tracking-[.1em] transition-opacity duration-[120ms] hover:opacity-90 disabled:cursor-wait disabled:opacity-60 max-sm:min-h-11"
             >
               {pending ? "…" : signup ? "REQUEST ACCOUNT" : "SIGN IN"}
             </button>
@@ -147,7 +147,7 @@ export function AuthForm({
           {signup ? "Already have an account? " : "No account yet? "}
           <Link
             href={signup ? "/login" : "/signup"}
-            className="text-brand-text hover:text-ink-0 underline-offset-2 hover:underline"
+            className="text-brand-text hover:text-ink-0 underline-offset-2 hover:underline max-sm:inline-block max-sm:py-3"
           >
             {signup ? "Sign in" : "Request one"}
           </Link>

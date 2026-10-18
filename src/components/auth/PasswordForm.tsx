@@ -65,7 +65,7 @@ export function PasswordForm() {
       <button
         type="submit"
         disabled={pending}
-        className="bg-brand-500 text-ink-0 font-display mt-2 cursor-pointer py-2 tracking-[.1em] transition-opacity duration-[120ms] hover:opacity-90 disabled:cursor-wait disabled:opacity-60"
+        className="bg-brand-500 text-ink-0 font-display mt-2 cursor-pointer py-2 tracking-[.1em] transition-opacity duration-[120ms] hover:opacity-90 disabled:cursor-wait disabled:opacity-60 max-sm:min-h-11"
       >
         {pending ? "…" : "CHANGE PASSWORD"}
       </button>

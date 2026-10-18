@@ -13,7 +13,7 @@ interface ApiKeysPanelProps {
 }
 
 const buttonClass =
-  "font-display cursor-pointer tracking-[.1em] transition-opacity duration-[120ms] hover:opacity-90 disabled:cursor-wait disabled:opacity-60";
+  "font-display cursor-pointer max-sm:min-h-11 max-sm:px-4 tracking-[.1em] transition-opacity duration-[120ms] hover:opacity-90 disabled:cursor-wait disabled:opacity-60";
 
 /** ISO timestamps as a plain date, the same on the server and the client. */
 const day = (iso: string) => iso.slice(0, 10);
