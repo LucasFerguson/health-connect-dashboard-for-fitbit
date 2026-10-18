@@ -10,7 +10,7 @@ import { Spinner } from "~/components/ui/Spinner";
 export default function DayViewLoading() {
   return (
     <div className="bg-ink-900 text-ink-0 flex h-screen min-h-[720px] flex-col overflow-hidden">
-      <div className="border-ink-600 bg-ink-950 h-[38px] shrink-0 border-b" />
+      <div className="border-ink-600 bg-ink-950 h-11 shrink-0 border-b lg:h-[38px]" />
       <div className="border-ink-600 bg-ink-900 h-10 shrink-0 border-b" />
       <div className="border-ink-600 bg-ink-950 h-[54px] shrink-0 border-b" />
       <div className="flex flex-1 items-center justify-center gap-3">
