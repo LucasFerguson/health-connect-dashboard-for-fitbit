@@ -91,7 +91,7 @@ export function HabitsView({
             answer, never as “no”.
           </p>
         </div>
-        <Label>
+        <Label className="max-sm:text-[11px]">
           {span
             ? `ANSWERS ${formatDateSpan(span.from, span.to).toUpperCase()}`
             : "NO ANSWERS YET"}
@@ -113,7 +113,7 @@ export function HabitsView({
                   scroll={false}
                   aria-current={active ? "page" : undefined}
                   className={clsx(
-                    "flex h-8 items-center gap-1.5 border px-3 font-mono text-[10px] tracking-[.08em] transition-colors duration-[120ms]",
+                    "flex h-8 items-center gap-1.5 border px-3 font-mono text-[10px] tracking-[.08em] transition-colors duration-[120ms] max-sm:h-11 max-sm:px-4 max-sm:text-[12px]",
                     index > 0 && "-ml-px",
                     active
                       ? "border-brand-400 bg-brand-950 text-ink-0 relative z-10"
@@ -134,7 +134,7 @@ export function HabitsView({
             >
               ‹
             </StepLink>
-            <span className="text-ink-0 min-w-[9.5rem] text-center font-mono text-[12px] tracking-[.04em]">
+            <span className="text-ink-0 min-w-[9.5rem] text-center font-mono text-[12px] tracking-[.04em] max-sm:text-[13px]">
               {formatPeriod(period, span)}
             </span>
             <StepLink
@@ -149,7 +149,7 @@ export function HabitsView({
             <Link
               href={href(period.view, latest)}
               scroll={false}
-              className="border-ink-500 text-ink-100 hover:border-ink-400 hover:bg-ink-700 hover:text-ink-0 flex h-8 items-center gap-1.5 border px-3 font-mono text-[10px] tracking-[.08em]"
+              className="border-ink-500 text-ink-100 hover:border-ink-400 hover:bg-ink-700 hover:text-ink-0 flex h-8 items-center gap-1.5 border px-3 font-mono text-[10px] tracking-[.08em] max-sm:h-11 max-sm:text-[12px]"
               style={notchStyle(7)}
             >
               LATEST ANSWERS
@@ -172,7 +172,7 @@ export function HabitsView({
             <Link
               href={href(period.view, latest)}
               scroll={false}
-              className="bg-brand-500 text-ink-0 hover:bg-brand-400 mt-3 inline-flex h-8 items-center gap-1.5 px-[14px] font-mono text-[10.5px] tracking-[.06em]"
+              className="bg-brand-500 text-ink-0 hover:bg-brand-400 mt-3 inline-flex h-8 items-center gap-1.5 px-[14px] font-mono text-[10.5px] tracking-[.06em] max-sm:h-11 max-sm:text-[12px]"
               style={notchStyle(8)}
             >
               JUMP TO LATEST ({formatDateSpan(latest, latest).toUpperCase()})
@@ -216,7 +216,7 @@ function StepLink({
   children: string;
 }) {
   const className =
-    "border-ink-500 text-ink-100 flex size-8 items-center justify-center border font-mono text-base";
+    "border-ink-500 text-ink-100 flex size-8 items-center justify-center border font-mono text-base max-sm:size-11 max-sm:text-lg";
   if (disabled) {
     return (
       <span aria-hidden className={clsx(className, "opacity-35")}>
@@ -262,9 +262,13 @@ function SummaryTable({
   const scope = period.view === "all" ? "ALL TIME" : "THIS PERIOD";
   return (
     <Card className="mt-4" padding="p-0">
-      <div className="border-ink-500 flex items-baseline justify-between gap-4 border-b px-4 py-3">
-        <Label className="text-ink-100">QUESTIONS · {scope}</Label>
-        <Label>FIRST / LAST SEEN ARE ALL-TIME</Label>
+      <div className="border-ink-500 flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1 border-b px-4 py-3">
+        <Label className="text-ink-100 max-sm:text-[11px]">
+          QUESTIONS · {scope}
+        </Label>
+        <Label className="max-sm:text-[11px]">
+          FIRST / LAST SEEN ARE ALL-TIME
+        </Label>
       </div>
       <ul className="divide-ink-600 divide-y">
         {habits.map((habit) => {
@@ -302,7 +306,7 @@ function SummaryTable({
                   />
                 </span>
               </div>
-              <span className="text-ink-200 font-mono text-[10px] tracking-[.04em] md:text-right">
+              <span className="text-ink-200 font-mono text-[10px] tracking-[.04em] max-sm:text-[11px] md:text-right">
                 {habit.entryCount > 0
                   ? `${formatDateSpan(habit.firstSeenDate, habit.firstSeenDate)} → ${formatDateSpan(habit.lastSeenDate, habit.lastSeenDate)} · ${habit.entryCount} total`
                   : "never answered"}

@@ -60,7 +60,7 @@ export function AnswerLegend({ className }: { className?: string }) {
   return (
     <div
       className={clsx(
-        "text-ink-100 flex flex-wrap items-center gap-x-4 gap-y-2 font-mono text-[10px] tracking-[.08em]",
+        "text-ink-100 flex flex-wrap items-center gap-x-4 gap-y-2 font-mono text-[10px] tracking-[.08em] max-sm:text-[11px]",
         className,
       )}
     >

@@ -171,7 +171,7 @@ export function HabitGrid({
     view === "week"
       ? "min-w-14"
       : view === "month"
-        ? "min-w-8"
+        ? "min-w-8 max-sm:min-w-10"
         : "min-w-[52px]";
   const sticky =
     "bg-ink-800 sticky left-0 z-10 w-[148px] min-w-[148px] border-r border-ink-500 sm:w-[260px] sm:min-w-[260px]";
@@ -192,7 +192,9 @@ export function HabitGrid({
                   "border-ink-500 border-b px-3 py-2 text-left align-bottom",
                 )}
               >
-                <Label className="text-ink-100">QUESTION</Label>
+                <Label className="text-ink-100 max-sm:text-[11px]">
+                  QUESTION
+                </Label>
               </th>
               {columns.map((column) => {
                 const columnNotes = datesBetween(
@@ -332,7 +334,7 @@ function RowCount({
   if (!first || !last) return null;
   const stats = habitRangeStats(habit.entries, first.from, last.to);
   return (
-    <Label className="mt-0.5 block">
+    <Label className="mt-0.5 block max-sm:text-[11px]">
       {stats.answeredDays === 0
         ? "NO ANSWERS"
         : `YES ${stats.yesDays}/${stats.answeredDays} DAYS`}
@@ -357,7 +359,7 @@ function ColumnHead({
   if (column.kind === "week") {
     return (
       <>
-        <span className="text-ink-200 font-mono text-[9px] tracking-[.06em]">
+        <span className="text-ink-200 font-mono text-[9px] tracking-[.06em] max-sm:text-[11px]">
           {date
             .toLocaleString("en-US", { month: "short", timeZone: "UTC" })
             .toUpperCase()}
@@ -371,7 +373,7 @@ function ColumnHead({
   const weekday = weekdayShort.format(date).toUpperCase();
   return (
     <>
-      <span className="text-ink-200 font-mono text-[9px] tracking-[.06em]">
+      <span className="text-ink-200 font-mono text-[9px] tracking-[.06em] max-sm:text-[11px]">
         {view === "week" ? weekday : weekday.slice(0, 1)}
       </span>
       <span className="text-ink-50 font-mono text-[11px]">
@@ -424,7 +426,7 @@ function WeekStrip({
 
 function TipTitle({ children }: { children: ReactNode }) {
   return (
-    <div className="text-ink-0 font-prose mb-1.5 text-[12px] leading-4 font-semibold">
+    <div className="text-ink-0 font-prose mb-1.5 pr-6 text-[12px] leading-4 font-semibold max-sm:text-[13px]">
       {children}
     </div>
   );
@@ -434,14 +436,16 @@ function Notes({ notes }: { notes: { date?: DateKey; text: string }[] }) {
   if (notes.length === 0) return null;
   return (
     <div className="border-ink-500 mt-2 border-t pt-2">
-      <Label className="text-brand-text-dim">JOURNAL NOTE</Label>
+      <Label className="text-brand-text-dim max-sm:text-[11px]">
+        JOURNAL NOTE
+      </Label>
       {notes.map((note, index) => (
         <p
           key={index}
           className="text-ink-50 font-prose mt-1 text-[12px] leading-4"
         >
           {note.date ? (
-            <span className="text-ink-200 font-mono text-[10px]">
+            <span className="text-ink-200 font-mono text-[10px] max-sm:text-[11px]">
               {formatDateSpan(note.date, note.date).replace(/, \d{4}$/, "")}{" "}
               ·{" "}
             </span>
@@ -475,7 +479,7 @@ function DayTip({
         <span className="text-ink-0">{answerText(day)}</span>
       </div>
       {day ? (
-        <ul className="text-ink-200 mt-1.5 space-y-0.5 font-mono text-[10px] leading-4">
+        <ul className="text-ink-200 mt-1.5 space-y-0.5 font-mono text-[10px] leading-4 max-sm:text-[11px]">
           {day.entries.map((entry) => (
             <li key={entry.id}>
               {day.entries.length > 1
@@ -535,7 +539,7 @@ function WeekTip({
           : `Yes on ${stats.yesDays} of ${stats.answeredDays} answered day${stats.answeredDays === 1 ? "" : "s"}`}
       </div>
       {answered.length > 0 ? (
-        <ul className="text-ink-200 mt-1.5 space-y-0.5 font-mono text-[10px] leading-4">
+        <ul className="text-ink-200 mt-1.5 space-y-0.5 font-mono text-[10px] leading-4 max-sm:text-[11px]">
           {answered.map((day) => (
             <li key={day.date} className="flex items-center gap-1.5">
               <AnswerMark answer={day.answer} mixed={day.mixed} size={8} />
@@ -639,7 +643,7 @@ function Tooltip({
           type="button"
           onClick={onClose}
           aria-label="Close"
-          className="text-ink-200 hover:text-ink-0 absolute top-1.5 right-2 font-mono text-sm"
+          className="text-ink-200 hover:text-ink-0 absolute top-0 right-0 flex size-9 items-center justify-center font-mono text-base max-sm:size-11"
         >
           ×
         </button>
