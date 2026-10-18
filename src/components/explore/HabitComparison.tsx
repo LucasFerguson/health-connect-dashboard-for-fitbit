@@ -228,13 +228,13 @@ export function HabitCrossTab({
       <div className="text-ink-0 font-mono text-[26px] leading-none font-bold">
         {count}
       </div>
-      <div className="text-ink-200 mt-1 font-mono text-[10px]">
+      <div className="text-ink-200 mt-1 font-mono text-[10px] max-sm:text-[11px]">
         {percent(count, total)} OF ROW
       </div>
     </td>
   );
   const head =
-    "text-ink-100 border-ink-500 border p-2 font-mono text-[10px] tracking-[.06em]";
+    "text-ink-100 border-ink-500 border p-2 font-mono text-[10px] max-sm:text-[11px] tracking-[.06em]";
 
   return (
     <section aria-label="Two-by-two table" className="flex flex-col gap-3">
@@ -341,7 +341,7 @@ export function HabitOutOfRange({
     EXPLORE_RANGES.find((option) => option.key === range)?.label ?? range;
   return (
     <Card className="mt-0" padding="p-5" topAccent="var(--color-caution)">
-      <Label className="text-caution-text">
+      <Label className="text-caution-text max-sm:text-[11px]">
         NO HABIT ANSWERS IN THIS RANGE
       </Label>
       <p className="text-ink-0 font-prose mt-2 text-base">

@@ -125,7 +125,7 @@ export function ExploreView({
             day is left out, never counted as zero.
           </p>
         </div>
-        <Label>
+        <Label className="max-sm:text-[11px]">
           {window.from ? `${window.from} → ${window.to}` : `ALL → ${window.to}`}
         </Label>
       </header>
@@ -144,7 +144,7 @@ export function ExploreView({
           <button
             type="button"
             onClick={() => update({ x: selection.y, y: selection.x })}
-            className="border-ink-500 text-ink-100 hover:border-ink-400 hover:bg-ink-700 hover:text-ink-0 flex h-9 items-center justify-center gap-1.5 self-end border px-3 font-mono text-[10px] tracking-[.08em] transition-colors duration-[120ms]"
+            className="border-ink-500 text-ink-100 hover:border-ink-400 hover:bg-ink-700 hover:text-ink-0 flex h-9 items-center justify-center gap-1.5 self-end border px-3 font-mono text-[10px] tracking-[.08em] transition-colors duration-[120ms] max-sm:h-11 max-sm:text-[12px]"
             style={notchStyle(7)}
             aria-label="Swap X and Y"
             title="Swap X and Y"
@@ -194,7 +194,7 @@ export function ExploreView({
               onChange={(range) => update({ range })}
             />
             {loadingRange ? (
-              <span className="mb-2">
+              <span className="mb-2 max-sm:mb-3.5">
                 <Spinner size={12} />
               </span>
             ) : null}
@@ -341,7 +341,7 @@ function MetricPicker({
           className="block size-2.5"
           style={{ backgroundColor: color }}
         />
-        <Label>{axis} AXIS</Label>
+        <Label className="max-sm:text-[11px]">{axis} AXIS</Label>
       </label>
       <select
         id={id}
@@ -352,7 +352,7 @@ function MetricPicker({
           );
           if (next) onChange(next.id);
         }}
-        className="border-ink-500 bg-ink-900 text-ink-0 hover:border-ink-400 focus-visible:border-brand-400 h-9 w-full min-w-0 border px-2.5 font-mono text-[12px] outline-none"
+        className="border-ink-500 bg-ink-900 text-ink-0 hover:border-ink-400 focus-visible:border-brand-400 h-9 w-full min-w-0 border px-2.5 font-mono text-[12px] outline-none max-sm:h-11 max-sm:text-[14px]"
         style={notchStyle(7)}
       >
         {groups.map(({ group, metrics }) => (
@@ -401,7 +401,7 @@ function ToggleGroup<T extends string>({
 }) {
   return (
     <div className="flex flex-col gap-1.5">
-      <Label>{label}</Label>
+      <Label className="max-sm:text-[11px]">{label}</Label>
       <div role="group" aria-label={label} className="flex">
         {options.map((option, index) => {
           const active = option.value === value;
@@ -412,7 +412,7 @@ function ToggleGroup<T extends string>({
               aria-pressed={active}
               onClick={() => onChange(option.value)}
               className={clsx(
-                "h-8 border px-3 font-mono text-[10px] tracking-[.08em] transition-colors duration-[120ms]",
+                "h-8 border px-3 font-mono text-[10px] tracking-[.08em] transition-colors duration-[120ms] max-sm:h-11 max-sm:px-3.5 max-sm:text-[12px]",
                 index > 0 && "-ml-px",
                 active
                   ? "border-brand-400 bg-brand-950 text-ink-0 relative z-10"
@@ -455,10 +455,10 @@ function LagControl({
   onChange: (lag: number) => void;
 }) {
   const stepper =
-    "border-ink-500 text-ink-100 hover:bg-ink-700 hover:text-ink-0 flex size-8 items-center justify-center border font-mono text-sm disabled:opacity-40 disabled:pointer-events-none";
+    "border-ink-500 text-ink-100 hover:bg-ink-700 hover:text-ink-0 flex size-8 shrink-0 items-center justify-center border font-mono text-sm disabled:opacity-40 disabled:pointer-events-none max-sm:size-11 max-sm:text-base";
   return (
     <div className="flex min-w-0 flex-1 basis-72 flex-col gap-1.5">
-      <Label>
+      <Label className="max-sm:text-[11px]">
         LAG · Y SHIFTED {lag > 0 ? "+" : lag < 0 ? "−" : "±"}
         {Math.abs(lag)}D
       </Label>
@@ -481,7 +481,7 @@ function LagControl({
           onChange={(event) => onChange(Number(event.target.value))}
           aria-label="Lag in days: Y is read this many days after X"
           aria-valuetext={describeLag(lag, x, y)}
-          className="accent-brand-400 min-w-0 flex-1"
+          className="accent-brand-400 h-8 min-w-0 flex-1 cursor-pointer max-sm:h-11"
         />
         <button
           type="button"
@@ -494,7 +494,10 @@ function LagControl({
         </button>
         <button
           type="button"
-          className={clsx(stepper, "w-auto px-2 text-[10px] tracking-[.08em]")}
+          className={clsx(
+            stepper,
+            "w-auto px-2 text-[10px] tracking-[.08em] max-sm:w-auto max-sm:text-[12px]",
+          )}
           onClick={() => onChange(0)}
           disabled={lag === 0}
         >

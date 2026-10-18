@@ -19,6 +19,11 @@ import {
   minuteAxisBounds,
   tooltipBase,
 } from "./chartTheme";
+import { useNarrowScreen } from "./useNarrowScreen";
+
+/** Days shown when a long range first opens on a phone; the slider still
+ * reaches the whole range. */
+const NARROW_WINDOW_DAYS = 90;
 
 /** Every date from `from` to `to`, inclusive. */
 function dateSpan(from: DateKey, to: DateKey): DateKey[] {
@@ -53,6 +58,7 @@ export function ExploreLineChart({
   lag: number;
   window: { from: DateKey | null; to: DateKey };
 }) {
+  const narrow = useNarrowScreen();
   const option = useMemo(() => {
     const xByDate = indexByDate(xSeries);
     const yByDate = indexByDate(ySeries);
@@ -142,12 +148,25 @@ export function ExploreLineChart({
             startValue: focusFrom < dates[0]! ? dates[0] : focusFrom,
             endValue: focusTo > dates.at(-1)! ? dates.at(-1) : focusTo,
           }
-        : {};
+        : // A year or more of daily points squeezed into ~340px is
+          // unreadable on a phone, so open on the latest 90 days there.
+          narrow && dates.length > NARROW_WINDOW_DAYS
+          ? {
+              startValue: dates[dates.length - NARROW_WINDOW_DAYS],
+              endValue: dates.at(-1),
+            }
+          : {};
 
     return {
       animation: false,
       textStyle: { fontFamily: CHART_FONT },
-      grid: { top: 52, right: 8, bottom: 64, left: 8, containLabel: true },
+      grid: {
+        top: 52,
+        right: 8,
+        bottom: narrow ? 74 : 64,
+        left: 8,
+        containLabel: true,
+      },
       legend: {
         top: 0,
         left: 0,
@@ -156,7 +175,7 @@ export function ExploreLineChart({
         textStyle: {
           color: EXPLORE_COLORS.tooltipText,
           fontFamily: CHART_FONT,
-          fontSize: 10,
+          fontSize: 11,
         },
       },
       tooltip: {
@@ -200,12 +219,12 @@ export function ExploreLineChart({
         {
           type: "slider",
           ...focus,
-          height: 18,
+          height: narrow ? 28 : 18,
           bottom: 8,
           borderColor: EXPLORE_COLORS.axisLine,
           fillerColor: "rgba(169, 123, 255, 0.15)",
           handleStyle: { color: EXPLORE_COLORS.point },
-          textStyle: { color: EXPLORE_COLORS.axisText, fontSize: 9 },
+          textStyle: { color: EXPLORE_COLORS.axisText, fontSize: 10 },
           dataBackground: {
             lineStyle: { color: EXPLORE_COLORS.axisLine },
             areaStyle: { color: "rgba(48, 40, 66, 0.4)" },
@@ -259,7 +278,7 @@ export function ExploreLineChart({
         seriesFor(y, yName, 1, yData, EXPLORE_COLORS.y),
       ],
     };
-  }, [x, y, xSeries, ySeries, lag, window]);
+  }, [x, y, xSeries, ySeries, lag, window, narrow]);
 
   return (
     <div

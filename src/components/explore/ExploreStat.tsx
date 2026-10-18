@@ -33,11 +33,13 @@ export function Stat({
 }) {
   return (
     <Card topAccent={accent} className="flex min-w-0 flex-col gap-1.5">
-      <Label>{label}</Label>
+      <Label className="max-sm:text-[11px]">{label}</Label>
       <span className="text-ink-0 font-mono text-[22px] leading-none font-bold tracking-[-.03em] sm:text-[30px]">
         {value}
       </span>
-      <Label className="text-ink-100 min-h-[11px]">{caption ?? ""}</Label>
+      <Label className="text-ink-100 min-h-[11px] max-sm:text-[11px]">
+        {caption ?? ""}
+      </Label>
     </Card>
   );
 }

@@ -239,7 +239,7 @@ export function ExploreGroupChart({
           style={{ height: "100%", width: "100%" }}
         />
       </div>
-      <div className="text-ink-100 mt-2 flex flex-wrap gap-x-5 gap-y-1 px-1 font-mono text-[10px] tracking-[.06em]">
+      <div className="text-ink-100 mt-2 flex flex-wrap gap-x-5 gap-y-1 px-1 font-mono text-[10px] tracking-[.06em] max-sm:text-[11px]">
         <span className="flex items-center gap-1.5">
           <span
             aria-hidden

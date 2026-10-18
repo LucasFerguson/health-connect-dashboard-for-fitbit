@@ -41,11 +41,11 @@ export const tooltipBase = {
 
 export function axisStyle(nameColor: string = EXPLORE_COLORS.axisText) {
   return {
-    nameTextStyle: { color: nameColor, fontFamily: CHART_FONT, fontSize: 10 },
+    nameTextStyle: { color: nameColor, fontFamily: CHART_FONT, fontSize: 11 },
     axisLabel: {
       color: EXPLORE_COLORS.axisText,
       fontFamily: CHART_FONT,
-      fontSize: 10,
+      fontSize: 11,
       hideOverlap: true,
     },
     axisLine: { lineStyle: { color: EXPLORE_COLORS.axisLine } },
