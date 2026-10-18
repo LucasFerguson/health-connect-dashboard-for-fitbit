@@ -4,6 +4,11 @@ import { LazyECharts as ReactECharts } from "../ui/LazyECharts";
 import type { DailySleepSummary } from "~/domain/analytics";
 import { formatDurationMinutes } from "~/features/health/metricFormatters";
 import { CalendarHeatmap } from "../heatmap/CalendarHeatmap";
+import {
+  dailyChartViewport,
+  monthlyChartViewport,
+} from "../metric-detail/dailyChartOptions";
+import { useNarrowChart } from "../metric-detail/useNarrowChart";
 
 export function SleepQuantityView({
   daily,
@@ -14,6 +19,8 @@ export function SleepQuantityView({
   targetMinutes: number;
   selectedDate?: string;
 }) {
+  // Phones open the daily chart on recent days; see dailyChartViewport.
+  const narrow = useNarrowChart();
   const latest = daily.at(-1) ?? null;
   const selected = selectedDate
     ? daily.find((day) => day.date === selectedDate)
@@ -103,14 +110,17 @@ export function SleepQuantityView({
           <h2 className="text-xl font-semibold">Daily sleep trend</h2>
           <p className="mt-1 text-sm text-white/70">
             Daily quantity compared with your configured target.
+            {narrow && daily.length > 90
+              ? " Opens on the last 90 days; drag the control's left handle to see the full history."
+              : null}
           </p>
           <div
-            className="mt-4 h-96"
+            className="mt-4 h-80 sm:h-96"
             role="img"
             aria-label="Daily sleep quantity history"
           >
             <ReactECharts
-              option={dailyOption(daily, targetMinutes)}
+              option={dailyOption(daily, targetMinutes, narrow)}
               style={{ height: "100%", width: "100%" }}
             />
           </div>
@@ -127,7 +137,7 @@ export function SleepQuantityView({
             aria-label="Monthly sleep quantity averages"
           >
             <ReactECharts
-              option={monthlyOption(monthly)}
+              option={monthlyOption(monthly, narrow)}
               style={{ height: "100%", width: "100%" }}
             />
           </div>
@@ -146,18 +156,30 @@ function Summary({ label, value }: { label: string; value: string }) {
   );
 }
 
-function dailyOption(daily: DailySleepSummary[], targetMinutes: number) {
+function dailyOption(
+  daily: DailySleepSummary[],
+  targetMinutes: number,
+  narrow: boolean,
+) {
+  const dates = daily.map((day) => day.date);
+  const viewport = dailyChartViewport(dates, narrow);
   return {
     animation: false,
-    grid: { top: 42, right: 18, bottom: 44, left: 58 },
+    grid: {
+      top: 42,
+      right: 18,
+      bottom: viewport.gridBottom ?? 44,
+      left: viewport.gridLeft ?? 58,
+    },
     legend: { top: 0, textStyle: { color: "#cbd5e1" } },
     tooltip: {
+      ...viewport.tooltip,
       trigger: "axis",
       valueFormatter: (value: number) => formatDurationMinutes(value),
     },
-    dataZoom: [{ type: "inside" }, { type: "slider", height: 18, bottom: 4 }],
-    xAxis: axis(daily.map((day) => day.date)),
-    yAxis: durationAxis(),
+    dataZoom: viewport.dataZoom,
+    xAxis: { ...axis(dates), axisLabel: viewport.xAxisLabel },
+    yAxis: durationAxis(viewport.yAxisLabelSize),
     series: [
       {
         name: "Recorded sleep",
@@ -176,16 +198,24 @@ function dailyOption(daily: DailySleepSummary[], targetMinutes: number) {
   };
 }
 
-function monthlyOption(monthly: Array<{ month: string; value: number }>) {
+function monthlyOption(
+  monthly: Array<{ month: string; value: number }>,
+  narrow: boolean,
+) {
+  const viewport = monthlyChartViewport(narrow);
   return {
     animation: false,
-    grid: { top: 20, right: 18, bottom: 34, left: 58 },
+    grid: { top: 20, right: 18, bottom: 34, left: viewport.gridLeft ?? 58 },
     tooltip: {
+      ...viewport.tooltip,
       trigger: "axis",
       valueFormatter: (value: number) => formatDurationMinutes(value),
     },
-    xAxis: axis(monthly.map((item) => item.month)),
-    yAxis: durationAxis(),
+    xAxis: {
+      ...axis(monthly.map((item) => item.month)),
+      axisLabel: viewport.xAxisLabel,
+    },
+    yAxis: durationAxis(viewport.yAxisLabelSize),
     series: [
       {
         name: "Average sleep",
@@ -206,10 +236,11 @@ function axis(values: string[]) {
   };
 }
 
-function durationAxis() {
+function durationAxis(labelSize: { fontSize?: number } = {}) {
   return {
     type: "value",
     axisLabel: {
+      ...labelSize,
       color: "#94a3b8",
       formatter: (value: number) => `${Math.round(value / 60)}h`,
     },
