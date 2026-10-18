@@ -1,12 +1,11 @@
 "use client";
 
-import { useEffect, useTransition } from "react";
-import { useRouter } from "next/navigation";
-import { clsx } from "clsx";
+import { useEffect } from "react";
 import { Chip } from "~/components/ui/Chip";
 import { IconButton } from "~/components/ui/IconButton";
 import type { DayState } from "~/domain/dayView";
 import { DayDatePicker } from "./DayDatePicker";
+import { useDayNavigation } from "./DayNavigation";
 
 function shiftDate(date: string, days: number): string {
   const instant = Date.parse(`${date}T00:00:00Z`);
@@ -35,21 +34,10 @@ export function ContextBar({
    * as "not future", which is close enough for a disabled-button hint. */
   dayState: DayState;
 }) {
-  const router = useRouter();
-  const [isPending, startTransition] = useTransition();
-  const isFuture = dayState === "future";
-
-  const goTo = (date: string) => {
-    startTransition(() => {
-      router.push(`/day/${date}`);
-    });
-  };
-
-  const goToToday = () => {
-    startTransition(() => {
-      router.push("/day");
-    });
-  };
+  const { goTo, goToToday, isPending, pendingDate } = useDayNavigation();
+  // Show the picked date straight away; the rest of the page catches up.
+  const shownDate = pendingDate ?? selectedDate;
+  const isFuture = pendingDate === null && dayState === "future";
 
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
@@ -57,58 +45,41 @@ export function ContextBar({
         const tag = event.target.tagName;
         if (tag === "INPUT" || tag === "TEXTAREA") return;
       }
-      if (event.key === "ArrowLeft") goTo(shiftDate(selectedDate, -1));
-      if (event.key === "ArrowRight") goTo(shiftDate(selectedDate, 1));
+      if (event.key === "ArrowLeft") goTo(shiftDate(shownDate, -1));
+      if (event.key === "ArrowRight") goTo(shiftDate(shownDate, 1));
     };
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selectedDate]);
+  }, [shownDate]);
 
   return (
     <div className="border-ink-600 bg-ink-900 relative z-20 flex h-10 shrink-0 items-center gap-3 border-b px-4 max-sm:h-[60px] max-sm:gap-2">
-      <div
-        className={clsx(
-          "flex shrink-0 items-center gap-px transition-opacity duration-[120ms] ease-out",
-          isPending && "opacity-50",
-        )}
-      >
+      <div className="flex shrink-0 items-center gap-px">
         <IconButton
           aria-label="Previous day"
-          onClick={() => goTo(shiftDate(selectedDate, -1))}
-          disabled={isPending}
+          onClick={() => goTo(shiftDate(shownDate, -1))}
           className={STEP_BUTTON_PHONE_CLASS}
         >
           ‹
         </IconButton>
         <DayDatePicker
-          selectedDate={selectedDate}
+          selectedDate={shownDate}
           isFuture={isFuture}
           isPending={isPending}
           onPick={goTo}
         />
         <IconButton
           aria-label="Next day"
-          onClick={() => goTo(shiftDate(selectedDate, 1))}
-          disabled={isPending}
+          onClick={() => goTo(shiftDate(shownDate, 1))}
           className={STEP_BUTTON_PHONE_CLASS}
         >
           ›
         </IconButton>
       </div>
 
-      <button
-        type="button"
-        onClick={goToToday}
-        disabled={isPending}
-        className="shrink-0"
-      >
-        <Chip
-          className={clsx(
-            "cursor-pointer transition-opacity duration-[120ms] ease-out max-sm:h-11 max-sm:px-3 max-sm:text-[11px]",
-            isPending && "cursor-not-allowed opacity-40",
-          )}
-        >
+      <button type="button" onClick={goToToday} className="shrink-0">
+        <Chip className="cursor-pointer max-sm:h-11 max-sm:px-3 max-sm:text-[11px]">
           TODAY
         </Chip>
       </button>

@@ -1,9 +1,8 @@
 "use client";
 
-import { useState, useTransition } from "react";
-import { useRouter } from "next/navigation";
 import { clsx } from "clsx";
 import { Spinner } from "~/components/ui/Spinner";
+import { useDayNavigation } from "./DayNavigation";
 import {
   RECOVERY_ZONE_COLOR,
   type DayStripCellData,
@@ -44,18 +43,12 @@ const HIDE_AT_DISTANCE: Record<number, string> = {
  * recovery and strain fractions when the metric's status is displayable.
  */
 export function DayStrip({ cells }: { cells: DayStripCellData[] }) {
-  const router = useRouter();
-  const [isPending, startTransition] = useTransition();
-  const [pendingDate, setPendingDate] = useState<string | null>(null);
-
+  const { goTo, pendingDate } = useDayNavigation();
+  // Centering and hiding stay on the loaded day so the strip doesn't jump
+  // mid-load; only the highlight moves to the picked day straight away.
   const selectedIndex = cells.findIndex((cell) => cell.isSelected);
-
-  const goTo = (date: string) => {
-    setPendingDate(date);
-    startTransition(() => {
-      router.push(`/day/${date}`);
-    });
-  };
+  const isHighlighted = (cell: DayStripCellData) =>
+    pendingDate ? cell.date === pendingDate : cell.isSelected;
 
   return (
     <div className="border-ink-600 bg-ink-950 flex h-[54px] shrink-0 items-stretch gap-0 border-b px-4 max-sm:h-[60px]">
@@ -71,7 +64,8 @@ export function DayStrip({ cells }: { cells: DayStripCellData[] }) {
       </div>
       <div className="@container flex min-w-0 flex-1 gap-[3px] overflow-hidden">
         {cells.map((cell, index) => {
-          const isCellPending = isPending && pendingDate === cell.date;
+          const isCellPending = pendingDate === cell.date;
+          const highlighted = isHighlighted(cell);
           const distance =
             selectedIndex === -1 ? 0 : Math.abs(index - selectedIndex);
           return (
@@ -80,12 +74,10 @@ export function DayStrip({ cells }: { cells: DayStripCellData[] }) {
               type="button"
               onClick={() => goTo(cell.date)}
               aria-current={cell.isSelected ? "date" : undefined}
-              disabled={isPending}
               className={clsx(
-                "bg-ink-900 flex min-w-[64px] flex-col justify-center gap-1 px-1.5 text-left transition-colors duration-[120ms] ease-out disabled:pointer-events-none",
+                "bg-ink-900 flex min-w-[64px] flex-col justify-center gap-1 px-1.5 text-left transition-colors duration-[120ms] ease-out",
                 HIDE_AT_DISTANCE[distance],
-                isPending && !isCellPending && "opacity-50",
-                cell.isSelected
+                highlighted
                   ? "border-brand-400 bg-ink-800 flex-[1.35] border px-2"
                   : cell.isFuture
                     ? "border-ink-400 flex-1 border border-dashed"
@@ -95,7 +87,7 @@ export function DayStrip({ cells }: { cells: DayStripCellData[] }) {
               <div
                 className={clsx(
                   "flex justify-between gap-1 font-mono text-[8.5px] max-sm:text-[11px]",
-                  cell.isSelected ? "text-ink-0 font-medium" : "text-ink-200",
+                  highlighted ? "text-ink-0 font-medium" : "text-ink-200",
                 )}
               >
                 <span>
@@ -108,7 +100,7 @@ export function DayStrip({ cells }: { cells: DayStripCellData[] }) {
                     className={
                       cell.isFuture
                         ? "text-brand-500"
-                        : cell.isSelected
+                        : highlighted
                           ? "text-recovery"
                           : undefined
                     }
@@ -127,7 +119,7 @@ export function DayStrip({ cells }: { cells: DayStripCellData[] }) {
                     opacity:
                       cell.sleepFraction === null
                         ? 0.25
-                        : cell.isSelected
+                        : highlighted
                           ? 1
                           : 0.55 + cell.sleepFraction * 0.45,
                   }}
@@ -143,7 +135,7 @@ export function DayStrip({ cells }: { cells: DayStripCellData[] }) {
                     opacity:
                       cell.recoveryFraction === null
                         ? 0.2
-                        : cell.isSelected
+                        : highlighted
                           ? 1
                           : 0.4 + cell.recoveryFraction * 0.5,
                   }}
@@ -157,7 +149,7 @@ export function DayStrip({ cells }: { cells: DayStripCellData[] }) {
                     opacity:
                       cell.strainFraction === null
                         ? 0.2
-                        : cell.isSelected
+                        : highlighted
                           ? 1
                           : 0.4 + cell.strainFraction * 0.4,
                   }}

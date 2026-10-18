@@ -6,6 +6,7 @@ import {
 import { timeToPercent } from "~/domain/dayViewTime";
 import { AutoRefresh } from "./AutoRefresh";
 import { ContextBar } from "./ContextBar";
+import { DayNavigationProvider, PendingDim } from "./DayNavigation";
 import { DayStrip } from "./DayStrip";
 import { DayViewTimeline } from "./DayViewTimeline";
 import { PanelRow } from "./PanelRow";
@@ -59,24 +60,26 @@ export function DayView({
 
   return (
     <div className="bg-ink-900 text-ink-0 flex flex-col md:h-screen md:min-h-[720px] md:overflow-hidden">
-      <AutoRefresh active={isToday} />
-      <ContextBar selectedDate={date} dayState={dayState} />
-      <DayStrip cells={stripCells} />
-      <div className="flex flex-col gap-3 p-4 pt-3.5 md:min-h-0 md:flex-1 md:overflow-y-hidden">
-        <PillarRow day={day} timeZone={timeZone} />
-        <DayViewTimeline
-          day={day}
-          rawRecords={rawRecords}
-          dayStartHour={DAY_START_HOUR}
-          isToday={isToday}
-          isPastDay={isPastDay}
-          nowIso={nowIso}
-          nowPercent={nowPercent}
-          timeZone={timeZone}
-          restingHeartRateBpm={restingHeartRateBpm}
-        />
-        <PanelRow day={day} />
-      </div>
+      <DayNavigationProvider>
+        <AutoRefresh active={isToday} />
+        <ContextBar selectedDate={date} dayState={dayState} />
+        <DayStrip cells={stripCells} />
+        <PendingDim className="flex flex-col gap-3 p-4 pt-3.5 md:min-h-0 md:flex-1 md:overflow-y-hidden">
+          <PillarRow day={day} timeZone={timeZone} />
+          <DayViewTimeline
+            day={day}
+            rawRecords={rawRecords}
+            dayStartHour={DAY_START_HOUR}
+            isToday={isToday}
+            isPastDay={isPastDay}
+            nowIso={nowIso}
+            nowPercent={nowPercent}
+            timeZone={timeZone}
+            restingHeartRateBpm={restingHeartRateBpm}
+          />
+          <PanelRow day={day} />
+        </PendingDim>
+      </DayNavigationProvider>
     </div>
   );
 }
