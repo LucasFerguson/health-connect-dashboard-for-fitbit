@@ -8,7 +8,7 @@ Dashboard: http://192.168.8.239:3000 (prod), http://192.168.8.239:3001 (dev).
 
 ## Waiting on you
 
-### Mobile cleanup (deployed 2026-10-18; signed-in pages not yet seen in a browser)
+### Mobile cleanup (deployed 2026-10-18; checked in headless Chromium at 390px, not yet on your phone)
 On your phone, check each page looks right and nothing scrolls sideways:
 - [ ] Nav: the menu button opens every page grouped by topic; the bar shows the current page.
 - [ ] `/day`: readable card labels, 44px prev/next/TODAY, the day strip opens on today, the whole page scrolls normally.
@@ -17,6 +17,9 @@ On your phone, check each page looks right and nothing scrolls sideways:
 - [ ] Metric pages (Steps, Calories, Heart, HRV, Skin temp, Weight): charts open on the last 90 days and the slider reaches older data; swiping over a chart scrolls the page.
 - [ ] `/habits`, `/explore`: controls are easy to tap; the Explore lag slider works by touch.
 - [ ] `/data-sources`: categories are collapsed with counts and open on tap.
+- [ ] The dark strip on the right of every page is gone (content fills the screen width).
+- [ ] Year heatmaps open on recent months; tapping a square shows that day's value under the grid.
+- [ ] Overview → Sleep stages: the time axis labels don't overlap.
 - If anything is broken: `scripts/deploy.sh rollback` restores the previous version.
 
 ### Nav analysis indicator and raw records (added 2026-10-17, deployed to prod 2026-10-18)
