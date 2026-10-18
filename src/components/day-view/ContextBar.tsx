@@ -1,54 +1,27 @@
 "use client";
 
-import { useEffect, useMemo, useTransition } from "react";
+import { useEffect, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { clsx } from "clsx";
 import { Chip } from "~/components/ui/Chip";
 import { IconButton } from "~/components/ui/IconButton";
-import { Menu } from "~/components/ui/Menu";
-import { Spinner } from "~/components/ui/Spinner";
 import type { DayState } from "~/domain/dayView";
-import { formatHourLabel } from "~/domain/dayViewTime";
+import { DayDatePicker } from "./DayDatePicker";
 
 function shiftDate(date: string, days: number): string {
   const instant = Date.parse(`${date}T00:00:00Z`);
   return new Date(instant + days * 86_400_000).toISOString().slice(0, 10);
 }
 
-const WEEKDAYS = ["SUN", "MON", "TUE", "WED", "THU", "FRI", "SAT"];
-const MONTHS = [
-  "JAN",
-  "FEB",
-  "MAR",
-  "APR",
-  "MAY",
-  "JUN",
-  "JUL",
-  "AUG",
-  "SEP",
-  "OCT",
-  "NOV",
-  "DEC",
-];
-
 /** The shared 24px IconButton is too small to tap on a phone; below `sm`
  * the stepper buttons grow to 44px and a larger chevron. */
 const STEP_BUTTON_PHONE_CLASS = "max-sm:size-11 max-sm:text-lg";
 
-function dayOfYear(date: string): number {
-  const instant = Date.parse(`${date}T00:00:00Z`);
-  const yearStart = Date.parse(`${date.slice(0, 4)}-01-01T00:00:00Z`);
-  return Math.round((instant - yearStart) / 86_400_000) + 1;
-}
-
 /**
  * Band 2 — the 40px context bar (60px on phones, so the stepper and TODAY
- * are 44px tap targets): date stepper, TODAY chip, and the DAY
- * START dropdown trigger (visual only — see TODO below).
- *
- * `dayStartHour` is accepted so the shell renders the correct chrome, but
- * wiring its menu up is out of scope here — noted as a known gap rather
- * than faked interactivity.
+ * are 44px tap targets): the date stepper, whose middle opens a month
+ * calendar (`DayDatePicker`), and the TODAY chip. The timeline always
+ * starts at midnight.
  */
 export function ContextBar({
   selectedDate,
@@ -92,19 +65,8 @@ export function ContextBar({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedDate]);
 
-  const { weekday, day, month, year, doy } = useMemo(() => {
-    const date = new Date(`${selectedDate}T00:00:00Z`);
-    return {
-      weekday: WEEKDAYS[date.getUTCDay()],
-      day: date.getUTCDate(),
-      month: MONTHS[date.getUTCMonth()],
-      year: date.getUTCFullYear(),
-      doy: dayOfYear(selectedDate),
-    };
-  }, [selectedDate]);
-
   return (
-    <div className="border-ink-600 bg-ink-900 flex h-10 shrink-0 items-center gap-3 overflow-x-auto border-b px-4 [scrollbar-width:none] max-sm:h-[60px] max-sm:gap-2 [&::-webkit-scrollbar]:hidden">
+    <div className="border-ink-600 bg-ink-900 relative z-20 flex h-10 shrink-0 items-center gap-3 border-b px-4 max-sm:h-[60px] max-sm:gap-2">
       <div
         className={clsx(
           "flex shrink-0 items-center gap-px transition-opacity duration-[120ms] ease-out",
@@ -119,20 +81,12 @@ export function ContextBar({
         >
           ‹
         </IconButton>
-        <div className="border-ink-500 bg-ink-800 flex h-6 items-center gap-[9px] border-y px-3 max-sm:h-11 max-sm:flex-col max-sm:items-start max-sm:justify-center max-sm:gap-0 max-sm:px-2.5">
-          <span className="font-display text-ink-0 text-lg tracking-[.1em] max-sm:leading-tight">
-            {weekday} {day} {month}
-          </span>
-          {/* One row on desktop; on a phone this is the second line under
-              the date, so the block stays 44px tall. */}
-          <span className="flex items-center gap-[9px] font-mono text-[9px] tracking-[.08em] max-sm:text-[11px] max-sm:leading-tight">
-            <span className="text-ink-200">
-              {year} · DAY {doy}
-            </span>
-            {isFuture ? <span className="text-brand-500">PLANNED</span> : null}
-            {isPending ? <Spinner size={10} /> : null}
-          </span>
-        </div>
+        <DayDatePicker
+          selectedDate={selectedDate}
+          isFuture={isFuture}
+          isPending={isPending}
+          onPick={goTo}
+        />
         <IconButton
           aria-label="Next day"
           onClick={() => goTo(shiftDate(selectedDate, 1))}
@@ -158,25 +112,6 @@ export function ContextBar({
           TODAY
         </Chip>
       </button>
-
-      <div className="bg-ink-500 h-4 w-px shrink-0" aria-hidden />
-
-      {/* Menu opens and lists real hour options, but selecting one is a
-          no-op — pivoting the timeline's axis origin isn't implemented yet.
-          Left genuinely inert rather than faking a working selection.
-          Hidden below sm: it's the lowest-priority control in this bar and
-          the date stepper needs the room on a phone-width screen. */}
-      <div className="hidden shrink-0 sm:block">
-        <Menu
-          trigger={`DAY START ${formatHourLabel(0)}`}
-          triggerTitle="Pivots the axis origin — not wired up yet"
-          options={[
-            { label: formatHourLabel(0) },
-            { label: formatHourLabel(4) },
-            { label: formatHourLabel(6) },
-          ]}
-        />
-      </div>
     </div>
   );
 }

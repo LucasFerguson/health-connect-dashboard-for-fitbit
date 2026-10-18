@@ -10,6 +10,7 @@ Dashboard: http://192.168.8.239:3000 (prod), http://192.168.8.239:3001 (dev).
 
 ### Day view: date strip, recovery card, full-resolution HR and steps (deployed to prod 2026-10-18; not checked in a browser)
 On `/day` at desktop width and on your phone:
+- [ ] The date at the top reads "September 27, 2026" with "SUNDAY · DAY 270" beside it (under it on a phone). Clicking it opens a month calendar: the arrows and month/year dropdowns move between months, clicking a day opens it, and Escape or a click outside closes it. The DAY START menu is gone.
 - [ ] The date strip never scrolls sideways: it shows only as many days as fit, with the selected day in the middle (about 5 on a phone, more as the window widens, up to 15). Narrow the desktop window and days drop off both ends evenly.
 - [ ] On a phone the RECORDED/PLANNED legend is gone and the date labels aren't cut off.
 - [ ] The middle bar in each strip cell shows that day's recovery zone: red (1-33), yellow (34-66) or green (67-100); days without a score show it faint grey.
