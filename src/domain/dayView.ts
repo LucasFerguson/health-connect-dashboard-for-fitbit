@@ -1,3 +1,4 @@
+import type { HeartRateDetail } from "./heartRateDetail";
 import type { AnalyticsStatus } from "./analyticsStatus";
 import type { DateKey, ISODateTime, SleepStageKind } from "./health";
 
@@ -169,6 +170,7 @@ export interface NearbyDay {
   date: DateKey;
   dayState: DayState;
   sleepDuration: NumericMetricValue | null;
+  recovery: NumericMetricValue | null;
   strain: NumericMetricValue | null;
 }
 
@@ -182,6 +184,9 @@ export interface DayViewData {
   /** Always the full window around `day.date`, oldest first, focused day
    * included. */
   nearbyDays: NearbyDay[];
+  /** Fine-grained HR candles/points from the raw samples; null (or absent)
+   * when they couldn't be read, so the lane uses the hourly candles. */
+  heartRateDetail?: HeartRateDetail | null;
 }
 
 // ---------------------------------------------------------------------------

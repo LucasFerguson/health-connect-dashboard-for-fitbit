@@ -166,9 +166,37 @@ export const DAY_QUERY = graphql(`
               status
               value
             }
+            recovery {
+              status
+              value
+            }
             strain {
               status
               value
+            }
+          }
+        }
+      }
+    }
+  }
+`);
+
+/**
+ * Raw heart-rate samples for one day, for the day view's high-resolution HR
+ * lane (`~/domain/heartRateDetail`). Separate from `DayPage` so a slow or
+ * failed sample read only costs the fine-grained chart, never the page.
+ */
+export const DAY_HEART_RATE_QUERY = graphql(`
+  query DayHeartRateSamples($range: TimeRange!) {
+    viewer {
+      sourceRecords {
+        heartRate(range: $range) {
+          records {
+            id
+            source
+            samples {
+              observedAt
+              bpm
             }
           }
         }

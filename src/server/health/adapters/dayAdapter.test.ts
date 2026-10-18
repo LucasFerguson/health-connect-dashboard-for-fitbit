@@ -178,6 +178,7 @@ function stripDay(
         sleep === null
           ? { status: "MISSING", value: null }
           : { status: "AVAILABLE", value: sleep },
+      recovery: { status: "MISSING", value: null },
       strain:
         strain === null
           ? { status: "MISSING", value: null }
@@ -385,6 +386,7 @@ void describe("adaptDayView: day strip", () => {
       date: "2026-01-10",
       dayState: "recorded",
       sleepDuration: { status: "available", value: 420 },
+      recovery: { status: "missing", value: null },
       strain: { status: "available", value: 8 },
     });
     assert.equal(byDate.get("2026-01-13")?.sleepDuration?.status, "missing");
@@ -395,6 +397,7 @@ void describe("adaptDayView: day strip", () => {
       date: "2026-01-15",
       dayState: "recorded",
       sleepDuration: null,
+      recovery: null,
       strain: null,
     });
     // Absent and after today: future.

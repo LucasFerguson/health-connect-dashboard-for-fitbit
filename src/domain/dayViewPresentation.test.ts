@@ -191,6 +191,10 @@ function nearbyDay(
       status: "missing",
       value: null,
     },
+    recovery: {
+      status: "missing",
+      value: null,
+    },
     strain: {
       status: "missing",
       value: null,
@@ -248,6 +252,22 @@ void describe("buildDayStripCells", () => {
     assert.equal(future.isFuture, true);
     assert.equal(future.sleepFraction, null);
     assert.equal(future.strainFraction, null);
+  });
+
+  void it("shows a partial (provisional) recovery score and hides an insufficient one", () => {
+    const cells = buildDayStripCells(
+      [
+        nearbyDay("2026-08-14", {
+          recovery: { status: "partial", value: 64 },
+        }),
+        nearbyDay("2026-08-15", {
+          recovery: { status: "insufficient_data", value: 50 },
+        }),
+      ],
+      "2026-08-15",
+    );
+    assert.equal(cells[0]?.recoveryFraction, 0.64);
+    assert.equal(cells[1]?.recoveryFraction, null);
   });
 
   void it("draws no bars for a date the backend has no stored day for", () => {

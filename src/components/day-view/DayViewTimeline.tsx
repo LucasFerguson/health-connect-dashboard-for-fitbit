@@ -1,10 +1,11 @@
 "use client";
 
-import { useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Card } from "~/components/ui/Card";
 import type { HealthDay } from "~/domain/dayView";
+import type { HeartRateDetail } from "~/domain/heartRateDetail";
 import { slotHourLabel } from "~/domain/dayViewTime";
-import { HeartRateLane } from "./HeartRateLane";
+import { HeartRateLane, type HeartRateChartMode } from "./HeartRateLane";
 import { HoverCrosshair } from "./HoverCrosshair";
 import { MovementLane } from "./MovementLane";
 import { PlanLane } from "./PlanLane";
@@ -18,11 +19,34 @@ import { HR_RAMP } from "./timelineConstants";
  * The 24-hour timeline — the core of the day view. Four lanes (HR
  * candlesticks, sleep stages, movement, plan) share one time axis built
  * from `~/domain/dayViewTime`'s shared math, so a heart-rate bump can be
- * read straight down into "REM". Lane data comes straight from
- * `day.timeline.*` as the backend bucketed it — no local bucketing.
+ * read straight down into "REM". Lane data comes from `day.timeline.*` as
+ * the backend bucketed it, except the HR lane, which prefers the 5-minute /
+ * 1-minute `heartRateDetail` built from the raw samples when there is one.
  */
+const MODE_STORAGE_KEY = "day-view:hr-chart-mode";
+
+/** The viewer's last candles/line choice. Storage can throw (private
+ * windows, blocked site data), so it falls back to candles. */
+function useHeartRateChartMode() {
+  const [mode, setMode] = useState<HeartRateChartMode>("candles");
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem(MODE_STORAGE_KEY);
+      if (saved === "candles" || saved === "line") setMode(saved);
+    } catch {}
+  }, []);
+  const choose = (next: HeartRateChartMode) => {
+    setMode(next);
+    try {
+      localStorage.setItem(MODE_STORAGE_KEY, next);
+    } catch {}
+  };
+  return [mode, choose] as const;
+}
+
 export function DayViewTimeline({
   day,
+  heartRateDetail,
   dayStartHour,
   isToday,
   isPastDay,
@@ -32,6 +56,7 @@ export function DayViewTimeline({
   restingHeartRateBpm,
 }: {
   day: HealthDay;
+  heartRateDetail: HeartRateDetail | null;
   dayStartHour: number;
   isToday: boolean;
   isPastDay: boolean;
@@ -41,6 +66,14 @@ export function DayViewTimeline({
   restingHeartRateBpm: number | null;
 }) {
   const plotRef = useRef<HTMLDivElement>(null);
+  const [chosenMode, setMode] = useHeartRateChartMode();
+  // The line needs the raw samples; without them only hourly candles exist.
+  const mode = heartRateDetail ? chosenMode : "candles";
+  const hrLabel = !heartRateDetail
+    ? "HOURLY HR CANDLES"
+    : mode === "line"
+      ? `${heartRateDetail.lineMinutes}-MIN HR LINE`
+      : `${heartRateDetail.candleMinutes}-MIN HR CANDLES`;
 
   return (
     <Card
@@ -54,8 +87,27 @@ export function DayViewTimeline({
         </span>
         <span className="text-ink-200 font-mono text-[11px] tracking-[.08em] sm:text-[9px]">
           {slotHourLabel(0, dayStartHour)} → {slotHourLabel(24, dayStartHour)} ·
-          HR CANDLES · SLEEP STAGES · MOVEMENT · PLAN
+          {hrLabel} · SLEEP STAGES · MOVEMENT · PLAN
         </span>
+        <label className="text-ink-200 flex items-center gap-1.5 font-mono text-[11px] tracking-[.08em] sm:text-[9px]">
+          HR
+          <select
+            value={mode}
+            onChange={(event) =>
+              setMode(event.target.value as HeartRateChartMode)
+            }
+            disabled={!heartRateDetail}
+            title={
+              heartRateDetail
+                ? undefined
+                : "Raw heart-rate samples couldn't be read for this day, so only the hourly candles are available."
+            }
+            className="border-ink-500 bg-ink-850 text-ink-0 hover:border-ink-300 focus-visible:outline-brand-400 cursor-pointer border px-1.5 py-1 font-mono text-[11px] tracking-[.06em] disabled:cursor-not-allowed disabled:opacity-60 sm:py-0.5 sm:text-[9px]"
+          >
+            <option value="candles">CANDLESTICK</option>
+            <option value="line">LINE</option>
+          </select>
+        </label>
         <div className="text-ink-200 flex items-center gap-2 font-mono text-[11px] sm:ml-auto sm:text-[8.5px]">
           <span>40</span>
           <div className="flex h-[7px] w-[120px]">
@@ -87,6 +139,8 @@ export function DayViewTimeline({
         >
           <HeartRateLane
             heartRate={day.timeline.heartRate}
+            detail={heartRateDetail}
+            mode={mode}
             restingHeartRateBpm={restingHeartRateBpm}
           />
           <TimeAxisLabels dayStartHour={dayStartHour} />

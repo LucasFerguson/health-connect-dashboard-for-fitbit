@@ -19,6 +19,18 @@ export const HR_RAMP = [
   "var(--color-hr-6)",
 ];
 
+/** `HR_RAMP` as hex, for the line view: echarts interpolates its colors
+ * and can't read CSS variables. Keep in sync with `--color-hr-*` in
+ * `globals.css`. */
+export const HR_RAMP_HEX = [
+  "#3fc4d9",
+  "#6e9cff",
+  "#4fc98a",
+  "#d9c13a",
+  "#f59a3e",
+  "#ff6b7a",
+];
+
 /** Converts a bpm value to a top-offset percentage within the HR lane
  * (0% = top = HR_SCALE_MAX, 100% = bottom = HR_SCALE_MIN). */
 export function bpmToLanePercent(bpm: number): number {

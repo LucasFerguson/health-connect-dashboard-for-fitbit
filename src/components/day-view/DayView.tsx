@@ -59,6 +59,7 @@ export function DayView({ data }: { data: DayViewData }) {
         <PillarRow day={day} timeZone={timeZone} />
         <DayViewTimeline
           day={day}
+          heartRateDetail={data.heartRateDetail ?? null}
           dayStartHour={DAY_START_HOUR}
           isToday={isToday}
           isPastDay={isPastDay}

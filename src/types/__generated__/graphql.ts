@@ -2,133 +2,453 @@
 /** Internal type. DO NOT USE DIRECTLY. */
 type Exact<T extends { [key: string]: unknown }> = { [K in keyof T]: T[K] };
 /** Internal type. DO NOT USE DIRECTLY. */
-export type Incremental<T> = T | { [P in keyof T]?: P extends ' $fragmentName' | '__typename' ? T[P] : never };
-import type { TypedDocumentNode as DocumentNode } from '@graphql-typed-document-node/core';
-export type ConsistencyCategory =
-  | 'OPTIMAL'
-  | 'POOR'
-  | 'SUFFICIENT';
+export type Incremental<T> =
+  | T
+  | {
+      [P in keyof T]?: P extends " $fragmentName" | "__typename" ? T[P] : never;
+    };
+import type { TypedDocumentNode as DocumentNode } from "@graphql-typed-document-node/core";
+export type ConsistencyCategory = "OPTIMAL" | "POOR" | "SUFFICIENT";
 
-export type DayState =
-  | 'FUTURE'
-  | 'RECORDED';
+export type DayState = "FUTURE" | "RECORDED";
 
-export type DebtCategory =
-  | 'HIGH'
-  | 'LOW'
-  | 'MODERATE'
-  | 'NONE';
+export type DebtCategory = "HIGH" | "LOW" | "MODERATE" | "NONE";
 
 export type HealthspanFactorKey =
-  | 'RESTING_HEART_RATE'
-  | 'SLEEP_CONSISTENCY'
-  | 'SLEEP_DURATION'
-  | 'STEPS';
+  | "RESTING_HEART_RATE"
+  | "SLEEP_CONSISTENCY"
+  | "SLEEP_DURATION"
+  | "STEPS";
 
-export type HealthspanFactorUnit =
-  | 'BPM'
-  | 'MINUTES'
-  | 'PERCENT'
-  | 'STEPS';
+export type HealthspanFactorUnit = "BPM" | "MINUTES" | "PERCENT" | "STEPS";
 
-export type HealthspanStatus =
-  | 'CALIBRATING'
-  | 'PARTIAL'
-  | 'READY';
+export type HealthspanStatus = "CALIBRATING" | "PARTIAL" | "READY";
 
 export type MetricStatus =
-  | 'AVAILABLE'
-  | 'BLOCKED'
-  | 'INSUFFICIENT_DATA'
-  | 'MISSING'
-  | 'NOT_IMPLEMENTED'
-  | 'PARTIAL'
-  | 'SAMPLE_TIME_ONLY'
-  | 'UNAVAILABLE';
+  | "AVAILABLE"
+  | "BLOCKED"
+  | "INSUFFICIENT_DATA"
+  | "MISSING"
+  | "NOT_IMPLEMENTED"
+  | "PARTIAL"
+  | "SAMPLE_TIME_ONLY"
+  | "UNAVAILABLE";
 
 export type MetricUnit =
-  | 'BPM'
-  | 'CELSIUS_DELTA'
-  | 'KCAL'
-  | 'KG'
-  | 'MS'
-  | 'STEPS';
+  | "BPM"
+  | "CELSIUS_DELTA"
+  | "KCAL"
+  | "KG"
+  | "MS"
+  | "STEPS";
 
-export type RecoveryBand =
-  | 'HIGH'
-  | 'LOW'
-  | 'MODERATE';
+export type RecoveryBand = "HIGH" | "LOW" | "MODERATE";
 
 export type RecoveryEstimateBasis =
-  | 'COMPLETE'
-  | 'INSUFFICIENT_DATA'
-  | 'PHYSIOLOGY_PARTIAL'
-  | 'SLEEP_CONSISTENCY_PARTIAL';
+  | "COMPLETE"
+  | "INSUFFICIENT_DATA"
+  | "PHYSIOLOGY_PARTIAL"
+  | "SLEEP_CONSISTENCY_PARTIAL";
 
 export type SleepStageKind =
-  | 'ASLEEP'
-  | 'AWAKE'
-  | 'DEEP'
-  | 'LIGHT'
-  | 'REM'
-  | 'UNKNOWN';
+  | "ASLEEP"
+  | "AWAKE"
+  | "DEEP"
+  | "LIGHT"
+  | "REM"
+  | "UNKNOWN";
 
-export type SyncState =
-  | 'IDLE'
-  | 'NEVER_OBSERVED'
-  | 'RECEIVING';
+export type SyncState = "IDLE" | "NEVER_OBSERVED" | "RECEIVING";
 
 export type TimeRange = {
   endExclusive: string;
   start: string;
 };
 
-export type DailySleepPageQueryVariables = Exact<{ [key: string]: never; }>;
+export type DailySleepPageQueryVariables = Exact<{ [key: string]: never }>;
 
+export type DailySleepPageQuery = {
+  viewer: {
+    analytics: {
+      id: string;
+      timeZone: string;
+      sleepDebt: { targetMinutes: number };
+      days: Array<{
+        id: string;
+        date: string;
+        headlineScores: {
+          sleepDuration: {
+            status: MetricStatus;
+            value: number | null;
+            eventCount: number | null;
+            recordingCount: number | null;
+          };
+        };
+      }>;
+    };
+  };
+};
 
-export type DailySleepPageQuery = { viewer: { analytics: { id: string, timeZone: string, sleepDebt: { targetMinutes: number }, days: Array<{ id: string, date: string, headlineScores: { sleepDuration: { status: MetricStatus, value: number | null, eventCount: number | null, recordingCount: number | null } } }> } } };
+export type DataSourcesPageQueryVariables = Exact<{ [key: string]: never }>;
 
-export type DataSourcesPageQueryVariables = Exact<{ [key: string]: never; }>;
-
-
-export type DataSourcesPageQuery = { viewer: { config: { homeTimeZone: string }, ingestion: { phoneSync: { lastUploadAt: string | null } }, sources: { inventory: { totalRecords: number, earliest: string | null, latest: string | null, signals: Array<{ collection: string, records: number, earliest: string | null, latest: string | null, bySource: Array<{ source: string, count: number }> }>, sources: Array<{ source: string, label: string, records: number }> }, devices: { devices: Array<{ id: string, sourceLabel: string, records: number, latest: string | null }> } } } };
+export type DataSourcesPageQuery = {
+  viewer: {
+    config: { homeTimeZone: string };
+    ingestion: { phoneSync: { lastUploadAt: string | null } };
+    sources: {
+      inventory: {
+        totalRecords: number;
+        earliest: string | null;
+        latest: string | null;
+        signals: Array<{
+          collection: string;
+          records: number;
+          earliest: string | null;
+          latest: string | null;
+          bySource: Array<{ source: string; count: number }>;
+        }>;
+        sources: Array<{ source: string; label: string; records: number }>;
+      };
+      devices: {
+        devices: Array<{
+          id: string;
+          sourceLabel: string;
+          records: number;
+          latest: string | null;
+        }>;
+      };
+    };
+  };
+};
 
 export type DayPageQueryVariables = Exact<{
   date: string;
   range: TimeRange;
 }>;
 
+export type DayPageQuery = {
+  viewer: {
+    analytics: {
+      id: string;
+      timeZone: string;
+      day: {
+        id: string;
+        date: string;
+        timeZone: string;
+        dayState: DayState;
+        headlineScores: {
+          sleepDuration: {
+            status: MetricStatus;
+            value: number | null;
+            note: string | null;
+            window: { startAt: string; endAt: string } | null;
+            stageMinutes: {
+              deep: number;
+              light: number;
+              rem: number;
+              asleep: number;
+              awake: number;
+              unknown: number;
+            } | null;
+          };
+          sleepNeed: {
+            status: MetricStatus;
+            value: number | null;
+            note: string | null;
+          };
+          recovery: {
+            status: MetricStatus;
+            value: number | null;
+            note: string | null;
+          };
+          strain: {
+            status: MetricStatus;
+            value: number | null;
+            note: string | null;
+          };
+          strainTarget: {
+            status: MetricStatus;
+            value: number | null;
+            note: string | null;
+          };
+        };
+        supportingMetrics: {
+          hrv: {
+            status: MetricStatus;
+            value: number | null;
+            note: string | null;
+          };
+          restingHeartRate: {
+            status: MetricStatus;
+            value: number | null;
+            note: string | null;
+          };
+          respiratoryRate: {
+            status: MetricStatus;
+            value: number | null;
+            note: string | null;
+          };
+          oxygenSaturation: {
+            status: MetricStatus;
+            value: number | null;
+            note: string | null;
+          };
+          skinTemperatureDeviation: {
+            status: MetricStatus;
+            value: number | null;
+            note: string | null;
+          };
+          steps: {
+            status: MetricStatus;
+            value: number | null;
+            note: string | null;
+          };
+          calories: {
+            status: MetricStatus;
+            value: number | null;
+            note: string | null;
+          };
+          zone3AndAbove: {
+            status: MetricStatus;
+            value: number | null;
+            note: string | null;
+          };
+        };
+        heartRateZones: { status: MetricStatus; note: string | null };
+        timeline: {
+          heartRate: {
+            status: MetricStatus;
+            note: string | null;
+            hours: Array<{
+              hour: number;
+              status: MetricStatus;
+              sampleCount: number;
+              min: number | null;
+              p25: number | null;
+              mean: number | null;
+              p75: number | null;
+              max: number | null;
+            }>;
+          };
+          sleepStages: Array<{
+            startAt: string;
+            endAt: string;
+            kind: SleepStageKind;
+          }>;
+          steps: Array<{ hour: number; count: number; status: MetricStatus }>;
+          schedule: { status: MetricStatus; note: string | null };
+          targetWakeTime: { status: MetricStatus; note: string | null };
+          targetBedTime: { status: MetricStatus; note: string | null };
+        };
+      } | null;
+      days: Array<{
+        id: string;
+        date: string;
+        dayState: DayState;
+        headlineScores: {
+          sleepDuration: { status: MetricStatus; value: number | null };
+          recovery: { status: MetricStatus; value: number | null };
+          strain: { status: MetricStatus; value: number | null };
+        };
+      }>;
+    };
+  };
+};
 
-export type DayPageQuery = { viewer: { analytics: { id: string, timeZone: string, day: { id: string, date: string, timeZone: string, dayState: DayState, headlineScores: { sleepDuration: { status: MetricStatus, value: number | null, note: string | null, window: { startAt: string, endAt: string } | null, stageMinutes: { deep: number, light: number, rem: number, asleep: number, awake: number, unknown: number } | null }, sleepNeed: { status: MetricStatus, value: number | null, note: string | null }, recovery: { status: MetricStatus, value: number | null, note: string | null }, strain: { status: MetricStatus, value: number | null, note: string | null }, strainTarget: { status: MetricStatus, value: number | null, note: string | null } }, supportingMetrics: { hrv: { status: MetricStatus, value: number | null, note: string | null }, restingHeartRate: { status: MetricStatus, value: number | null, note: string | null }, respiratoryRate: { status: MetricStatus, value: number | null, note: string | null }, oxygenSaturation: { status: MetricStatus, value: number | null, note: string | null }, skinTemperatureDeviation: { status: MetricStatus, value: number | null, note: string | null }, steps: { status: MetricStatus, value: number | null, note: string | null }, calories: { status: MetricStatus, value: number | null, note: string | null }, zone3AndAbove: { status: MetricStatus, value: number | null, note: string | null } }, heartRateZones: { status: MetricStatus, note: string | null }, timeline: { heartRate: { status: MetricStatus, note: string | null, hours: Array<{ hour: number, status: MetricStatus, sampleCount: number, min: number | null, p25: number | null, mean: number | null, p75: number | null, max: number | null }> }, sleepStages: Array<{ startAt: string, endAt: string, kind: SleepStageKind }>, steps: Array<{ hour: number, count: number, status: MetricStatus }>, schedule: { status: MetricStatus, note: string | null }, targetWakeTime: { status: MetricStatus, note: string | null }, targetBedTime: { status: MetricStatus, note: string | null } } } | null, days: Array<{ id: string, date: string, dayState: DayState, headlineScores: { sleepDuration: { status: MetricStatus, value: number | null }, strain: { status: MetricStatus, value: number | null } } }> } } };
+export type DayHeartRateSamplesQueryVariables = Exact<{
+  range: TimeRange;
+}>;
 
-export type DayIndexTimeZoneQueryVariables = Exact<{ [key: string]: never; }>;
+export type DayHeartRateSamplesQuery = {
+  viewer: {
+    sourceRecords: {
+      heartRate: {
+        records: Array<{
+          id: string;
+          source: string;
+          samples: Array<{ observedAt: string; bpm: number }>;
+        }>;
+      };
+    };
+  };
+};
 
+export type DayIndexTimeZoneQueryVariables = Exact<{ [key: string]: never }>;
 
-export type DayIndexTimeZoneQuery = { viewer: { analytics: { id: string, timeZone: string } } };
+export type DayIndexTimeZoneQuery = {
+  viewer: { analytics: { id: string; timeZone: string } };
+};
 
 export type ExplorePageQueryVariables = Exact<{
   range?: TimeRange | null | undefined;
 }>;
 
-
-export type ExplorePageQuery = { viewer: { habits: Array<{ id: string, question: string, firstSeenDate: string, lastSeenDate: string, entryCount: number, entries: Array<{ id: string, date: string, answeredYes: boolean }> }>, analytics: { id: string, timeZone: string, steps: { daily: Array<{ id: string, date: string, value: number }> }, activeCalories: { daily: Array<{ id: string, date: string, value: number }> }, totalCalories: { daily: Array<{ id: string, date: string, value: number }> }, restingHeartRate: { daily: Array<{ id: string, date: string, value: number }> }, heartRateVariability: { daily: Array<{ id: string, date: string, value: number }> }, skinTemperature: { daily: Array<{ id: string, date: string, value: number }> }, weight: { daily: Array<{ id: string, date: string, value: number }> }, sleepDebt: { daily: Array<{ id: string, date: string, sleepMinutes: number, debtMinutes: number }> }, sleepConsistency: { daily: Array<{ id: string, date: string, score: number | null, bedtimeMinutesLocal: number, wakeMinutesLocal: number }> }, healthspan: { trend: Array<{ id: string, date: string, healthAgeYears: number | null, ageDeltaYears: number | null, paceOfAging: number | null }> }, strain: { daily: Array<{ id: string, date: string, score: number | null, quality: { publishable: boolean } }> }, recovery: { daily: Array<{ id: string, date: string, score: number | null, status: string, quality: { publishable: boolean } }> }, days: Array<{ id: string, date: string, supportingMetrics: { respiratoryRate: { status: MetricStatus, value: number | null }, oxygenSaturation: { status: MetricStatus, value: number | null }, zone3AndAbove: { status: MetricStatus, value: number | null } } }> } } };
+export type ExplorePageQuery = {
+  viewer: {
+    habits: Array<{
+      id: string;
+      question: string;
+      firstSeenDate: string;
+      lastSeenDate: string;
+      entryCount: number;
+      entries: Array<{ id: string; date: string; answeredYes: boolean }>;
+    }>;
+    analytics: {
+      id: string;
+      timeZone: string;
+      steps: { daily: Array<{ id: string; date: string; value: number }> };
+      activeCalories: {
+        daily: Array<{ id: string; date: string; value: number }>;
+      };
+      totalCalories: {
+        daily: Array<{ id: string; date: string; value: number }>;
+      };
+      restingHeartRate: {
+        daily: Array<{ id: string; date: string; value: number }>;
+      };
+      heartRateVariability: {
+        daily: Array<{ id: string; date: string; value: number }>;
+      };
+      skinTemperature: {
+        daily: Array<{ id: string; date: string; value: number }>;
+      };
+      weight: { daily: Array<{ id: string; date: string; value: number }> };
+      sleepDebt: {
+        daily: Array<{
+          id: string;
+          date: string;
+          sleepMinutes: number;
+          debtMinutes: number;
+        }>;
+      };
+      sleepConsistency: {
+        daily: Array<{
+          id: string;
+          date: string;
+          score: number | null;
+          bedtimeMinutesLocal: number;
+          wakeMinutesLocal: number;
+        }>;
+      };
+      healthspan: {
+        trend: Array<{
+          id: string;
+          date: string;
+          healthAgeYears: number | null;
+          ageDeltaYears: number | null;
+          paceOfAging: number | null;
+        }>;
+      };
+      strain: {
+        daily: Array<{
+          id: string;
+          date: string;
+          score: number | null;
+          quality: { publishable: boolean };
+        }>;
+      };
+      recovery: {
+        daily: Array<{
+          id: string;
+          date: string;
+          score: number | null;
+          status: string;
+          quality: { publishable: boolean };
+        }>;
+      };
+      days: Array<{
+        id: string;
+        date: string;
+        supportingMetrics: {
+          respiratoryRate: { status: MetricStatus; value: number | null };
+          oxygenSaturation: { status: MetricStatus; value: number | null };
+          zone3AndAbove: { status: MetricStatus; value: number | null };
+        };
+      }>;
+    };
+  };
+};
 
 export type HabitsPageQueryVariables = Exact<{
   range?: TimeRange | null | undefined;
 }>;
 
+export type HabitsPageQuery = {
+  viewer: {
+    habits: Array<{
+      id: string;
+      source: string;
+      question: string;
+      firstSeenDate: string;
+      lastSeenDate: string;
+      entryCount: number;
+      entries: Array<{
+        id: string;
+        date: string;
+        cycleStartLocal: string;
+        cycleEndLocal: string;
+        answeredYes: boolean;
+        notes: string | null;
+      }>;
+    }>;
+  };
+};
 
-export type HabitsPageQuery = { viewer: { habits: Array<{ id: string, source: string, question: string, firstSeenDate: string, lastSeenDate: string, entryCount: number, entries: Array<{ id: string, date: string, cycleStartLocal: string, cycleEndLocal: string, answeredYes: boolean, notes: string | null }> }> } };
+export type HabitsLatestQueryVariables = Exact<{ [key: string]: never }>;
 
-export type HabitsLatestQueryVariables = Exact<{ [key: string]: never; }>;
+export type HabitsLatestQuery = {
+  viewer: {
+    habits: Array<{ id: string; lastSeenDate: string; entryCount: number }>;
+  };
+};
 
+export type HealthspanPageQueryVariables = Exact<{ [key: string]: never }>;
 
-export type HabitsLatestQuery = { viewer: { habits: Array<{ id: string, lastSeenDate: string, entryCount: number }> } };
-
-export type HealthspanPageQueryVariables = Exact<{ [key: string]: never; }>;
-
-
-export type HealthspanPageQuery = { viewer: { analytics: { id: string, timeZone: string, healthspan: { modelVersion: string, status: HealthspanStatus, birthDateConfigured: boolean, methodology: string, calibrationReasons: Array<string>, paceOfAging: number | null, paceWindowDays: number | null, latest: { id: string, date: string, chronologicalAgeYears: number | null, healthAgeYears: number | null, ageDeltaYears: number | null, paceOfAging: number | null, qualityFlags: Array<string>, factors: Array<{ id: string, key: HealthspanFactorKey, label: string, value: number, unit: HealthspanFactorUnit, referenceValue: number, ageImpactYears: number, coverageDays: number }> } | null, trend: Array<{ id: string, date: string, chronologicalAgeYears: number | null, healthAgeYears: number | null, ageDeltaYears: number | null, paceOfAging: number | null, qualityFlags: Array<string> }> } } } };
+export type HealthspanPageQuery = {
+  viewer: {
+    analytics: {
+      id: string;
+      timeZone: string;
+      healthspan: {
+        modelVersion: string;
+        status: HealthspanStatus;
+        birthDateConfigured: boolean;
+        methodology: string;
+        calibrationReasons: Array<string>;
+        paceOfAging: number | null;
+        paceWindowDays: number | null;
+        latest: {
+          id: string;
+          date: string;
+          chronologicalAgeYears: number | null;
+          healthAgeYears: number | null;
+          ageDeltaYears: number | null;
+          paceOfAging: number | null;
+          qualityFlags: Array<string>;
+          factors: Array<{
+            id: string;
+            key: HealthspanFactorKey;
+            label: string;
+            value: number;
+            unit: HealthspanFactorUnit;
+            referenceValue: number;
+            ageImpactYears: number;
+            coverageDays: number;
+          }>;
+        } | null;
+        trend: Array<{
+          id: string;
+          date: string;
+          chronologicalAgeYears: number | null;
+          healthAgeYears: number | null;
+          ageDeltaYears: number | null;
+          paceOfAging: number | null;
+          qualityFlags: Array<string>;
+        }>;
+      };
+    };
+  };
+};
 
 export type MetricSeriesPageQueryVariables = Exact<{
   steps: boolean;
@@ -140,80 +460,9030 @@ export type MetricSeriesPageQueryVariables = Exact<{
   skinTemperature: boolean;
 }>;
 
+export type MetricSeriesPageQuery = {
+  viewer: {
+    analytics: {
+      id: string;
+      timeZone: string;
+      steps?: {
+        unit: MetricUnit;
+        daily: Array<{
+          id: string;
+          date: string;
+          value: number;
+          source: string;
+          qualityFlags: Array<string>;
+          bySource: Array<{
+            source: string;
+            value: number;
+            observationCount: number;
+            coverageMinutes: number | null;
+          }>;
+        }>;
+        overview: {
+          average7Day: number | null;
+          average30Day: number | null;
+          changeFromPrevious: number | null;
+          sampleCount: number;
+          latest: {
+            id: string;
+            date: string;
+            value: number;
+            source: string;
+            qualityFlags: Array<string>;
+            bySource: Array<{
+              source: string;
+              value: number;
+              observationCount: number;
+              coverageMinutes: number | null;
+            }>;
+          } | null;
+          previous: {
+            id: string;
+            date: string;
+            value: number;
+            source: string;
+            qualityFlags: Array<string>;
+            bySource: Array<{
+              source: string;
+              value: number;
+              observationCount: number;
+              coverageMinutes: number | null;
+            }>;
+          } | null;
+        };
+        rolling7Day: Array<{
+          id: string;
+          date: string;
+          value: number;
+          sampleCount: number;
+        }>;
+        monthly: Array<{
+          id: string;
+          month: string;
+          value: number;
+          sampleCount: number;
+        }>;
+      };
+      activeCalories?: {
+        unit: MetricUnit;
+        daily: Array<{
+          id: string;
+          date: string;
+          value: number;
+          source: string;
+          qualityFlags: Array<string>;
+          bySource: Array<{
+            source: string;
+            value: number;
+            observationCount: number;
+            coverageMinutes: number | null;
+          }>;
+        }>;
+        overview: {
+          average7Day: number | null;
+          average30Day: number | null;
+          changeFromPrevious: number | null;
+          sampleCount: number;
+          latest: {
+            id: string;
+            date: string;
+            value: number;
+            source: string;
+            qualityFlags: Array<string>;
+            bySource: Array<{
+              source: string;
+              value: number;
+              observationCount: number;
+              coverageMinutes: number | null;
+            }>;
+          } | null;
+          previous: {
+            id: string;
+            date: string;
+            value: number;
+            source: string;
+            qualityFlags: Array<string>;
+            bySource: Array<{
+              source: string;
+              value: number;
+              observationCount: number;
+              coverageMinutes: number | null;
+            }>;
+          } | null;
+        };
+        rolling7Day: Array<{
+          id: string;
+          date: string;
+          value: number;
+          sampleCount: number;
+        }>;
+        monthly: Array<{
+          id: string;
+          month: string;
+          value: number;
+          sampleCount: number;
+        }>;
+      };
+      totalCalories?: {
+        unit: MetricUnit;
+        daily: Array<{
+          id: string;
+          date: string;
+          value: number;
+          source: string;
+          qualityFlags: Array<string>;
+          bySource: Array<{
+            source: string;
+            value: number;
+            observationCount: number;
+            coverageMinutes: number | null;
+          }>;
+        }>;
+        overview: {
+          average7Day: number | null;
+          average30Day: number | null;
+          changeFromPrevious: number | null;
+          sampleCount: number;
+          latest: {
+            id: string;
+            date: string;
+            value: number;
+            source: string;
+            qualityFlags: Array<string>;
+            bySource: Array<{
+              source: string;
+              value: number;
+              observationCount: number;
+              coverageMinutes: number | null;
+            }>;
+          } | null;
+          previous: {
+            id: string;
+            date: string;
+            value: number;
+            source: string;
+            qualityFlags: Array<string>;
+            bySource: Array<{
+              source: string;
+              value: number;
+              observationCount: number;
+              coverageMinutes: number | null;
+            }>;
+          } | null;
+        };
+        rolling7Day: Array<{
+          id: string;
+          date: string;
+          value: number;
+          sampleCount: number;
+        }>;
+        monthly: Array<{
+          id: string;
+          month: string;
+          value: number;
+          sampleCount: number;
+        }>;
+      };
+      restingHeartRate?: {
+        unit: MetricUnit;
+        daily: Array<{
+          id: string;
+          date: string;
+          value: number;
+          source: string;
+          qualityFlags: Array<string>;
+          bySource: Array<{
+            source: string;
+            value: number;
+            observationCount: number;
+            coverageMinutes: number | null;
+          }>;
+        }>;
+        overview: {
+          average7Day: number | null;
+          average30Day: number | null;
+          changeFromPrevious: number | null;
+          sampleCount: number;
+          latest: {
+            id: string;
+            date: string;
+            value: number;
+            source: string;
+            qualityFlags: Array<string>;
+            bySource: Array<{
+              source: string;
+              value: number;
+              observationCount: number;
+              coverageMinutes: number | null;
+            }>;
+          } | null;
+          previous: {
+            id: string;
+            date: string;
+            value: number;
+            source: string;
+            qualityFlags: Array<string>;
+            bySource: Array<{
+              source: string;
+              value: number;
+              observationCount: number;
+              coverageMinutes: number | null;
+            }>;
+          } | null;
+        };
+        rolling7Day: Array<{
+          id: string;
+          date: string;
+          value: number;
+          sampleCount: number;
+        }>;
+        monthly: Array<{
+          id: string;
+          month: string;
+          value: number;
+          sampleCount: number;
+        }>;
+      };
+      weight?: {
+        unit: MetricUnit;
+        daily: Array<{
+          id: string;
+          date: string;
+          value: number;
+          source: string;
+          qualityFlags: Array<string>;
+          bySource: Array<{
+            source: string;
+            value: number;
+            observationCount: number;
+            coverageMinutes: number | null;
+          }>;
+        }>;
+        overview: {
+          average7Day: number | null;
+          average30Day: number | null;
+          changeFromPrevious: number | null;
+          sampleCount: number;
+          latest: {
+            id: string;
+            date: string;
+            value: number;
+            source: string;
+            qualityFlags: Array<string>;
+            bySource: Array<{
+              source: string;
+              value: number;
+              observationCount: number;
+              coverageMinutes: number | null;
+            }>;
+          } | null;
+          previous: {
+            id: string;
+            date: string;
+            value: number;
+            source: string;
+            qualityFlags: Array<string>;
+            bySource: Array<{
+              source: string;
+              value: number;
+              observationCount: number;
+              coverageMinutes: number | null;
+            }>;
+          } | null;
+        };
+        rolling7Day: Array<{
+          id: string;
+          date: string;
+          value: number;
+          sampleCount: number;
+        }>;
+        monthly: Array<{
+          id: string;
+          month: string;
+          value: number;
+          sampleCount: number;
+        }>;
+      };
+      heartRateVariability?: {
+        unit: MetricUnit;
+        daily: Array<{
+          id: string;
+          date: string;
+          value: number;
+          source: string;
+          qualityFlags: Array<string>;
+          bySource: Array<{
+            source: string;
+            value: number;
+            observationCount: number;
+            coverageMinutes: number | null;
+          }>;
+        }>;
+        overview: {
+          average7Day: number | null;
+          average30Day: number | null;
+          changeFromPrevious: number | null;
+          sampleCount: number;
+          latest: {
+            id: string;
+            date: string;
+            value: number;
+            source: string;
+            qualityFlags: Array<string>;
+            bySource: Array<{
+              source: string;
+              value: number;
+              observationCount: number;
+              coverageMinutes: number | null;
+            }>;
+          } | null;
+          previous: {
+            id: string;
+            date: string;
+            value: number;
+            source: string;
+            qualityFlags: Array<string>;
+            bySource: Array<{
+              source: string;
+              value: number;
+              observationCount: number;
+              coverageMinutes: number | null;
+            }>;
+          } | null;
+        };
+        rolling7Day: Array<{
+          id: string;
+          date: string;
+          value: number;
+          sampleCount: number;
+        }>;
+        monthly: Array<{
+          id: string;
+          month: string;
+          value: number;
+          sampleCount: number;
+        }>;
+      };
+      skinTemperature?: {
+        unit: MetricUnit;
+        daily: Array<{
+          id: string;
+          date: string;
+          value: number;
+          source: string;
+          qualityFlags: Array<string>;
+          bySource: Array<{
+            source: string;
+            value: number;
+            observationCount: number;
+            coverageMinutes: number | null;
+          }>;
+        }>;
+        overview: {
+          average7Day: number | null;
+          average30Day: number | null;
+          changeFromPrevious: number | null;
+          sampleCount: number;
+          latest: {
+            id: string;
+            date: string;
+            value: number;
+            source: string;
+            qualityFlags: Array<string>;
+            bySource: Array<{
+              source: string;
+              value: number;
+              observationCount: number;
+              coverageMinutes: number | null;
+            }>;
+          } | null;
+          previous: {
+            id: string;
+            date: string;
+            value: number;
+            source: string;
+            qualityFlags: Array<string>;
+            bySource: Array<{
+              source: string;
+              value: number;
+              observationCount: number;
+              coverageMinutes: number | null;
+            }>;
+          } | null;
+        };
+        rolling7Day: Array<{
+          id: string;
+          date: string;
+          value: number;
+          sampleCount: number;
+        }>;
+        monthly: Array<{
+          id: string;
+          month: string;
+          value: number;
+          sampleCount: number;
+        }>;
+      };
+    };
+  };
+};
 
-export type MetricSeriesPageQuery = { viewer: { analytics: { id: string, timeZone: string, steps?: { unit: MetricUnit, daily: Array<{ id: string, date: string, value: number, source: string, qualityFlags: Array<string>, bySource: Array<{ source: string, value: number, observationCount: number, coverageMinutes: number | null }> }>, overview: { average7Day: number | null, average30Day: number | null, changeFromPrevious: number | null, sampleCount: number, latest: { id: string, date: string, value: number, source: string, qualityFlags: Array<string>, bySource: Array<{ source: string, value: number, observationCount: number, coverageMinutes: number | null }> } | null, previous: { id: string, date: string, value: number, source: string, qualityFlags: Array<string>, bySource: Array<{ source: string, value: number, observationCount: number, coverageMinutes: number | null }> } | null }, rolling7Day: Array<{ id: string, date: string, value: number, sampleCount: number }>, monthly: Array<{ id: string, month: string, value: number, sampleCount: number }> }, activeCalories?: { unit: MetricUnit, daily: Array<{ id: string, date: string, value: number, source: string, qualityFlags: Array<string>, bySource: Array<{ source: string, value: number, observationCount: number, coverageMinutes: number | null }> }>, overview: { average7Day: number | null, average30Day: number | null, changeFromPrevious: number | null, sampleCount: number, latest: { id: string, date: string, value: number, source: string, qualityFlags: Array<string>, bySource: Array<{ source: string, value: number, observationCount: number, coverageMinutes: number | null }> } | null, previous: { id: string, date: string, value: number, source: string, qualityFlags: Array<string>, bySource: Array<{ source: string, value: number, observationCount: number, coverageMinutes: number | null }> } | null }, rolling7Day: Array<{ id: string, date: string, value: number, sampleCount: number }>, monthly: Array<{ id: string, month: string, value: number, sampleCount: number }> }, totalCalories?: { unit: MetricUnit, daily: Array<{ id: string, date: string, value: number, source: string, qualityFlags: Array<string>, bySource: Array<{ source: string, value: number, observationCount: number, coverageMinutes: number | null }> }>, overview: { average7Day: number | null, average30Day: number | null, changeFromPrevious: number | null, sampleCount: number, latest: { id: string, date: string, value: number, source: string, qualityFlags: Array<string>, bySource: Array<{ source: string, value: number, observationCount: number, coverageMinutes: number | null }> } | null, previous: { id: string, date: string, value: number, source: string, qualityFlags: Array<string>, bySource: Array<{ source: string, value: number, observationCount: number, coverageMinutes: number | null }> } | null }, rolling7Day: Array<{ id: string, date: string, value: number, sampleCount: number }>, monthly: Array<{ id: string, month: string, value: number, sampleCount: number }> }, restingHeartRate?: { unit: MetricUnit, daily: Array<{ id: string, date: string, value: number, source: string, qualityFlags: Array<string>, bySource: Array<{ source: string, value: number, observationCount: number, coverageMinutes: number | null }> }>, overview: { average7Day: number | null, average30Day: number | null, changeFromPrevious: number | null, sampleCount: number, latest: { id: string, date: string, value: number, source: string, qualityFlags: Array<string>, bySource: Array<{ source: string, value: number, observationCount: number, coverageMinutes: number | null }> } | null, previous: { id: string, date: string, value: number, source: string, qualityFlags: Array<string>, bySource: Array<{ source: string, value: number, observationCount: number, coverageMinutes: number | null }> } | null }, rolling7Day: Array<{ id: string, date: string, value: number, sampleCount: number }>, monthly: Array<{ id: string, month: string, value: number, sampleCount: number }> }, weight?: { unit: MetricUnit, daily: Array<{ id: string, date: string, value: number, source: string, qualityFlags: Array<string>, bySource: Array<{ source: string, value: number, observationCount: number, coverageMinutes: number | null }> }>, overview: { average7Day: number | null, average30Day: number | null, changeFromPrevious: number | null, sampleCount: number, latest: { id: string, date: string, value: number, source: string, qualityFlags: Array<string>, bySource: Array<{ source: string, value: number, observationCount: number, coverageMinutes: number | null }> } | null, previous: { id: string, date: string, value: number, source: string, qualityFlags: Array<string>, bySource: Array<{ source: string, value: number, observationCount: number, coverageMinutes: number | null }> } | null }, rolling7Day: Array<{ id: string, date: string, value: number, sampleCount: number }>, monthly: Array<{ id: string, month: string, value: number, sampleCount: number }> }, heartRateVariability?: { unit: MetricUnit, daily: Array<{ id: string, date: string, value: number, source: string, qualityFlags: Array<string>, bySource: Array<{ source: string, value: number, observationCount: number, coverageMinutes: number | null }> }>, overview: { average7Day: number | null, average30Day: number | null, changeFromPrevious: number | null, sampleCount: number, latest: { id: string, date: string, value: number, source: string, qualityFlags: Array<string>, bySource: Array<{ source: string, value: number, observationCount: number, coverageMinutes: number | null }> } | null, previous: { id: string, date: string, value: number, source: string, qualityFlags: Array<string>, bySource: Array<{ source: string, value: number, observationCount: number, coverageMinutes: number | null }> } | null }, rolling7Day: Array<{ id: string, date: string, value: number, sampleCount: number }>, monthly: Array<{ id: string, month: string, value: number, sampleCount: number }> }, skinTemperature?: { unit: MetricUnit, daily: Array<{ id: string, date: string, value: number, source: string, qualityFlags: Array<string>, bySource: Array<{ source: string, value: number, observationCount: number, coverageMinutes: number | null }> }>, overview: { average7Day: number | null, average30Day: number | null, changeFromPrevious: number | null, sampleCount: number, latest: { id: string, date: string, value: number, source: string, qualityFlags: Array<string>, bySource: Array<{ source: string, value: number, observationCount: number, coverageMinutes: number | null }> } | null, previous: { id: string, date: string, value: number, source: string, qualityFlags: Array<string>, bySource: Array<{ source: string, value: number, observationCount: number, coverageMinutes: number | null }> } | null }, rolling7Day: Array<{ id: string, date: string, value: number, sampleCount: number }>, monthly: Array<{ id: string, month: string, value: number, sampleCount: number }> } } } };
+export type OverviewPageQueryVariables = Exact<{ [key: string]: never }>;
 
-export type OverviewPageQueryVariables = Exact<{ [key: string]: never; }>;
+export type OverviewPageQuery = {
+  viewer: {
+    analytics: {
+      id: string;
+      timeZone: string;
+      processedAt: string | null;
+      sleepEvents: Array<{
+        id: string;
+        date: string;
+        primary: {
+          id: string;
+          source: string;
+          startAt: string;
+          endAt: string;
+          title: string | null;
+          notes: string | null;
+        };
+        recordings: Array<{
+          id: string;
+          source: string;
+          startAt: string;
+          endAt: string;
+          title: string | null;
+          notes: string | null;
+        }>;
+      }>;
+      deviceSleepComparisons: Array<{
+        source: string;
+        recordingCount: number;
+        averageSleepMinutes: number;
+        comparisonCount: number;
+        averageDifferenceMinutes: number;
+      }>;
+      days: Array<{
+        id: string;
+        date: string;
+        headlineScores: {
+          sleepDuration: {
+            status: MetricStatus;
+            value: number | null;
+            eventCount: number | null;
+            recordingCount: number | null;
+          };
+        };
+      }>;
+      sleepDebt: {
+        targetMinutes: number;
+        methodology: string;
+        average7DayMinutes: number | null;
+        average30DayMinutes: number | null;
+        previous30DayAverageMinutes: number | null;
+        breakdown30Day: {
+          recordedDays: number;
+          none: number;
+          low: number;
+          moderate: number;
+          high: number;
+        } | null;
+        daily: Array<{
+          id: string;
+          date: string;
+          sleepMinutes: number;
+          targetMinutes: number;
+          debtMinutes: number;
+          surplusMinutes: number;
+          category: DebtCategory;
+          rolling7DayAverageMinutes: number | null;
+          rolling7DayTotalMinutes: number | null;
+          rolling30DayAverageMinutes: number | null;
+        }>;
+      };
+      sleepConsistency: {
+        baselineWindowDays: number;
+        minimumBaselineNights: number;
+        methodology: string;
+        average7DayScore: number | null;
+        average30DayScore: number | null;
+        previous30DayAverageScore: number | null;
+        breakdown30Day: {
+          scoredDays: number;
+          optimal: number;
+          sufficient: number;
+          poor: number;
+        } | null;
+        daily: Array<{
+          id: string;
+          date: string;
+          source: string;
+          bedtimeAt: string;
+          wakeAt: string;
+          bedtimeMinutesLocal: number;
+          wakeMinutesLocal: number;
+          baselineBedtimeMinutesLocal: number | null;
+          baselineWakeMinutesLocal: number | null;
+          bedtimeDeviationMinutes: number | null;
+          wakeDeviationMinutes: number | null;
+          baselineNightCount: number;
+          score: number | null;
+          category: ConsistencyCategory | null;
+          rolling7DayAverageScore: number | null;
+          rolling30DayAverageScore: number | null;
+          qualityFlags: Array<string>;
+        }>;
+      };
+      healthspan: {
+        modelVersion: string;
+        status: HealthspanStatus;
+        birthDateConfigured: boolean;
+        methodology: string;
+        calibrationReasons: Array<string>;
+        paceOfAging: number | null;
+        paceWindowDays: number | null;
+        latest: {
+          id: string;
+          date: string;
+          chronologicalAgeYears: number | null;
+          healthAgeYears: number | null;
+          ageDeltaYears: number | null;
+          paceOfAging: number | null;
+          qualityFlags: Array<string>;
+          factors: Array<{
+            id: string;
+            key: HealthspanFactorKey;
+            label: string;
+            value: number;
+            unit: HealthspanFactorUnit;
+            referenceValue: number;
+            ageImpactYears: number;
+            coverageDays: number;
+          }>;
+        } | null;
+      };
+      steps: {
+        unit: MetricUnit;
+        overview: {
+          average7Day: number | null;
+          average30Day: number | null;
+          changeFromPrevious: number | null;
+          sampleCount: number;
+          latest: {
+            id: string;
+            date: string;
+            value: number;
+            source: string;
+            qualityFlags: Array<string>;
+          } | null;
+          previous: {
+            id: string;
+            date: string;
+            value: number;
+            source: string;
+            qualityFlags: Array<string>;
+          } | null;
+        };
+        daily: Array<{
+          id: string;
+          date: string;
+          value: number;
+          source: string;
+          qualityFlags: Array<string>;
+        }>;
+      };
+      activeCalories: {
+        unit: MetricUnit;
+        overview: {
+          average7Day: number | null;
+          average30Day: number | null;
+          changeFromPrevious: number | null;
+          sampleCount: number;
+          latest: {
+            id: string;
+            date: string;
+            value: number;
+            source: string;
+            qualityFlags: Array<string>;
+          } | null;
+          previous: {
+            id: string;
+            date: string;
+            value: number;
+            source: string;
+            qualityFlags: Array<string>;
+          } | null;
+        };
+        daily: Array<{
+          id: string;
+          date: string;
+          value: number;
+          source: string;
+          qualityFlags: Array<string>;
+        }>;
+      };
+      totalCalories: {
+        unit: MetricUnit;
+        overview: {
+          average7Day: number | null;
+          average30Day: number | null;
+          changeFromPrevious: number | null;
+          sampleCount: number;
+          latest: {
+            id: string;
+            date: string;
+            value: number;
+            source: string;
+            qualityFlags: Array<string>;
+          } | null;
+          previous: {
+            id: string;
+            date: string;
+            value: number;
+            source: string;
+            qualityFlags: Array<string>;
+          } | null;
+        };
+        daily: Array<{
+          id: string;
+          date: string;
+          value: number;
+          source: string;
+          qualityFlags: Array<string>;
+        }>;
+      };
+      restingHeartRate: {
+        unit: MetricUnit;
+        overview: {
+          average7Day: number | null;
+          average30Day: number | null;
+          changeFromPrevious: number | null;
+          sampleCount: number;
+          latest: {
+            id: string;
+            date: string;
+            value: number;
+            source: string;
+            qualityFlags: Array<string>;
+          } | null;
+          previous: {
+            id: string;
+            date: string;
+            value: number;
+            source: string;
+            qualityFlags: Array<string>;
+          } | null;
+        };
+        daily: Array<{
+          id: string;
+          date: string;
+          value: number;
+          source: string;
+          qualityFlags: Array<string>;
+        }>;
+      };
+      weight: {
+        unit: MetricUnit;
+        overview: {
+          average7Day: number | null;
+          average30Day: number | null;
+          changeFromPrevious: number | null;
+          sampleCount: number;
+          latest: {
+            id: string;
+            date: string;
+            value: number;
+            source: string;
+            qualityFlags: Array<string>;
+          } | null;
+          previous: {
+            id: string;
+            date: string;
+            value: number;
+            source: string;
+            qualityFlags: Array<string>;
+          } | null;
+        };
+        daily: Array<{
+          id: string;
+          date: string;
+          value: number;
+          source: string;
+          qualityFlags: Array<string>;
+        }>;
+      };
+    };
+  };
+};
 
+export type RecoveryPageQueryVariables = Exact<{ [key: string]: never }>;
 
-export type OverviewPageQuery = { viewer: { analytics: { id: string, timeZone: string, processedAt: string | null, sleepEvents: Array<{ id: string, date: string, primary: { id: string, source: string, startAt: string, endAt: string, title: string | null, notes: string | null }, recordings: Array<{ id: string, source: string, startAt: string, endAt: string, title: string | null, notes: string | null }> }>, deviceSleepComparisons: Array<{ source: string, recordingCount: number, averageSleepMinutes: number, comparisonCount: number, averageDifferenceMinutes: number }>, days: Array<{ id: string, date: string, headlineScores: { sleepDuration: { status: MetricStatus, value: number | null, eventCount: number | null, recordingCount: number | null } } }>, sleepDebt: { targetMinutes: number, methodology: string, average7DayMinutes: number | null, average30DayMinutes: number | null, previous30DayAverageMinutes: number | null, breakdown30Day: { recordedDays: number, none: number, low: number, moderate: number, high: number } | null, daily: Array<{ id: string, date: string, sleepMinutes: number, targetMinutes: number, debtMinutes: number, surplusMinutes: number, category: DebtCategory, rolling7DayAverageMinutes: number | null, rolling7DayTotalMinutes: number | null, rolling30DayAverageMinutes: number | null }> }, sleepConsistency: { baselineWindowDays: number, minimumBaselineNights: number, methodology: string, average7DayScore: number | null, average30DayScore: number | null, previous30DayAverageScore: number | null, breakdown30Day: { scoredDays: number, optimal: number, sufficient: number, poor: number } | null, daily: Array<{ id: string, date: string, source: string, bedtimeAt: string, wakeAt: string, bedtimeMinutesLocal: number, wakeMinutesLocal: number, baselineBedtimeMinutesLocal: number | null, baselineWakeMinutesLocal: number | null, bedtimeDeviationMinutes: number | null, wakeDeviationMinutes: number | null, baselineNightCount: number, score: number | null, category: ConsistencyCategory | null, rolling7DayAverageScore: number | null, rolling30DayAverageScore: number | null, qualityFlags: Array<string> }> }, healthspan: { modelVersion: string, status: HealthspanStatus, birthDateConfigured: boolean, methodology: string, calibrationReasons: Array<string>, paceOfAging: number | null, paceWindowDays: number | null, latest: { id: string, date: string, chronologicalAgeYears: number | null, healthAgeYears: number | null, ageDeltaYears: number | null, paceOfAging: number | null, qualityFlags: Array<string>, factors: Array<{ id: string, key: HealthspanFactorKey, label: string, value: number, unit: HealthspanFactorUnit, referenceValue: number, ageImpactYears: number, coverageDays: number }> } | null }, steps: { unit: MetricUnit, overview: { average7Day: number | null, average30Day: number | null, changeFromPrevious: number | null, sampleCount: number, latest: { id: string, date: string, value: number, source: string, qualityFlags: Array<string> } | null, previous: { id: string, date: string, value: number, source: string, qualityFlags: Array<string> } | null }, daily: Array<{ id: string, date: string, value: number, source: string, qualityFlags: Array<string> }> }, activeCalories: { unit: MetricUnit, overview: { average7Day: number | null, average30Day: number | null, changeFromPrevious: number | null, sampleCount: number, latest: { id: string, date: string, value: number, source: string, qualityFlags: Array<string> } | null, previous: { id: string, date: string, value: number, source: string, qualityFlags: Array<string> } | null }, daily: Array<{ id: string, date: string, value: number, source: string, qualityFlags: Array<string> }> }, totalCalories: { unit: MetricUnit, overview: { average7Day: number | null, average30Day: number | null, changeFromPrevious: number | null, sampleCount: number, latest: { id: string, date: string, value: number, source: string, qualityFlags: Array<string> } | null, previous: { id: string, date: string, value: number, source: string, qualityFlags: Array<string> } | null }, daily: Array<{ id: string, date: string, value: number, source: string, qualityFlags: Array<string> }> }, restingHeartRate: { unit: MetricUnit, overview: { average7Day: number | null, average30Day: number | null, changeFromPrevious: number | null, sampleCount: number, latest: { id: string, date: string, value: number, source: string, qualityFlags: Array<string> } | null, previous: { id: string, date: string, value: number, source: string, qualityFlags: Array<string> } | null }, daily: Array<{ id: string, date: string, value: number, source: string, qualityFlags: Array<string> }> }, weight: { unit: MetricUnit, overview: { average7Day: number | null, average30Day: number | null, changeFromPrevious: number | null, sampleCount: number, latest: { id: string, date: string, value: number, source: string, qualityFlags: Array<string> } | null, previous: { id: string, date: string, value: number, source: string, qualityFlags: Array<string> } | null }, daily: Array<{ id: string, date: string, value: number, source: string, qualityFlags: Array<string> }> } } } };
+export type RecoveryPageQuery = {
+  viewer: {
+    analytics: {
+      id: string;
+      timeZone: string;
+      recovery: {
+        algorithmVersion: string;
+        status: string;
+        provisional: boolean;
+        methodology: string;
+        limitations: Array<string>;
+        weights: {
+          sleep: number;
+          hrv: number;
+          restingHeartRate: number;
+          sleepConsistency: number;
+        };
+        availability: {
+          available: boolean;
+          publishableDayCount: number;
+          completeDayCount: number;
+          reasons: Array<string>;
+        };
+        daily: Array<{
+          id: string;
+          date: string;
+          score: number | null;
+          band: RecoveryBand | null;
+          status: string;
+          provisional: boolean;
+          components: {
+            sleep: {
+              score: number;
+              value: number;
+              baseline: number | null;
+              unit: string;
+              baselineDays: number | null;
+            } | null;
+            restingHeartRate: {
+              score: number;
+              value: number;
+              baseline: number | null;
+              unit: string;
+              baselineDays: number | null;
+            } | null;
+            hrv: {
+              score: number;
+              value: number;
+              baseline: number | null;
+              unit: string;
+              baselineDays: number | null;
+            } | null;
+            sleepConsistency: {
+              score: number;
+              value: number;
+              baseline: number | null;
+              unit: string;
+              baselineDays: number | null;
+            } | null;
+          };
+          quality: {
+            publishable: boolean;
+            complete: boolean;
+            estimateBasis: RecoveryEstimateBasis;
+            availableWeight: number;
+            baselineWindowDays: number;
+            minimumBaselineDays: number;
+            reasons: Array<string>;
+          };
+        }>;
+      };
+    };
+  };
+};
 
-export type RecoveryPageQueryVariables = Exact<{ [key: string]: never; }>;
+export type SleepConsistencyPageQueryVariables = Exact<{
+  [key: string]: never;
+}>;
 
+export type SleepConsistencyPageQuery = {
+  viewer: {
+    analytics: {
+      id: string;
+      timeZone: string;
+      sleepConsistency: {
+        baselineWindowDays: number;
+        minimumBaselineNights: number;
+        methodology: string;
+        average7DayScore: number | null;
+        average30DayScore: number | null;
+        previous30DayAverageScore: number | null;
+        breakdown30Day: {
+          scoredDays: number;
+          optimal: number;
+          sufficient: number;
+          poor: number;
+        } | null;
+        daily: Array<{
+          id: string;
+          date: string;
+          source: string;
+          bedtimeAt: string;
+          wakeAt: string;
+          bedtimeMinutesLocal: number;
+          wakeMinutesLocal: number;
+          baselineBedtimeMinutesLocal: number | null;
+          baselineWakeMinutesLocal: number | null;
+          bedtimeDeviationMinutes: number | null;
+          wakeDeviationMinutes: number | null;
+          baselineNightCount: number;
+          score: number | null;
+          category: ConsistencyCategory | null;
+          rolling7DayAverageScore: number | null;
+          rolling30DayAverageScore: number | null;
+          qualityFlags: Array<string>;
+        }>;
+      };
+    };
+  };
+};
 
-export type RecoveryPageQuery = { viewer: { analytics: { id: string, timeZone: string, recovery: { algorithmVersion: string, status: string, provisional: boolean, methodology: string, limitations: Array<string>, weights: { sleep: number, hrv: number, restingHeartRate: number, sleepConsistency: number }, availability: { available: boolean, publishableDayCount: number, completeDayCount: number, reasons: Array<string> }, daily: Array<{ id: string, date: string, score: number | null, band: RecoveryBand | null, status: string, provisional: boolean, components: { sleep: { score: number, value: number, baseline: number | null, unit: string, baselineDays: number | null } | null, restingHeartRate: { score: number, value: number, baseline: number | null, unit: string, baselineDays: number | null } | null, hrv: { score: number, value: number, baseline: number | null, unit: string, baselineDays: number | null } | null, sleepConsistency: { score: number, value: number, baseline: number | null, unit: string, baselineDays: number | null } | null }, quality: { publishable: boolean, complete: boolean, estimateBasis: RecoveryEstimateBasis, availableWeight: number, baselineWindowDays: number, minimumBaselineDays: number, reasons: Array<string> } }> } } } };
+export type SleepDebtPageQueryVariables = Exact<{ [key: string]: never }>;
 
-export type SleepConsistencyPageQueryVariables = Exact<{ [key: string]: never; }>;
-
-
-export type SleepConsistencyPageQuery = { viewer: { analytics: { id: string, timeZone: string, sleepConsistency: { baselineWindowDays: number, minimumBaselineNights: number, methodology: string, average7DayScore: number | null, average30DayScore: number | null, previous30DayAverageScore: number | null, breakdown30Day: { scoredDays: number, optimal: number, sufficient: number, poor: number } | null, daily: Array<{ id: string, date: string, source: string, bedtimeAt: string, wakeAt: string, bedtimeMinutesLocal: number, wakeMinutesLocal: number, baselineBedtimeMinutesLocal: number | null, baselineWakeMinutesLocal: number | null, bedtimeDeviationMinutes: number | null, wakeDeviationMinutes: number | null, baselineNightCount: number, score: number | null, category: ConsistencyCategory | null, rolling7DayAverageScore: number | null, rolling30DayAverageScore: number | null, qualityFlags: Array<string> }> } } } };
-
-export type SleepDebtPageQueryVariables = Exact<{ [key: string]: never; }>;
-
-
-export type SleepDebtPageQuery = { viewer: { analytics: { id: string, timeZone: string, sleepDebt: { targetMinutes: number, methodology: string, average7DayMinutes: number | null, average30DayMinutes: number | null, previous30DayAverageMinutes: number | null, breakdown30Day: { recordedDays: number, none: number, low: number, moderate: number, high: number } | null, daily: Array<{ id: string, date: string, sleepMinutes: number, targetMinutes: number, debtMinutes: number, surplusMinutes: number, category: DebtCategory, rolling7DayAverageMinutes: number | null, rolling7DayTotalMinutes: number | null, rolling30DayAverageMinutes: number | null }> } } } };
+export type SleepDebtPageQuery = {
+  viewer: {
+    analytics: {
+      id: string;
+      timeZone: string;
+      sleepDebt: {
+        targetMinutes: number;
+        methodology: string;
+        average7DayMinutes: number | null;
+        average30DayMinutes: number | null;
+        previous30DayAverageMinutes: number | null;
+        breakdown30Day: {
+          recordedDays: number;
+          none: number;
+          low: number;
+          moderate: number;
+          high: number;
+        } | null;
+        daily: Array<{
+          id: string;
+          date: string;
+          sleepMinutes: number;
+          targetMinutes: number;
+          debtMinutes: number;
+          surplusMinutes: number;
+          category: DebtCategory;
+          rolling7DayAverageMinutes: number | null;
+          rolling7DayTotalMinutes: number | null;
+          rolling30DayAverageMinutes: number | null;
+        }>;
+      };
+    };
+  };
+};
 
 export type SleepStagesQueryVariables = Exact<{
   range: TimeRange;
 }>;
 
+export type SleepStagesQuery = {
+  viewer: {
+    analytics: {
+      id: string;
+      sleepEvents: Array<{
+        id: string;
+        recordings: Array<{
+          id: string;
+          stages: Array<{
+            startAt: string;
+            endAt: string;
+            kind: SleepStageKind;
+          }>;
+        }>;
+      }>;
+    };
+  };
+};
 
-export type SleepStagesQuery = { viewer: { analytics: { id: string, sleepEvents: Array<{ id: string, recordings: Array<{ id: string, stages: Array<{ startAt: string, endAt: string, kind: SleepStageKind }> }> }> } } };
+export type SkinTemperatureSourceRecordsQueryVariables = Exact<{
+  [key: string]: never;
+}>;
 
-export type SkinTemperatureSourceRecordsQueryVariables = Exact<{ [key: string]: never; }>;
-
-
-export type SkinTemperatureSourceRecordsQuery = { viewer: { config: { homeTimeZone: string }, sourceRecords: { skinTemperature: Array<{ id: string, source: string, startAt: string, endAt: string, baselineCelsius: number | null, measurementLocation: number | null, deltas: Array<{ observedAt: string, celsius: number }> }> } } };
+export type SkinTemperatureSourceRecordsQuery = {
+  viewer: {
+    config: { homeTimeZone: string };
+    sourceRecords: {
+      skinTemperature: Array<{
+        id: string;
+        source: string;
+        startAt: string;
+        endAt: string;
+        baselineCelsius: number | null;
+        measurementLocation: number | null;
+        deltas: Array<{ observedAt: string; celsius: number }>;
+      }>;
+    };
+  };
+};
 
 export type HrvSourceReadingsQueryVariables = Exact<{
   range?: TimeRange | null | undefined;
 }>;
 
+export type HrvSourceReadingsQuery = {
+  viewer: {
+    config: { homeTimeZone: string };
+    sourceRecords: {
+      heartRateVariability: Array<{
+        id: string;
+        source: string;
+        observedAt: string;
+        milliseconds: number;
+      }>;
+    };
+  };
+};
 
-export type HrvSourceReadingsQuery = { viewer: { config: { homeTimeZone: string }, sourceRecords: { heartRateVariability: Array<{ id: string, source: string, observedAt: string, milliseconds: number }> } } };
+export type SyncStatusQueryVariables = Exact<{ [key: string]: never }>;
 
-export type SyncStatusQueryVariables = Exact<{ [key: string]: never; }>;
+export type SyncStatusQuery = {
+  viewer: {
+    ingestion: {
+      phoneSync: {
+        observedActive: boolean;
+        state: SyncState;
+        lastUploadAt: string | null;
+        activeUntil: string | null;
+        secondsSinceLastUpload: number | null;
+        lastRecordType: string | null;
+        lastRecordCount: number | null;
+        totalUploadRequests: number;
+        totalRecordsReceived: number;
+        activityWindowSeconds: number;
+        note: string;
+      };
+      analyticsJob: {
+        status: string;
+        reason: string | null;
+        requestedAt: string | null;
+        startedAt: string | null;
+        completedAt: string | null;
+        error: unknown;
+      } | null;
+      current: { completedAt: string } | null;
+    };
+  };
+};
 
+export type DebtDailyQueryVariables = Exact<{ [key: string]: never }>;
 
-export type SyncStatusQuery = { viewer: { ingestion: { phoneSync: { observedActive: boolean, state: SyncState, lastUploadAt: string | null, activeUntil: string | null, secondsSinceLastUpload: number | null, lastRecordType: string | null, lastRecordCount: number | null, totalUploadRequests: number, totalRecordsReceived: number, activityWindowSeconds: number, note: string }, analyticsJob: { status: string, reason: string | null, requestedAt: string | null, startedAt: string | null, completedAt: string | null, error: unknown } | null, current: { completedAt: string } | null } } };
+export type DebtDailyQuery = {
+  viewer: {
+    analytics: {
+      id: string;
+      sleepDebt: {
+        targetMinutes: number;
+        daily: Array<{ id: string; date: string; debtMinutes: number }>;
+      };
+    };
+  };
+};
 
-export type DebtDailyQueryVariables = Exact<{ [key: string]: never; }>;
+export type DebtBreakdownQueryVariables = Exact<{ [key: string]: never }>;
 
+export type DebtBreakdownQuery = {
+  viewer: {
+    analytics: {
+      id: string;
+      sleepDebt: {
+        breakdown30Day: { recordedDays: number; high: number } | null;
+      };
+    };
+  };
+};
 
-export type DebtDailyQuery = { viewer: { analytics: { id: string, sleepDebt: { targetMinutes: number, daily: Array<{ id: string, date: string, debtMinutes: number }> } } } };
-
-export type DebtBreakdownQueryVariables = Exact<{ [key: string]: never; }>;
-
-
-export type DebtBreakdownQuery = { viewer: { analytics: { id: string, sleepDebt: { breakdown30Day: { recordedDays: number, high: number } | null } } } };
-
-
-export const DailySleepPageDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"DailySleepPage"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"viewer"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"analytics"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"timeZone"}},{"kind":"Field","name":{"kind":"Name","value":"sleepDebt"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"targetMinutes"}}]}},{"kind":"Field","name":{"kind":"Name","value":"days"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"date"}},{"kind":"Field","name":{"kind":"Name","value":"headlineScores"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"sleepDuration"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"status"}},{"kind":"Field","name":{"kind":"Name","value":"value"}},{"kind":"Field","name":{"kind":"Name","value":"eventCount"}},{"kind":"Field","name":{"kind":"Name","value":"recordingCount"}}]}}]}}]}}]}}]}}]}}]} as unknown as DocumentNode<DailySleepPageQuery, DailySleepPageQueryVariables>;
-export const DataSourcesPageDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"DataSourcesPage"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"viewer"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"config"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"homeTimeZone"}}]}},{"kind":"Field","name":{"kind":"Name","value":"ingestion"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"phoneSync"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"lastUploadAt"}}]}}]}},{"kind":"Field","name":{"kind":"Name","value":"sources"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"inventory"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"totalRecords"}},{"kind":"Field","name":{"kind":"Name","value":"earliest"}},{"kind":"Field","name":{"kind":"Name","value":"latest"}},{"kind":"Field","name":{"kind":"Name","value":"signals"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"collection"}},{"kind":"Field","name":{"kind":"Name","value":"records"}},{"kind":"Field","name":{"kind":"Name","value":"earliest"}},{"kind":"Field","name":{"kind":"Name","value":"latest"}},{"kind":"Field","name":{"kind":"Name","value":"bySource"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"source"}},{"kind":"Field","name":{"kind":"Name","value":"count"}}]}}]}},{"kind":"Field","name":{"kind":"Name","value":"sources"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"source"}},{"kind":"Field","name":{"kind":"Name","value":"label"}},{"kind":"Field","name":{"kind":"Name","value":"records"}}]}}]}},{"kind":"Field","name":{"kind":"Name","value":"devices"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"devices"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"sourceLabel"}},{"kind":"Field","name":{"kind":"Name","value":"records"}},{"kind":"Field","name":{"kind":"Name","value":"latest"}}]}}]}}]}}]}}]}}]} as unknown as DocumentNode<DataSourcesPageQuery, DataSourcesPageQueryVariables>;
-export const DayPageDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"DayPage"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"date"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"Date"}}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"range"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"TimeRange"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"viewer"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"analytics"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"timeZone"}},{"kind":"Field","name":{"kind":"Name","value":"day"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"date"},"value":{"kind":"Variable","name":{"kind":"Name","value":"date"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"date"}},{"kind":"Field","name":{"kind":"Name","value":"timeZone"}},{"kind":"Field","name":{"kind":"Name","value":"dayState"}},{"kind":"Field","name":{"kind":"Name","value":"headlineScores"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"sleepDuration"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"status"}},{"kind":"Field","name":{"kind":"Name","value":"value"}},{"kind":"Field","name":{"kind":"Name","value":"note"}},{"kind":"Field","name":{"kind":"Name","value":"window"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"startAt"}},{"kind":"Field","name":{"kind":"Name","value":"endAt"}}]}},{"kind":"Field","name":{"kind":"Name","value":"stageMinutes"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"deep"}},{"kind":"Field","name":{"kind":"Name","value":"light"}},{"kind":"Field","name":{"kind":"Name","value":"rem"}},{"kind":"Field","name":{"kind":"Name","value":"asleep"}},{"kind":"Field","name":{"kind":"Name","value":"awake"}},{"kind":"Field","name":{"kind":"Name","value":"unknown"}}]}}]}},{"kind":"Field","name":{"kind":"Name","value":"sleepNeed"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"status"}},{"kind":"Field","name":{"kind":"Name","value":"value"}},{"kind":"Field","name":{"kind":"Name","value":"note"}}]}},{"kind":"Field","name":{"kind":"Name","value":"recovery"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"status"}},{"kind":"Field","name":{"kind":"Name","value":"value"}},{"kind":"Field","name":{"kind":"Name","value":"note"}}]}},{"kind":"Field","name":{"kind":"Name","value":"strain"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"status"}},{"kind":"Field","name":{"kind":"Name","value":"value"}},{"kind":"Field","name":{"kind":"Name","value":"note"}}]}},{"kind":"Field","name":{"kind":"Name","value":"strainTarget"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"status"}},{"kind":"Field","name":{"kind":"Name","value":"value"}},{"kind":"Field","name":{"kind":"Name","value":"note"}}]}}]}},{"kind":"Field","name":{"kind":"Name","value":"supportingMetrics"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"hrv"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"status"}},{"kind":"Field","name":{"kind":"Name","value":"value"}},{"kind":"Field","name":{"kind":"Name","value":"note"}}]}},{"kind":"Field","name":{"kind":"Name","value":"restingHeartRate"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"status"}},{"kind":"Field","name":{"kind":"Name","value":"value"}},{"kind":"Field","name":{"kind":"Name","value":"note"}}]}},{"kind":"Field","name":{"kind":"Name","value":"respiratoryRate"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"status"}},{"kind":"Field","name":{"kind":"Name","value":"value"}},{"kind":"Field","name":{"kind":"Name","value":"note"}}]}},{"kind":"Field","name":{"kind":"Name","value":"oxygenSaturation"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"status"}},{"kind":"Field","name":{"kind":"Name","value":"value"}},{"kind":"Field","name":{"kind":"Name","value":"note"}}]}},{"kind":"Field","name":{"kind":"Name","value":"skinTemperatureDeviation"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"status"}},{"kind":"Field","name":{"kind":"Name","value":"value"}},{"kind":"Field","name":{"kind":"Name","value":"note"}}]}},{"kind":"Field","name":{"kind":"Name","value":"steps"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"status"}},{"kind":"Field","name":{"kind":"Name","value":"value"}},{"kind":"Field","name":{"kind":"Name","value":"note"}}]}},{"kind":"Field","name":{"kind":"Name","value":"calories"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"status"}},{"kind":"Field","name":{"kind":"Name","value":"value"}},{"kind":"Field","name":{"kind":"Name","value":"note"}}]}},{"kind":"Field","name":{"kind":"Name","value":"zone3AndAbove"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"status"}},{"kind":"Field","name":{"kind":"Name","value":"value"}},{"kind":"Field","name":{"kind":"Name","value":"note"}}]}}]}},{"kind":"Field","name":{"kind":"Name","value":"heartRateZones"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"status"}},{"kind":"Field","name":{"kind":"Name","value":"note"}}]}},{"kind":"Field","name":{"kind":"Name","value":"timeline"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"heartRate"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"status"}},{"kind":"Field","name":{"kind":"Name","value":"note"}},{"kind":"Field","name":{"kind":"Name","value":"hours"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"hour"}},{"kind":"Field","name":{"kind":"Name","value":"status"}},{"kind":"Field","name":{"kind":"Name","value":"sampleCount"}},{"kind":"Field","name":{"kind":"Name","value":"min"}},{"kind":"Field","name":{"kind":"Name","value":"p25"}},{"kind":"Field","name":{"kind":"Name","value":"mean"}},{"kind":"Field","name":{"kind":"Name","value":"p75"}},{"kind":"Field","name":{"kind":"Name","value":"max"}}]}}]}},{"kind":"Field","name":{"kind":"Name","value":"sleepStages"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"startAt"}},{"kind":"Field","name":{"kind":"Name","value":"endAt"}},{"kind":"Field","name":{"kind":"Name","value":"kind"}}]}},{"kind":"Field","name":{"kind":"Name","value":"steps"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"hour"}},{"kind":"Field","name":{"kind":"Name","value":"count"}},{"kind":"Field","name":{"kind":"Name","value":"status"}}]}},{"kind":"Field","name":{"kind":"Name","value":"schedule"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"status"}},{"kind":"Field","name":{"kind":"Name","value":"note"}}]}},{"kind":"Field","name":{"kind":"Name","value":"targetWakeTime"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"status"}},{"kind":"Field","name":{"kind":"Name","value":"note"}}]}},{"kind":"Field","name":{"kind":"Name","value":"targetBedTime"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"status"}},{"kind":"Field","name":{"kind":"Name","value":"note"}}]}}]}}]}},{"kind":"Field","name":{"kind":"Name","value":"days"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"range"},"value":{"kind":"Variable","name":{"kind":"Name","value":"range"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"date"}},{"kind":"Field","name":{"kind":"Name","value":"dayState"}},{"kind":"Field","name":{"kind":"Name","value":"headlineScores"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"sleepDuration"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"status"}},{"kind":"Field","name":{"kind":"Name","value":"value"}}]}},{"kind":"Field","name":{"kind":"Name","value":"strain"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"status"}},{"kind":"Field","name":{"kind":"Name","value":"value"}}]}}]}}]}}]}}]}}]}}]} as unknown as DocumentNode<DayPageQuery, DayPageQueryVariables>;
-export const DayIndexTimeZoneDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"DayIndexTimeZone"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"viewer"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"analytics"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"timeZone"}}]}}]}}]}}]} as unknown as DocumentNode<DayIndexTimeZoneQuery, DayIndexTimeZoneQueryVariables>;
-export const ExplorePageDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"ExplorePage"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"range"}},"type":{"kind":"NamedType","name":{"kind":"Name","value":"TimeRange"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"viewer"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"habits"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"range"},"value":{"kind":"Variable","name":{"kind":"Name","value":"range"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"question"}},{"kind":"Field","name":{"kind":"Name","value":"firstSeenDate"}},{"kind":"Field","name":{"kind":"Name","value":"lastSeenDate"}},{"kind":"Field","name":{"kind":"Name","value":"entryCount"}},{"kind":"Field","name":{"kind":"Name","value":"entries"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"date"}},{"kind":"Field","name":{"kind":"Name","value":"answeredYes"}}]}}]}},{"kind":"Field","name":{"kind":"Name","value":"analytics"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"timeZone"}},{"kind":"Field","name":{"kind":"Name","value":"steps"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"daily"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"range"},"value":{"kind":"Variable","name":{"kind":"Name","value":"range"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"date"}},{"kind":"Field","name":{"kind":"Name","value":"value"}}]}}]}},{"kind":"Field","name":{"kind":"Name","value":"activeCalories"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"daily"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"range"},"value":{"kind":"Variable","name":{"kind":"Name","value":"range"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"date"}},{"kind":"Field","name":{"kind":"Name","value":"value"}}]}}]}},{"kind":"Field","name":{"kind":"Name","value":"totalCalories"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"daily"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"range"},"value":{"kind":"Variable","name":{"kind":"Name","value":"range"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"date"}},{"kind":"Field","name":{"kind":"Name","value":"value"}}]}}]}},{"kind":"Field","name":{"kind":"Name","value":"restingHeartRate"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"daily"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"range"},"value":{"kind":"Variable","name":{"kind":"Name","value":"range"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"date"}},{"kind":"Field","name":{"kind":"Name","value":"value"}}]}}]}},{"kind":"Field","name":{"kind":"Name","value":"heartRateVariability"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"daily"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"range"},"value":{"kind":"Variable","name":{"kind":"Name","value":"range"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"date"}},{"kind":"Field","name":{"kind":"Name","value":"value"}}]}}]}},{"kind":"Field","name":{"kind":"Name","value":"skinTemperature"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"daily"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"range"},"value":{"kind":"Variable","name":{"kind":"Name","value":"range"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"date"}},{"kind":"Field","name":{"kind":"Name","value":"value"}}]}}]}},{"kind":"Field","name":{"kind":"Name","value":"weight"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"daily"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"range"},"value":{"kind":"Variable","name":{"kind":"Name","value":"range"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"date"}},{"kind":"Field","name":{"kind":"Name","value":"value"}}]}}]}},{"kind":"Field","name":{"kind":"Name","value":"sleepDebt"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"daily"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"range"},"value":{"kind":"Variable","name":{"kind":"Name","value":"range"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"date"}},{"kind":"Field","name":{"kind":"Name","value":"sleepMinutes"}},{"kind":"Field","name":{"kind":"Name","value":"debtMinutes"}}]}}]}},{"kind":"Field","name":{"kind":"Name","value":"sleepConsistency"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"daily"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"range"},"value":{"kind":"Variable","name":{"kind":"Name","value":"range"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"date"}},{"kind":"Field","name":{"kind":"Name","value":"score"}},{"kind":"Field","name":{"kind":"Name","value":"bedtimeMinutesLocal"}},{"kind":"Field","name":{"kind":"Name","value":"wakeMinutesLocal"}}]}}]}},{"kind":"Field","name":{"kind":"Name","value":"healthspan"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"trend"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"range"},"value":{"kind":"Variable","name":{"kind":"Name","value":"range"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"date"}},{"kind":"Field","name":{"kind":"Name","value":"healthAgeYears"}},{"kind":"Field","name":{"kind":"Name","value":"ageDeltaYears"}},{"kind":"Field","name":{"kind":"Name","value":"paceOfAging"}}]}}]}},{"kind":"Field","name":{"kind":"Name","value":"strain"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"daily"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"range"},"value":{"kind":"Variable","name":{"kind":"Name","value":"range"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"date"}},{"kind":"Field","name":{"kind":"Name","value":"score"}},{"kind":"Field","name":{"kind":"Name","value":"quality"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"publishable"}}]}}]}}]}},{"kind":"Field","name":{"kind":"Name","value":"recovery"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"daily"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"range"},"value":{"kind":"Variable","name":{"kind":"Name","value":"range"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"date"}},{"kind":"Field","name":{"kind":"Name","value":"score"}},{"kind":"Field","name":{"kind":"Name","value":"status"}},{"kind":"Field","name":{"kind":"Name","value":"quality"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"publishable"}}]}}]}}]}},{"kind":"Field","name":{"kind":"Name","value":"days"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"range"},"value":{"kind":"Variable","name":{"kind":"Name","value":"range"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"date"}},{"kind":"Field","name":{"kind":"Name","value":"supportingMetrics"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"respiratoryRate"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"status"}},{"kind":"Field","name":{"kind":"Name","value":"value"}}]}},{"kind":"Field","name":{"kind":"Name","value":"oxygenSaturation"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"status"}},{"kind":"Field","name":{"kind":"Name","value":"value"}}]}},{"kind":"Field","name":{"kind":"Name","value":"zone3AndAbove"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"status"}},{"kind":"Field","name":{"kind":"Name","value":"value"}}]}}]}}]}}]}}]}}]}}]} as unknown as DocumentNode<ExplorePageQuery, ExplorePageQueryVariables>;
-export const HabitsPageDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"HabitsPage"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"range"}},"type":{"kind":"NamedType","name":{"kind":"Name","value":"TimeRange"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"viewer"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"habits"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"range"},"value":{"kind":"Variable","name":{"kind":"Name","value":"range"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"source"}},{"kind":"Field","name":{"kind":"Name","value":"question"}},{"kind":"Field","name":{"kind":"Name","value":"firstSeenDate"}},{"kind":"Field","name":{"kind":"Name","value":"lastSeenDate"}},{"kind":"Field","name":{"kind":"Name","value":"entryCount"}},{"kind":"Field","name":{"kind":"Name","value":"entries"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"date"}},{"kind":"Field","name":{"kind":"Name","value":"cycleStartLocal"}},{"kind":"Field","name":{"kind":"Name","value":"cycleEndLocal"}},{"kind":"Field","name":{"kind":"Name","value":"answeredYes"}},{"kind":"Field","name":{"kind":"Name","value":"notes"}}]}}]}}]}}]}}]} as unknown as DocumentNode<HabitsPageQuery, HabitsPageQueryVariables>;
-export const HabitsLatestDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"HabitsLatest"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"viewer"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"habits"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"lastSeenDate"}},{"kind":"Field","name":{"kind":"Name","value":"entryCount"}}]}}]}}]}}]} as unknown as DocumentNode<HabitsLatestQuery, HabitsLatestQueryVariables>;
-export const HealthspanPageDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"HealthspanPage"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"viewer"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"analytics"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"timeZone"}},{"kind":"Field","name":{"kind":"Name","value":"healthspan"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"modelVersion"}},{"kind":"Field","name":{"kind":"Name","value":"status"}},{"kind":"Field","name":{"kind":"Name","value":"birthDateConfigured"}},{"kind":"Field","name":{"kind":"Name","value":"methodology"}},{"kind":"Field","name":{"kind":"Name","value":"calibrationReasons"}},{"kind":"Field","name":{"kind":"Name","value":"paceOfAging"}},{"kind":"Field","name":{"kind":"Name","value":"paceWindowDays"}},{"kind":"Field","name":{"kind":"Name","value":"latest"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"date"}},{"kind":"Field","name":{"kind":"Name","value":"chronologicalAgeYears"}},{"kind":"Field","name":{"kind":"Name","value":"healthAgeYears"}},{"kind":"Field","name":{"kind":"Name","value":"ageDeltaYears"}},{"kind":"Field","name":{"kind":"Name","value":"paceOfAging"}},{"kind":"Field","name":{"kind":"Name","value":"qualityFlags"}},{"kind":"Field","name":{"kind":"Name","value":"factors"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"key"}},{"kind":"Field","name":{"kind":"Name","value":"label"}},{"kind":"Field","name":{"kind":"Name","value":"value"}},{"kind":"Field","name":{"kind":"Name","value":"unit"}},{"kind":"Field","name":{"kind":"Name","value":"referenceValue"}},{"kind":"Field","name":{"kind":"Name","value":"ageImpactYears"}},{"kind":"Field","name":{"kind":"Name","value":"coverageDays"}}]}}]}},{"kind":"Field","name":{"kind":"Name","value":"trend"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"date"}},{"kind":"Field","name":{"kind":"Name","value":"chronologicalAgeYears"}},{"kind":"Field","name":{"kind":"Name","value":"healthAgeYears"}},{"kind":"Field","name":{"kind":"Name","value":"ageDeltaYears"}},{"kind":"Field","name":{"kind":"Name","value":"paceOfAging"}},{"kind":"Field","name":{"kind":"Name","value":"qualityFlags"}}]}}]}}]}}]}}]}}]} as unknown as DocumentNode<HealthspanPageQuery, HealthspanPageQueryVariables>;
-export const MetricSeriesPageDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"MetricSeriesPage"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"steps"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"Boolean"}}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"activeCalories"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"Boolean"}}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"totalCalories"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"Boolean"}}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"restingHeartRate"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"Boolean"}}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"weight"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"Boolean"}}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"heartRateVariability"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"Boolean"}}}},{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"skinTemperature"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"Boolean"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"viewer"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"analytics"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"timeZone"}},{"kind":"Field","name":{"kind":"Name","value":"steps"},"directives":[{"kind":"Directive","name":{"kind":"Name","value":"include"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"if"},"value":{"kind":"Variable","name":{"kind":"Name","value":"steps"}}}]}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"unit"}},{"kind":"Field","name":{"kind":"Name","value":"daily"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"date"}},{"kind":"Field","name":{"kind":"Name","value":"value"}},{"kind":"Field","name":{"kind":"Name","value":"source"}},{"kind":"Field","name":{"kind":"Name","value":"qualityFlags"}},{"kind":"Field","name":{"kind":"Name","value":"bySource"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"source"}},{"kind":"Field","name":{"kind":"Name","value":"value"}},{"kind":"Field","name":{"kind":"Name","value":"observationCount"}},{"kind":"Field","name":{"kind":"Name","value":"coverageMinutes"}}]}}]}},{"kind":"Field","name":{"kind":"Name","value":"overview"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"latest"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"date"}},{"kind":"Field","name":{"kind":"Name","value":"value"}},{"kind":"Field","name":{"kind":"Name","value":"source"}},{"kind":"Field","name":{"kind":"Name","value":"qualityFlags"}},{"kind":"Field","name":{"kind":"Name","value":"bySource"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"source"}},{"kind":"Field","name":{"kind":"Name","value":"value"}},{"kind":"Field","name":{"kind":"Name","value":"observationCount"}},{"kind":"Field","name":{"kind":"Name","value":"coverageMinutes"}}]}}]}},{"kind":"Field","name":{"kind":"Name","value":"previous"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"date"}},{"kind":"Field","name":{"kind":"Name","value":"value"}},{"kind":"Field","name":{"kind":"Name","value":"source"}},{"kind":"Field","name":{"kind":"Name","value":"qualityFlags"}},{"kind":"Field","name":{"kind":"Name","value":"bySource"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"source"}},{"kind":"Field","name":{"kind":"Name","value":"value"}},{"kind":"Field","name":{"kind":"Name","value":"observationCount"}},{"kind":"Field","name":{"kind":"Name","value":"coverageMinutes"}}]}}]}},{"kind":"Field","name":{"kind":"Name","value":"average7Day"}},{"kind":"Field","name":{"kind":"Name","value":"average30Day"}},{"kind":"Field","name":{"kind":"Name","value":"changeFromPrevious"}},{"kind":"Field","name":{"kind":"Name","value":"sampleCount"}}]}},{"kind":"Field","name":{"kind":"Name","value":"rolling7Day"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"date"}},{"kind":"Field","name":{"kind":"Name","value":"value"}},{"kind":"Field","name":{"kind":"Name","value":"sampleCount"}}]}},{"kind":"Field","name":{"kind":"Name","value":"monthly"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"month"}},{"kind":"Field","name":{"kind":"Name","value":"value"}},{"kind":"Field","name":{"kind":"Name","value":"sampleCount"}}]}}]}},{"kind":"Field","name":{"kind":"Name","value":"activeCalories"},"directives":[{"kind":"Directive","name":{"kind":"Name","value":"include"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"if"},"value":{"kind":"Variable","name":{"kind":"Name","value":"activeCalories"}}}]}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"unit"}},{"kind":"Field","name":{"kind":"Name","value":"daily"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"date"}},{"kind":"Field","name":{"kind":"Name","value":"value"}},{"kind":"Field","name":{"kind":"Name","value":"source"}},{"kind":"Field","name":{"kind":"Name","value":"qualityFlags"}},{"kind":"Field","name":{"kind":"Name","value":"bySource"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"source"}},{"kind":"Field","name":{"kind":"Name","value":"value"}},{"kind":"Field","name":{"kind":"Name","value":"observationCount"}},{"kind":"Field","name":{"kind":"Name","value":"coverageMinutes"}}]}}]}},{"kind":"Field","name":{"kind":"Name","value":"overview"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"latest"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"date"}},{"kind":"Field","name":{"kind":"Name","value":"value"}},{"kind":"Field","name":{"kind":"Name","value":"source"}},{"kind":"Field","name":{"kind":"Name","value":"qualityFlags"}},{"kind":"Field","name":{"kind":"Name","value":"bySource"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"source"}},{"kind":"Field","name":{"kind":"Name","value":"value"}},{"kind":"Field","name":{"kind":"Name","value":"observationCount"}},{"kind":"Field","name":{"kind":"Name","value":"coverageMinutes"}}]}}]}},{"kind":"Field","name":{"kind":"Name","value":"previous"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"date"}},{"kind":"Field","name":{"kind":"Name","value":"value"}},{"kind":"Field","name":{"kind":"Name","value":"source"}},{"kind":"Field","name":{"kind":"Name","value":"qualityFlags"}},{"kind":"Field","name":{"kind":"Name","value":"bySource"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"source"}},{"kind":"Field","name":{"kind":"Name","value":"value"}},{"kind":"Field","name":{"kind":"Name","value":"observationCount"}},{"kind":"Field","name":{"kind":"Name","value":"coverageMinutes"}}]}}]}},{"kind":"Field","name":{"kind":"Name","value":"average7Day"}},{"kind":"Field","name":{"kind":"Name","value":"average30Day"}},{"kind":"Field","name":{"kind":"Name","value":"changeFromPrevious"}},{"kind":"Field","name":{"kind":"Name","value":"sampleCount"}}]}},{"kind":"Field","name":{"kind":"Name","value":"rolling7Day"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"date"}},{"kind":"Field","name":{"kind":"Name","value":"value"}},{"kind":"Field","name":{"kind":"Name","value":"sampleCount"}}]}},{"kind":"Field","name":{"kind":"Name","value":"monthly"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"month"}},{"kind":"Field","name":{"kind":"Name","value":"value"}},{"kind":"Field","name":{"kind":"Name","value":"sampleCount"}}]}}]}},{"kind":"Field","name":{"kind":"Name","value":"totalCalories"},"directives":[{"kind":"Directive","name":{"kind":"Name","value":"include"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"if"},"value":{"kind":"Variable","name":{"kind":"Name","value":"totalCalories"}}}]}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"unit"}},{"kind":"Field","name":{"kind":"Name","value":"daily"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"date"}},{"kind":"Field","name":{"kind":"Name","value":"value"}},{"kind":"Field","name":{"kind":"Name","value":"source"}},{"kind":"Field","name":{"kind":"Name","value":"qualityFlags"}},{"kind":"Field","name":{"kind":"Name","value":"bySource"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"source"}},{"kind":"Field","name":{"kind":"Name","value":"value"}},{"kind":"Field","name":{"kind":"Name","value":"observationCount"}},{"kind":"Field","name":{"kind":"Name","value":"coverageMinutes"}}]}}]}},{"kind":"Field","name":{"kind":"Name","value":"overview"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"latest"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"date"}},{"kind":"Field","name":{"kind":"Name","value":"value"}},{"kind":"Field","name":{"kind":"Name","value":"source"}},{"kind":"Field","name":{"kind":"Name","value":"qualityFlags"}},{"kind":"Field","name":{"kind":"Name","value":"bySource"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"source"}},{"kind":"Field","name":{"kind":"Name","value":"value"}},{"kind":"Field","name":{"kind":"Name","value":"observationCount"}},{"kind":"Field","name":{"kind":"Name","value":"coverageMinutes"}}]}}]}},{"kind":"Field","name":{"kind":"Name","value":"previous"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"date"}},{"kind":"Field","name":{"kind":"Name","value":"value"}},{"kind":"Field","name":{"kind":"Name","value":"source"}},{"kind":"Field","name":{"kind":"Name","value":"qualityFlags"}},{"kind":"Field","name":{"kind":"Name","value":"bySource"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"source"}},{"kind":"Field","name":{"kind":"Name","value":"value"}},{"kind":"Field","name":{"kind":"Name","value":"observationCount"}},{"kind":"Field","name":{"kind":"Name","value":"coverageMinutes"}}]}}]}},{"kind":"Field","name":{"kind":"Name","value":"average7Day"}},{"kind":"Field","name":{"kind":"Name","value":"average30Day"}},{"kind":"Field","name":{"kind":"Name","value":"changeFromPrevious"}},{"kind":"Field","name":{"kind":"Name","value":"sampleCount"}}]}},{"kind":"Field","name":{"kind":"Name","value":"rolling7Day"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"date"}},{"kind":"Field","name":{"kind":"Name","value":"value"}},{"kind":"Field","name":{"kind":"Name","value":"sampleCount"}}]}},{"kind":"Field","name":{"kind":"Name","value":"monthly"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"month"}},{"kind":"Field","name":{"kind":"Name","value":"value"}},{"kind":"Field","name":{"kind":"Name","value":"sampleCount"}}]}}]}},{"kind":"Field","name":{"kind":"Name","value":"restingHeartRate"},"directives":[{"kind":"Directive","name":{"kind":"Name","value":"include"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"if"},"value":{"kind":"Variable","name":{"kind":"Name","value":"restingHeartRate"}}}]}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"unit"}},{"kind":"Field","name":{"kind":"Name","value":"daily"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"date"}},{"kind":"Field","name":{"kind":"Name","value":"value"}},{"kind":"Field","name":{"kind":"Name","value":"source"}},{"kind":"Field","name":{"kind":"Name","value":"qualityFlags"}},{"kind":"Field","name":{"kind":"Name","value":"bySource"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"source"}},{"kind":"Field","name":{"kind":"Name","value":"value"}},{"kind":"Field","name":{"kind":"Name","value":"observationCount"}},{"kind":"Field","name":{"kind":"Name","value":"coverageMinutes"}}]}}]}},{"kind":"Field","name":{"kind":"Name","value":"overview"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"latest"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"date"}},{"kind":"Field","name":{"kind":"Name","value":"value"}},{"kind":"Field","name":{"kind":"Name","value":"source"}},{"kind":"Field","name":{"kind":"Name","value":"qualityFlags"}},{"kind":"Field","name":{"kind":"Name","value":"bySource"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"source"}},{"kind":"Field","name":{"kind":"Name","value":"value"}},{"kind":"Field","name":{"kind":"Name","value":"observationCount"}},{"kind":"Field","name":{"kind":"Name","value":"coverageMinutes"}}]}}]}},{"kind":"Field","name":{"kind":"Name","value":"previous"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"date"}},{"kind":"Field","name":{"kind":"Name","value":"value"}},{"kind":"Field","name":{"kind":"Name","value":"source"}},{"kind":"Field","name":{"kind":"Name","value":"qualityFlags"}},{"kind":"Field","name":{"kind":"Name","value":"bySource"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"source"}},{"kind":"Field","name":{"kind":"Name","value":"value"}},{"kind":"Field","name":{"kind":"Name","value":"observationCount"}},{"kind":"Field","name":{"kind":"Name","value":"coverageMinutes"}}]}}]}},{"kind":"Field","name":{"kind":"Name","value":"average7Day"}},{"kind":"Field","name":{"kind":"Name","value":"average30Day"}},{"kind":"Field","name":{"kind":"Name","value":"changeFromPrevious"}},{"kind":"Field","name":{"kind":"Name","value":"sampleCount"}}]}},{"kind":"Field","name":{"kind":"Name","value":"rolling7Day"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"date"}},{"kind":"Field","name":{"kind":"Name","value":"value"}},{"kind":"Field","name":{"kind":"Name","value":"sampleCount"}}]}},{"kind":"Field","name":{"kind":"Name","value":"monthly"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"month"}},{"kind":"Field","name":{"kind":"Name","value":"value"}},{"kind":"Field","name":{"kind":"Name","value":"sampleCount"}}]}}]}},{"kind":"Field","name":{"kind":"Name","value":"weight"},"directives":[{"kind":"Directive","name":{"kind":"Name","value":"include"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"if"},"value":{"kind":"Variable","name":{"kind":"Name","value":"weight"}}}]}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"unit"}},{"kind":"Field","name":{"kind":"Name","value":"daily"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"date"}},{"kind":"Field","name":{"kind":"Name","value":"value"}},{"kind":"Field","name":{"kind":"Name","value":"source"}},{"kind":"Field","name":{"kind":"Name","value":"qualityFlags"}},{"kind":"Field","name":{"kind":"Name","value":"bySource"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"source"}},{"kind":"Field","name":{"kind":"Name","value":"value"}},{"kind":"Field","name":{"kind":"Name","value":"observationCount"}},{"kind":"Field","name":{"kind":"Name","value":"coverageMinutes"}}]}}]}},{"kind":"Field","name":{"kind":"Name","value":"overview"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"latest"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"date"}},{"kind":"Field","name":{"kind":"Name","value":"value"}},{"kind":"Field","name":{"kind":"Name","value":"source"}},{"kind":"Field","name":{"kind":"Name","value":"qualityFlags"}},{"kind":"Field","name":{"kind":"Name","value":"bySource"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"source"}},{"kind":"Field","name":{"kind":"Name","value":"value"}},{"kind":"Field","name":{"kind":"Name","value":"observationCount"}},{"kind":"Field","name":{"kind":"Name","value":"coverageMinutes"}}]}}]}},{"kind":"Field","name":{"kind":"Name","value":"previous"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"date"}},{"kind":"Field","name":{"kind":"Name","value":"value"}},{"kind":"Field","name":{"kind":"Name","value":"source"}},{"kind":"Field","name":{"kind":"Name","value":"qualityFlags"}},{"kind":"Field","name":{"kind":"Name","value":"bySource"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"source"}},{"kind":"Field","name":{"kind":"Name","value":"value"}},{"kind":"Field","name":{"kind":"Name","value":"observationCount"}},{"kind":"Field","name":{"kind":"Name","value":"coverageMinutes"}}]}}]}},{"kind":"Field","name":{"kind":"Name","value":"average7Day"}},{"kind":"Field","name":{"kind":"Name","value":"average30Day"}},{"kind":"Field","name":{"kind":"Name","value":"changeFromPrevious"}},{"kind":"Field","name":{"kind":"Name","value":"sampleCount"}}]}},{"kind":"Field","name":{"kind":"Name","value":"rolling7Day"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"date"}},{"kind":"Field","name":{"kind":"Name","value":"value"}},{"kind":"Field","name":{"kind":"Name","value":"sampleCount"}}]}},{"kind":"Field","name":{"kind":"Name","value":"monthly"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"month"}},{"kind":"Field","name":{"kind":"Name","value":"value"}},{"kind":"Field","name":{"kind":"Name","value":"sampleCount"}}]}}]}},{"kind":"Field","name":{"kind":"Name","value":"heartRateVariability"},"directives":[{"kind":"Directive","name":{"kind":"Name","value":"include"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"if"},"value":{"kind":"Variable","name":{"kind":"Name","value":"heartRateVariability"}}}]}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"unit"}},{"kind":"Field","name":{"kind":"Name","value":"daily"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"date"}},{"kind":"Field","name":{"kind":"Name","value":"value"}},{"kind":"Field","name":{"kind":"Name","value":"source"}},{"kind":"Field","name":{"kind":"Name","value":"qualityFlags"}},{"kind":"Field","name":{"kind":"Name","value":"bySource"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"source"}},{"kind":"Field","name":{"kind":"Name","value":"value"}},{"kind":"Field","name":{"kind":"Name","value":"observationCount"}},{"kind":"Field","name":{"kind":"Name","value":"coverageMinutes"}}]}}]}},{"kind":"Field","name":{"kind":"Name","value":"overview"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"latest"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"date"}},{"kind":"Field","name":{"kind":"Name","value":"value"}},{"kind":"Field","name":{"kind":"Name","value":"source"}},{"kind":"Field","name":{"kind":"Name","value":"qualityFlags"}},{"kind":"Field","name":{"kind":"Name","value":"bySource"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"source"}},{"kind":"Field","name":{"kind":"Name","value":"value"}},{"kind":"Field","name":{"kind":"Name","value":"observationCount"}},{"kind":"Field","name":{"kind":"Name","value":"coverageMinutes"}}]}}]}},{"kind":"Field","name":{"kind":"Name","value":"previous"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"date"}},{"kind":"Field","name":{"kind":"Name","value":"value"}},{"kind":"Field","name":{"kind":"Name","value":"source"}},{"kind":"Field","name":{"kind":"Name","value":"qualityFlags"}},{"kind":"Field","name":{"kind":"Name","value":"bySource"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"source"}},{"kind":"Field","name":{"kind":"Name","value":"value"}},{"kind":"Field","name":{"kind":"Name","value":"observationCount"}},{"kind":"Field","name":{"kind":"Name","value":"coverageMinutes"}}]}}]}},{"kind":"Field","name":{"kind":"Name","value":"average7Day"}},{"kind":"Field","name":{"kind":"Name","value":"average30Day"}},{"kind":"Field","name":{"kind":"Name","value":"changeFromPrevious"}},{"kind":"Field","name":{"kind":"Name","value":"sampleCount"}}]}},{"kind":"Field","name":{"kind":"Name","value":"rolling7Day"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"date"}},{"kind":"Field","name":{"kind":"Name","value":"value"}},{"kind":"Field","name":{"kind":"Name","value":"sampleCount"}}]}},{"kind":"Field","name":{"kind":"Name","value":"monthly"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"month"}},{"kind":"Field","name":{"kind":"Name","value":"value"}},{"kind":"Field","name":{"kind":"Name","value":"sampleCount"}}]}}]}},{"kind":"Field","name":{"kind":"Name","value":"skinTemperature"},"directives":[{"kind":"Directive","name":{"kind":"Name","value":"include"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"if"},"value":{"kind":"Variable","name":{"kind":"Name","value":"skinTemperature"}}}]}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"unit"}},{"kind":"Field","name":{"kind":"Name","value":"daily"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"date"}},{"kind":"Field","name":{"kind":"Name","value":"value"}},{"kind":"Field","name":{"kind":"Name","value":"source"}},{"kind":"Field","name":{"kind":"Name","value":"qualityFlags"}},{"kind":"Field","name":{"kind":"Name","value":"bySource"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"source"}},{"kind":"Field","name":{"kind":"Name","value":"value"}},{"kind":"Field","name":{"kind":"Name","value":"observationCount"}},{"kind":"Field","name":{"kind":"Name","value":"coverageMinutes"}}]}}]}},{"kind":"Field","name":{"kind":"Name","value":"overview"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"latest"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"date"}},{"kind":"Field","name":{"kind":"Name","value":"value"}},{"kind":"Field","name":{"kind":"Name","value":"source"}},{"kind":"Field","name":{"kind":"Name","value":"qualityFlags"}},{"kind":"Field","name":{"kind":"Name","value":"bySource"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"source"}},{"kind":"Field","name":{"kind":"Name","value":"value"}},{"kind":"Field","name":{"kind":"Name","value":"observationCount"}},{"kind":"Field","name":{"kind":"Name","value":"coverageMinutes"}}]}}]}},{"kind":"Field","name":{"kind":"Name","value":"previous"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"date"}},{"kind":"Field","name":{"kind":"Name","value":"value"}},{"kind":"Field","name":{"kind":"Name","value":"source"}},{"kind":"Field","name":{"kind":"Name","value":"qualityFlags"}},{"kind":"Field","name":{"kind":"Name","value":"bySource"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"source"}},{"kind":"Field","name":{"kind":"Name","value":"value"}},{"kind":"Field","name":{"kind":"Name","value":"observationCount"}},{"kind":"Field","name":{"kind":"Name","value":"coverageMinutes"}}]}}]}},{"kind":"Field","name":{"kind":"Name","value":"average7Day"}},{"kind":"Field","name":{"kind":"Name","value":"average30Day"}},{"kind":"Field","name":{"kind":"Name","value":"changeFromPrevious"}},{"kind":"Field","name":{"kind":"Name","value":"sampleCount"}}]}},{"kind":"Field","name":{"kind":"Name","value":"rolling7Day"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"date"}},{"kind":"Field","name":{"kind":"Name","value":"value"}},{"kind":"Field","name":{"kind":"Name","value":"sampleCount"}}]}},{"kind":"Field","name":{"kind":"Name","value":"monthly"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"month"}},{"kind":"Field","name":{"kind":"Name","value":"value"}},{"kind":"Field","name":{"kind":"Name","value":"sampleCount"}}]}}]}}]}}]}}]}}]} as unknown as DocumentNode<MetricSeriesPageQuery, MetricSeriesPageQueryVariables>;
-export const OverviewPageDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"OverviewPage"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"viewer"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"analytics"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"timeZone"}},{"kind":"Field","name":{"kind":"Name","value":"processedAt"}},{"kind":"Field","name":{"kind":"Name","value":"sleepEvents"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"date"}},{"kind":"Field","name":{"kind":"Name","value":"primary"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"source"}},{"kind":"Field","name":{"kind":"Name","value":"startAt"}},{"kind":"Field","name":{"kind":"Name","value":"endAt"}},{"kind":"Field","name":{"kind":"Name","value":"title"}},{"kind":"Field","name":{"kind":"Name","value":"notes"}}]}},{"kind":"Field","name":{"kind":"Name","value":"recordings"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"source"}},{"kind":"Field","name":{"kind":"Name","value":"startAt"}},{"kind":"Field","name":{"kind":"Name","value":"endAt"}},{"kind":"Field","name":{"kind":"Name","value":"title"}},{"kind":"Field","name":{"kind":"Name","value":"notes"}}]}}]}},{"kind":"Field","name":{"kind":"Name","value":"deviceSleepComparisons"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"source"}},{"kind":"Field","name":{"kind":"Name","value":"recordingCount"}},{"kind":"Field","name":{"kind":"Name","value":"averageSleepMinutes"}},{"kind":"Field","name":{"kind":"Name","value":"comparisonCount"}},{"kind":"Field","name":{"kind":"Name","value":"averageDifferenceMinutes"}}]}},{"kind":"Field","name":{"kind":"Name","value":"days"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"date"}},{"kind":"Field","name":{"kind":"Name","value":"headlineScores"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"sleepDuration"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"status"}},{"kind":"Field","name":{"kind":"Name","value":"value"}},{"kind":"Field","name":{"kind":"Name","value":"eventCount"}},{"kind":"Field","name":{"kind":"Name","value":"recordingCount"}}]}}]}}]}},{"kind":"Field","name":{"kind":"Name","value":"sleepDebt"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"targetMinutes"}},{"kind":"Field","name":{"kind":"Name","value":"methodology"}},{"kind":"Field","name":{"kind":"Name","value":"average7DayMinutes"}},{"kind":"Field","name":{"kind":"Name","value":"average30DayMinutes"}},{"kind":"Field","name":{"kind":"Name","value":"previous30DayAverageMinutes"}},{"kind":"Field","name":{"kind":"Name","value":"breakdown30Day"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"recordedDays"}},{"kind":"Field","name":{"kind":"Name","value":"none"}},{"kind":"Field","name":{"kind":"Name","value":"low"}},{"kind":"Field","name":{"kind":"Name","value":"moderate"}},{"kind":"Field","name":{"kind":"Name","value":"high"}}]}},{"kind":"Field","name":{"kind":"Name","value":"daily"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"date"}},{"kind":"Field","name":{"kind":"Name","value":"sleepMinutes"}},{"kind":"Field","name":{"kind":"Name","value":"targetMinutes"}},{"kind":"Field","name":{"kind":"Name","value":"debtMinutes"}},{"kind":"Field","name":{"kind":"Name","value":"surplusMinutes"}},{"kind":"Field","name":{"kind":"Name","value":"category"}},{"kind":"Field","name":{"kind":"Name","value":"rolling7DayAverageMinutes"}},{"kind":"Field","name":{"kind":"Name","value":"rolling7DayTotalMinutes"}},{"kind":"Field","name":{"kind":"Name","value":"rolling30DayAverageMinutes"}}]}}]}},{"kind":"Field","name":{"kind":"Name","value":"sleepConsistency"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"baselineWindowDays"}},{"kind":"Field","name":{"kind":"Name","value":"minimumBaselineNights"}},{"kind":"Field","name":{"kind":"Name","value":"methodology"}},{"kind":"Field","name":{"kind":"Name","value":"average7DayScore"}},{"kind":"Field","name":{"kind":"Name","value":"average30DayScore"}},{"kind":"Field","name":{"kind":"Name","value":"previous30DayAverageScore"}},{"kind":"Field","name":{"kind":"Name","value":"breakdown30Day"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"scoredDays"}},{"kind":"Field","name":{"kind":"Name","value":"optimal"}},{"kind":"Field","name":{"kind":"Name","value":"sufficient"}},{"kind":"Field","name":{"kind":"Name","value":"poor"}}]}},{"kind":"Field","name":{"kind":"Name","value":"daily"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"date"}},{"kind":"Field","name":{"kind":"Name","value":"source"}},{"kind":"Field","name":{"kind":"Name","value":"bedtimeAt"}},{"kind":"Field","name":{"kind":"Name","value":"wakeAt"}},{"kind":"Field","name":{"kind":"Name","value":"bedtimeMinutesLocal"}},{"kind":"Field","name":{"kind":"Name","value":"wakeMinutesLocal"}},{"kind":"Field","name":{"kind":"Name","value":"baselineBedtimeMinutesLocal"}},{"kind":"Field","name":{"kind":"Name","value":"baselineWakeMinutesLocal"}},{"kind":"Field","name":{"kind":"Name","value":"bedtimeDeviationMinutes"}},{"kind":"Field","name":{"kind":"Name","value":"wakeDeviationMinutes"}},{"kind":"Field","name":{"kind":"Name","value":"baselineNightCount"}},{"kind":"Field","name":{"kind":"Name","value":"score"}},{"kind":"Field","name":{"kind":"Name","value":"category"}},{"kind":"Field","name":{"kind":"Name","value":"rolling7DayAverageScore"}},{"kind":"Field","name":{"kind":"Name","value":"rolling30DayAverageScore"}},{"kind":"Field","name":{"kind":"Name","value":"qualityFlags"}}]}}]}},{"kind":"Field","name":{"kind":"Name","value":"healthspan"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"modelVersion"}},{"kind":"Field","name":{"kind":"Name","value":"status"}},{"kind":"Field","name":{"kind":"Name","value":"birthDateConfigured"}},{"kind":"Field","name":{"kind":"Name","value":"methodology"}},{"kind":"Field","name":{"kind":"Name","value":"calibrationReasons"}},{"kind":"Field","name":{"kind":"Name","value":"paceOfAging"}},{"kind":"Field","name":{"kind":"Name","value":"paceWindowDays"}},{"kind":"Field","name":{"kind":"Name","value":"latest"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"date"}},{"kind":"Field","name":{"kind":"Name","value":"chronologicalAgeYears"}},{"kind":"Field","name":{"kind":"Name","value":"healthAgeYears"}},{"kind":"Field","name":{"kind":"Name","value":"ageDeltaYears"}},{"kind":"Field","name":{"kind":"Name","value":"paceOfAging"}},{"kind":"Field","name":{"kind":"Name","value":"qualityFlags"}},{"kind":"Field","name":{"kind":"Name","value":"factors"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"key"}},{"kind":"Field","name":{"kind":"Name","value":"label"}},{"kind":"Field","name":{"kind":"Name","value":"value"}},{"kind":"Field","name":{"kind":"Name","value":"unit"}},{"kind":"Field","name":{"kind":"Name","value":"referenceValue"}},{"kind":"Field","name":{"kind":"Name","value":"ageImpactYears"}},{"kind":"Field","name":{"kind":"Name","value":"coverageDays"}}]}}]}}]}},{"kind":"Field","name":{"kind":"Name","value":"steps"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"unit"}},{"kind":"Field","name":{"kind":"Name","value":"overview"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"average7Day"}},{"kind":"Field","name":{"kind":"Name","value":"average30Day"}},{"kind":"Field","name":{"kind":"Name","value":"changeFromPrevious"}},{"kind":"Field","name":{"kind":"Name","value":"sampleCount"}},{"kind":"Field","name":{"kind":"Name","value":"latest"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"date"}},{"kind":"Field","name":{"kind":"Name","value":"value"}},{"kind":"Field","name":{"kind":"Name","value":"source"}},{"kind":"Field","name":{"kind":"Name","value":"qualityFlags"}}]}},{"kind":"Field","name":{"kind":"Name","value":"previous"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"date"}},{"kind":"Field","name":{"kind":"Name","value":"value"}},{"kind":"Field","name":{"kind":"Name","value":"source"}},{"kind":"Field","name":{"kind":"Name","value":"qualityFlags"}}]}}]}},{"kind":"Field","name":{"kind":"Name","value":"daily"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"date"}},{"kind":"Field","name":{"kind":"Name","value":"value"}},{"kind":"Field","name":{"kind":"Name","value":"source"}},{"kind":"Field","name":{"kind":"Name","value":"qualityFlags"}}]}}]}},{"kind":"Field","name":{"kind":"Name","value":"activeCalories"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"unit"}},{"kind":"Field","name":{"kind":"Name","value":"overview"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"average7Day"}},{"kind":"Field","name":{"kind":"Name","value":"average30Day"}},{"kind":"Field","name":{"kind":"Name","value":"changeFromPrevious"}},{"kind":"Field","name":{"kind":"Name","value":"sampleCount"}},{"kind":"Field","name":{"kind":"Name","value":"latest"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"date"}},{"kind":"Field","name":{"kind":"Name","value":"value"}},{"kind":"Field","name":{"kind":"Name","value":"source"}},{"kind":"Field","name":{"kind":"Name","value":"qualityFlags"}}]}},{"kind":"Field","name":{"kind":"Name","value":"previous"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"date"}},{"kind":"Field","name":{"kind":"Name","value":"value"}},{"kind":"Field","name":{"kind":"Name","value":"source"}},{"kind":"Field","name":{"kind":"Name","value":"qualityFlags"}}]}}]}},{"kind":"Field","name":{"kind":"Name","value":"daily"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"date"}},{"kind":"Field","name":{"kind":"Name","value":"value"}},{"kind":"Field","name":{"kind":"Name","value":"source"}},{"kind":"Field","name":{"kind":"Name","value":"qualityFlags"}}]}}]}},{"kind":"Field","name":{"kind":"Name","value":"totalCalories"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"unit"}},{"kind":"Field","name":{"kind":"Name","value":"overview"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"average7Day"}},{"kind":"Field","name":{"kind":"Name","value":"average30Day"}},{"kind":"Field","name":{"kind":"Name","value":"changeFromPrevious"}},{"kind":"Field","name":{"kind":"Name","value":"sampleCount"}},{"kind":"Field","name":{"kind":"Name","value":"latest"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"date"}},{"kind":"Field","name":{"kind":"Name","value":"value"}},{"kind":"Field","name":{"kind":"Name","value":"source"}},{"kind":"Field","name":{"kind":"Name","value":"qualityFlags"}}]}},{"kind":"Field","name":{"kind":"Name","value":"previous"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"date"}},{"kind":"Field","name":{"kind":"Name","value":"value"}},{"kind":"Field","name":{"kind":"Name","value":"source"}},{"kind":"Field","name":{"kind":"Name","value":"qualityFlags"}}]}}]}},{"kind":"Field","name":{"kind":"Name","value":"daily"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"date"}},{"kind":"Field","name":{"kind":"Name","value":"value"}},{"kind":"Field","name":{"kind":"Name","value":"source"}},{"kind":"Field","name":{"kind":"Name","value":"qualityFlags"}}]}}]}},{"kind":"Field","name":{"kind":"Name","value":"restingHeartRate"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"unit"}},{"kind":"Field","name":{"kind":"Name","value":"overview"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"average7Day"}},{"kind":"Field","name":{"kind":"Name","value":"average30Day"}},{"kind":"Field","name":{"kind":"Name","value":"changeFromPrevious"}},{"kind":"Field","name":{"kind":"Name","value":"sampleCount"}},{"kind":"Field","name":{"kind":"Name","value":"latest"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"date"}},{"kind":"Field","name":{"kind":"Name","value":"value"}},{"kind":"Field","name":{"kind":"Name","value":"source"}},{"kind":"Field","name":{"kind":"Name","value":"qualityFlags"}}]}},{"kind":"Field","name":{"kind":"Name","value":"previous"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"date"}},{"kind":"Field","name":{"kind":"Name","value":"value"}},{"kind":"Field","name":{"kind":"Name","value":"source"}},{"kind":"Field","name":{"kind":"Name","value":"qualityFlags"}}]}}]}},{"kind":"Field","name":{"kind":"Name","value":"daily"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"date"}},{"kind":"Field","name":{"kind":"Name","value":"value"}},{"kind":"Field","name":{"kind":"Name","value":"source"}},{"kind":"Field","name":{"kind":"Name","value":"qualityFlags"}}]}}]}},{"kind":"Field","name":{"kind":"Name","value":"weight"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"unit"}},{"kind":"Field","name":{"kind":"Name","value":"overview"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"average7Day"}},{"kind":"Field","name":{"kind":"Name","value":"average30Day"}},{"kind":"Field","name":{"kind":"Name","value":"changeFromPrevious"}},{"kind":"Field","name":{"kind":"Name","value":"sampleCount"}},{"kind":"Field","name":{"kind":"Name","value":"latest"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"date"}},{"kind":"Field","name":{"kind":"Name","value":"value"}},{"kind":"Field","name":{"kind":"Name","value":"source"}},{"kind":"Field","name":{"kind":"Name","value":"qualityFlags"}}]}},{"kind":"Field","name":{"kind":"Name","value":"previous"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"date"}},{"kind":"Field","name":{"kind":"Name","value":"value"}},{"kind":"Field","name":{"kind":"Name","value":"source"}},{"kind":"Field","name":{"kind":"Name","value":"qualityFlags"}}]}}]}},{"kind":"Field","name":{"kind":"Name","value":"daily"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"date"}},{"kind":"Field","name":{"kind":"Name","value":"value"}},{"kind":"Field","name":{"kind":"Name","value":"source"}},{"kind":"Field","name":{"kind":"Name","value":"qualityFlags"}}]}}]}}]}}]}}]}}]} as unknown as DocumentNode<OverviewPageQuery, OverviewPageQueryVariables>;
-export const RecoveryPageDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"RecoveryPage"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"viewer"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"analytics"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"timeZone"}},{"kind":"Field","name":{"kind":"Name","value":"recovery"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"algorithmVersion"}},{"kind":"Field","name":{"kind":"Name","value":"status"}},{"kind":"Field","name":{"kind":"Name","value":"provisional"}},{"kind":"Field","name":{"kind":"Name","value":"methodology"}},{"kind":"Field","name":{"kind":"Name","value":"limitations"}},{"kind":"Field","name":{"kind":"Name","value":"weights"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"sleep"}},{"kind":"Field","name":{"kind":"Name","value":"hrv"}},{"kind":"Field","name":{"kind":"Name","value":"restingHeartRate"}},{"kind":"Field","name":{"kind":"Name","value":"sleepConsistency"}}]}},{"kind":"Field","name":{"kind":"Name","value":"availability"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"available"}},{"kind":"Field","name":{"kind":"Name","value":"publishableDayCount"}},{"kind":"Field","name":{"kind":"Name","value":"completeDayCount"}},{"kind":"Field","name":{"kind":"Name","value":"reasons"}}]}},{"kind":"Field","name":{"kind":"Name","value":"daily"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"date"}},{"kind":"Field","name":{"kind":"Name","value":"score"}},{"kind":"Field","name":{"kind":"Name","value":"band"}},{"kind":"Field","name":{"kind":"Name","value":"status"}},{"kind":"Field","name":{"kind":"Name","value":"provisional"}},{"kind":"Field","name":{"kind":"Name","value":"components"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"sleep"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"score"}},{"kind":"Field","name":{"kind":"Name","value":"value"}},{"kind":"Field","name":{"kind":"Name","value":"baseline"}},{"kind":"Field","name":{"kind":"Name","value":"unit"}},{"kind":"Field","name":{"kind":"Name","value":"baselineDays"}}]}},{"kind":"Field","name":{"kind":"Name","value":"restingHeartRate"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"score"}},{"kind":"Field","name":{"kind":"Name","value":"value"}},{"kind":"Field","name":{"kind":"Name","value":"baseline"}},{"kind":"Field","name":{"kind":"Name","value":"unit"}},{"kind":"Field","name":{"kind":"Name","value":"baselineDays"}}]}},{"kind":"Field","name":{"kind":"Name","value":"hrv"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"score"}},{"kind":"Field","name":{"kind":"Name","value":"value"}},{"kind":"Field","name":{"kind":"Name","value":"baseline"}},{"kind":"Field","name":{"kind":"Name","value":"unit"}},{"kind":"Field","name":{"kind":"Name","value":"baselineDays"}}]}},{"kind":"Field","name":{"kind":"Name","value":"sleepConsistency"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"score"}},{"kind":"Field","name":{"kind":"Name","value":"value"}},{"kind":"Field","name":{"kind":"Name","value":"baseline"}},{"kind":"Field","name":{"kind":"Name","value":"unit"}},{"kind":"Field","name":{"kind":"Name","value":"baselineDays"}}]}}]}},{"kind":"Field","name":{"kind":"Name","value":"quality"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"publishable"}},{"kind":"Field","name":{"kind":"Name","value":"complete"}},{"kind":"Field","name":{"kind":"Name","value":"estimateBasis"}},{"kind":"Field","name":{"kind":"Name","value":"availableWeight"}},{"kind":"Field","name":{"kind":"Name","value":"baselineWindowDays"}},{"kind":"Field","name":{"kind":"Name","value":"minimumBaselineDays"}},{"kind":"Field","name":{"kind":"Name","value":"reasons"}}]}}]}}]}}]}}]}}]}}]} as unknown as DocumentNode<RecoveryPageQuery, RecoveryPageQueryVariables>;
-export const SleepConsistencyPageDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"SleepConsistencyPage"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"viewer"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"analytics"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"timeZone"}},{"kind":"Field","name":{"kind":"Name","value":"sleepConsistency"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"baselineWindowDays"}},{"kind":"Field","name":{"kind":"Name","value":"minimumBaselineNights"}},{"kind":"Field","name":{"kind":"Name","value":"methodology"}},{"kind":"Field","name":{"kind":"Name","value":"average7DayScore"}},{"kind":"Field","name":{"kind":"Name","value":"average30DayScore"}},{"kind":"Field","name":{"kind":"Name","value":"previous30DayAverageScore"}},{"kind":"Field","name":{"kind":"Name","value":"breakdown30Day"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"scoredDays"}},{"kind":"Field","name":{"kind":"Name","value":"optimal"}},{"kind":"Field","name":{"kind":"Name","value":"sufficient"}},{"kind":"Field","name":{"kind":"Name","value":"poor"}}]}},{"kind":"Field","name":{"kind":"Name","value":"daily"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"date"}},{"kind":"Field","name":{"kind":"Name","value":"source"}},{"kind":"Field","name":{"kind":"Name","value":"bedtimeAt"}},{"kind":"Field","name":{"kind":"Name","value":"wakeAt"}},{"kind":"Field","name":{"kind":"Name","value":"bedtimeMinutesLocal"}},{"kind":"Field","name":{"kind":"Name","value":"wakeMinutesLocal"}},{"kind":"Field","name":{"kind":"Name","value":"baselineBedtimeMinutesLocal"}},{"kind":"Field","name":{"kind":"Name","value":"baselineWakeMinutesLocal"}},{"kind":"Field","name":{"kind":"Name","value":"bedtimeDeviationMinutes"}},{"kind":"Field","name":{"kind":"Name","value":"wakeDeviationMinutes"}},{"kind":"Field","name":{"kind":"Name","value":"baselineNightCount"}},{"kind":"Field","name":{"kind":"Name","value":"score"}},{"kind":"Field","name":{"kind":"Name","value":"category"}},{"kind":"Field","name":{"kind":"Name","value":"rolling7DayAverageScore"}},{"kind":"Field","name":{"kind":"Name","value":"rolling30DayAverageScore"}},{"kind":"Field","name":{"kind":"Name","value":"qualityFlags"}}]}}]}}]}}]}}]}}]} as unknown as DocumentNode<SleepConsistencyPageQuery, SleepConsistencyPageQueryVariables>;
-export const SleepDebtPageDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"SleepDebtPage"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"viewer"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"analytics"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"timeZone"}},{"kind":"Field","name":{"kind":"Name","value":"sleepDebt"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"targetMinutes"}},{"kind":"Field","name":{"kind":"Name","value":"methodology"}},{"kind":"Field","name":{"kind":"Name","value":"average7DayMinutes"}},{"kind":"Field","name":{"kind":"Name","value":"average30DayMinutes"}},{"kind":"Field","name":{"kind":"Name","value":"previous30DayAverageMinutes"}},{"kind":"Field","name":{"kind":"Name","value":"breakdown30Day"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"recordedDays"}},{"kind":"Field","name":{"kind":"Name","value":"none"}},{"kind":"Field","name":{"kind":"Name","value":"low"}},{"kind":"Field","name":{"kind":"Name","value":"moderate"}},{"kind":"Field","name":{"kind":"Name","value":"high"}}]}},{"kind":"Field","name":{"kind":"Name","value":"daily"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"date"}},{"kind":"Field","name":{"kind":"Name","value":"sleepMinutes"}},{"kind":"Field","name":{"kind":"Name","value":"targetMinutes"}},{"kind":"Field","name":{"kind":"Name","value":"debtMinutes"}},{"kind":"Field","name":{"kind":"Name","value":"surplusMinutes"}},{"kind":"Field","name":{"kind":"Name","value":"category"}},{"kind":"Field","name":{"kind":"Name","value":"rolling7DayAverageMinutes"}},{"kind":"Field","name":{"kind":"Name","value":"rolling7DayTotalMinutes"}},{"kind":"Field","name":{"kind":"Name","value":"rolling30DayAverageMinutes"}}]}}]}}]}}]}}]}}]} as unknown as DocumentNode<SleepDebtPageQuery, SleepDebtPageQueryVariables>;
-export const SleepStagesDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"SleepStages"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"range"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"TimeRange"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"viewer"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"analytics"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"sleepEvents"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"range"},"value":{"kind":"Variable","name":{"kind":"Name","value":"range"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"recordings"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"stages"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"startAt"}},{"kind":"Field","name":{"kind":"Name","value":"endAt"}},{"kind":"Field","name":{"kind":"Name","value":"kind"}}]}}]}}]}}]}}]}}]}}]} as unknown as DocumentNode<SleepStagesQuery, SleepStagesQueryVariables>;
-export const SkinTemperatureSourceRecordsDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"SkinTemperatureSourceRecords"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"viewer"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"config"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"homeTimeZone"}}]}},{"kind":"Field","name":{"kind":"Name","value":"sourceRecords"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"skinTemperature"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"source"}},{"kind":"Field","name":{"kind":"Name","value":"startAt"}},{"kind":"Field","name":{"kind":"Name","value":"endAt"}},{"kind":"Field","name":{"kind":"Name","value":"baselineCelsius"}},{"kind":"Field","name":{"kind":"Name","value":"deltas"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"observedAt"}},{"kind":"Field","name":{"kind":"Name","value":"celsius"}}]}},{"kind":"Field","name":{"kind":"Name","value":"measurementLocation"}}]}}]}}]}}]}}]} as unknown as DocumentNode<SkinTemperatureSourceRecordsQuery, SkinTemperatureSourceRecordsQueryVariables>;
-export const HrvSourceReadingsDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"HrvSourceReadings"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"range"}},"type":{"kind":"NamedType","name":{"kind":"Name","value":"TimeRange"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"viewer"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"config"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"homeTimeZone"}}]}},{"kind":"Field","name":{"kind":"Name","value":"sourceRecords"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"heartRateVariability"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"range"},"value":{"kind":"Variable","name":{"kind":"Name","value":"range"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"source"}},{"kind":"Field","name":{"kind":"Name","value":"observedAt"}},{"kind":"Field","name":{"kind":"Name","value":"milliseconds"}}]}}]}}]}}]}}]} as unknown as DocumentNode<HrvSourceReadingsQuery, HrvSourceReadingsQueryVariables>;
-export const SyncStatusDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"SyncStatus"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"viewer"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"ingestion"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"phoneSync"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"observedActive"}},{"kind":"Field","name":{"kind":"Name","value":"state"}},{"kind":"Field","name":{"kind":"Name","value":"lastUploadAt"}},{"kind":"Field","name":{"kind":"Name","value":"activeUntil"}},{"kind":"Field","name":{"kind":"Name","value":"secondsSinceLastUpload"}},{"kind":"Field","name":{"kind":"Name","value":"lastRecordType"}},{"kind":"Field","name":{"kind":"Name","value":"lastRecordCount"}},{"kind":"Field","name":{"kind":"Name","value":"totalUploadRequests"}},{"kind":"Field","name":{"kind":"Name","value":"totalRecordsReceived"}},{"kind":"Field","name":{"kind":"Name","value":"activityWindowSeconds"}},{"kind":"Field","name":{"kind":"Name","value":"note"}}]}},{"kind":"Field","name":{"kind":"Name","value":"analyticsJob"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"status"}},{"kind":"Field","name":{"kind":"Name","value":"reason"}},{"kind":"Field","name":{"kind":"Name","value":"requestedAt"}},{"kind":"Field","name":{"kind":"Name","value":"startedAt"}},{"kind":"Field","name":{"kind":"Name","value":"completedAt"}},{"kind":"Field","name":{"kind":"Name","value":"error"}}]}},{"kind":"Field","name":{"kind":"Name","value":"current"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"completedAt"}}]}}]}}]}}]}}]} as unknown as DocumentNode<SyncStatusQuery, SyncStatusQueryVariables>;
-export const DebtDailyDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"DebtDaily"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"viewer"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"analytics"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"sleepDebt"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"targetMinutes"}},{"kind":"Field","name":{"kind":"Name","value":"daily"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"date"}},{"kind":"Field","name":{"kind":"Name","value":"debtMinutes"}}]}}]}}]}}]}}]}}]} as unknown as DocumentNode<DebtDailyQuery, DebtDailyQueryVariables>;
-export const DebtBreakdownDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"DebtBreakdown"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"viewer"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"analytics"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"sleepDebt"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"breakdown30Day"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"recordedDays"}},{"kind":"Field","name":{"kind":"Name","value":"high"}}]}}]}}]}}]}}]}}]} as unknown as DocumentNode<DebtBreakdownQuery, DebtBreakdownQueryVariables>;
+export const DailySleepPageDocument = {
+  kind: "Document",
+  definitions: [
+    {
+      kind: "OperationDefinition",
+      operation: "query",
+      name: { kind: "Name", value: "DailySleepPage" },
+      selectionSet: {
+        kind: "SelectionSet",
+        selections: [
+          {
+            kind: "Field",
+            name: { kind: "Name", value: "viewer" },
+            selectionSet: {
+              kind: "SelectionSet",
+              selections: [
+                {
+                  kind: "Field",
+                  name: { kind: "Name", value: "analytics" },
+                  selectionSet: {
+                    kind: "SelectionSet",
+                    selections: [
+                      { kind: "Field", name: { kind: "Name", value: "id" } },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "timeZone" },
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "sleepDebt" },
+                        selectionSet: {
+                          kind: "SelectionSet",
+                          selections: [
+                            {
+                              kind: "Field",
+                              name: { kind: "Name", value: "targetMinutes" },
+                            },
+                          ],
+                        },
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "days" },
+                        selectionSet: {
+                          kind: "SelectionSet",
+                          selections: [
+                            {
+                              kind: "Field",
+                              name: { kind: "Name", value: "id" },
+                            },
+                            {
+                              kind: "Field",
+                              name: { kind: "Name", value: "date" },
+                            },
+                            {
+                              kind: "Field",
+                              name: { kind: "Name", value: "headlineScores" },
+                              selectionSet: {
+                                kind: "SelectionSet",
+                                selections: [
+                                  {
+                                    kind: "Field",
+                                    name: {
+                                      kind: "Name",
+                                      value: "sleepDuration",
+                                    },
+                                    selectionSet: {
+                                      kind: "SelectionSet",
+                                      selections: [
+                                        {
+                                          kind: "Field",
+                                          name: {
+                                            kind: "Name",
+                                            value: "status",
+                                          },
+                                        },
+                                        {
+                                          kind: "Field",
+                                          name: {
+                                            kind: "Name",
+                                            value: "value",
+                                          },
+                                        },
+                                        {
+                                          kind: "Field",
+                                          name: {
+                                            kind: "Name",
+                                            value: "eventCount",
+                                          },
+                                        },
+                                        {
+                                          kind: "Field",
+                                          name: {
+                                            kind: "Name",
+                                            value: "recordingCount",
+                                          },
+                                        },
+                                      ],
+                                    },
+                                  },
+                                ],
+                              },
+                            },
+                          ],
+                        },
+                      },
+                    ],
+                  },
+                },
+              ],
+            },
+          },
+        ],
+      },
+    },
+  ],
+} as unknown as DocumentNode<DailySleepPageQuery, DailySleepPageQueryVariables>;
+export const DataSourcesPageDocument = {
+  kind: "Document",
+  definitions: [
+    {
+      kind: "OperationDefinition",
+      operation: "query",
+      name: { kind: "Name", value: "DataSourcesPage" },
+      selectionSet: {
+        kind: "SelectionSet",
+        selections: [
+          {
+            kind: "Field",
+            name: { kind: "Name", value: "viewer" },
+            selectionSet: {
+              kind: "SelectionSet",
+              selections: [
+                {
+                  kind: "Field",
+                  name: { kind: "Name", value: "config" },
+                  selectionSet: {
+                    kind: "SelectionSet",
+                    selections: [
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "homeTimeZone" },
+                      },
+                    ],
+                  },
+                },
+                {
+                  kind: "Field",
+                  name: { kind: "Name", value: "ingestion" },
+                  selectionSet: {
+                    kind: "SelectionSet",
+                    selections: [
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "phoneSync" },
+                        selectionSet: {
+                          kind: "SelectionSet",
+                          selections: [
+                            {
+                              kind: "Field",
+                              name: { kind: "Name", value: "lastUploadAt" },
+                            },
+                          ],
+                        },
+                      },
+                    ],
+                  },
+                },
+                {
+                  kind: "Field",
+                  name: { kind: "Name", value: "sources" },
+                  selectionSet: {
+                    kind: "SelectionSet",
+                    selections: [
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "inventory" },
+                        selectionSet: {
+                          kind: "SelectionSet",
+                          selections: [
+                            {
+                              kind: "Field",
+                              name: { kind: "Name", value: "totalRecords" },
+                            },
+                            {
+                              kind: "Field",
+                              name: { kind: "Name", value: "earliest" },
+                            },
+                            {
+                              kind: "Field",
+                              name: { kind: "Name", value: "latest" },
+                            },
+                            {
+                              kind: "Field",
+                              name: { kind: "Name", value: "signals" },
+                              selectionSet: {
+                                kind: "SelectionSet",
+                                selections: [
+                                  {
+                                    kind: "Field",
+                                    name: { kind: "Name", value: "collection" },
+                                  },
+                                  {
+                                    kind: "Field",
+                                    name: { kind: "Name", value: "records" },
+                                  },
+                                  {
+                                    kind: "Field",
+                                    name: { kind: "Name", value: "earliest" },
+                                  },
+                                  {
+                                    kind: "Field",
+                                    name: { kind: "Name", value: "latest" },
+                                  },
+                                  {
+                                    kind: "Field",
+                                    name: { kind: "Name", value: "bySource" },
+                                    selectionSet: {
+                                      kind: "SelectionSet",
+                                      selections: [
+                                        {
+                                          kind: "Field",
+                                          name: {
+                                            kind: "Name",
+                                            value: "source",
+                                          },
+                                        },
+                                        {
+                                          kind: "Field",
+                                          name: {
+                                            kind: "Name",
+                                            value: "count",
+                                          },
+                                        },
+                                      ],
+                                    },
+                                  },
+                                ],
+                              },
+                            },
+                            {
+                              kind: "Field",
+                              name: { kind: "Name", value: "sources" },
+                              selectionSet: {
+                                kind: "SelectionSet",
+                                selections: [
+                                  {
+                                    kind: "Field",
+                                    name: { kind: "Name", value: "source" },
+                                  },
+                                  {
+                                    kind: "Field",
+                                    name: { kind: "Name", value: "label" },
+                                  },
+                                  {
+                                    kind: "Field",
+                                    name: { kind: "Name", value: "records" },
+                                  },
+                                ],
+                              },
+                            },
+                          ],
+                        },
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "devices" },
+                        selectionSet: {
+                          kind: "SelectionSet",
+                          selections: [
+                            {
+                              kind: "Field",
+                              name: { kind: "Name", value: "devices" },
+                              selectionSet: {
+                                kind: "SelectionSet",
+                                selections: [
+                                  {
+                                    kind: "Field",
+                                    name: { kind: "Name", value: "id" },
+                                  },
+                                  {
+                                    kind: "Field",
+                                    name: {
+                                      kind: "Name",
+                                      value: "sourceLabel",
+                                    },
+                                  },
+                                  {
+                                    kind: "Field",
+                                    name: { kind: "Name", value: "records" },
+                                  },
+                                  {
+                                    kind: "Field",
+                                    name: { kind: "Name", value: "latest" },
+                                  },
+                                ],
+                              },
+                            },
+                          ],
+                        },
+                      },
+                    ],
+                  },
+                },
+              ],
+            },
+          },
+        ],
+      },
+    },
+  ],
+} as unknown as DocumentNode<
+  DataSourcesPageQuery,
+  DataSourcesPageQueryVariables
+>;
+export const DayPageDocument = {
+  kind: "Document",
+  definitions: [
+    {
+      kind: "OperationDefinition",
+      operation: "query",
+      name: { kind: "Name", value: "DayPage" },
+      variableDefinitions: [
+        {
+          kind: "VariableDefinition",
+          variable: { kind: "Variable", name: { kind: "Name", value: "date" } },
+          type: {
+            kind: "NonNullType",
+            type: { kind: "NamedType", name: { kind: "Name", value: "Date" } },
+          },
+        },
+        {
+          kind: "VariableDefinition",
+          variable: {
+            kind: "Variable",
+            name: { kind: "Name", value: "range" },
+          },
+          type: {
+            kind: "NonNullType",
+            type: {
+              kind: "NamedType",
+              name: { kind: "Name", value: "TimeRange" },
+            },
+          },
+        },
+      ],
+      selectionSet: {
+        kind: "SelectionSet",
+        selections: [
+          {
+            kind: "Field",
+            name: { kind: "Name", value: "viewer" },
+            selectionSet: {
+              kind: "SelectionSet",
+              selections: [
+                {
+                  kind: "Field",
+                  name: { kind: "Name", value: "analytics" },
+                  selectionSet: {
+                    kind: "SelectionSet",
+                    selections: [
+                      { kind: "Field", name: { kind: "Name", value: "id" } },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "timeZone" },
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "day" },
+                        arguments: [
+                          {
+                            kind: "Argument",
+                            name: { kind: "Name", value: "date" },
+                            value: {
+                              kind: "Variable",
+                              name: { kind: "Name", value: "date" },
+                            },
+                          },
+                        ],
+                        selectionSet: {
+                          kind: "SelectionSet",
+                          selections: [
+                            {
+                              kind: "Field",
+                              name: { kind: "Name", value: "id" },
+                            },
+                            {
+                              kind: "Field",
+                              name: { kind: "Name", value: "date" },
+                            },
+                            {
+                              kind: "Field",
+                              name: { kind: "Name", value: "timeZone" },
+                            },
+                            {
+                              kind: "Field",
+                              name: { kind: "Name", value: "dayState" },
+                            },
+                            {
+                              kind: "Field",
+                              name: { kind: "Name", value: "headlineScores" },
+                              selectionSet: {
+                                kind: "SelectionSet",
+                                selections: [
+                                  {
+                                    kind: "Field",
+                                    name: {
+                                      kind: "Name",
+                                      value: "sleepDuration",
+                                    },
+                                    selectionSet: {
+                                      kind: "SelectionSet",
+                                      selections: [
+                                        {
+                                          kind: "Field",
+                                          name: {
+                                            kind: "Name",
+                                            value: "status",
+                                          },
+                                        },
+                                        {
+                                          kind: "Field",
+                                          name: {
+                                            kind: "Name",
+                                            value: "value",
+                                          },
+                                        },
+                                        {
+                                          kind: "Field",
+                                          name: { kind: "Name", value: "note" },
+                                        },
+                                        {
+                                          kind: "Field",
+                                          name: {
+                                            kind: "Name",
+                                            value: "window",
+                                          },
+                                          selectionSet: {
+                                            kind: "SelectionSet",
+                                            selections: [
+                                              {
+                                                kind: "Field",
+                                                name: {
+                                                  kind: "Name",
+                                                  value: "startAt",
+                                                },
+                                              },
+                                              {
+                                                kind: "Field",
+                                                name: {
+                                                  kind: "Name",
+                                                  value: "endAt",
+                                                },
+                                              },
+                                            ],
+                                          },
+                                        },
+                                        {
+                                          kind: "Field",
+                                          name: {
+                                            kind: "Name",
+                                            value: "stageMinutes",
+                                          },
+                                          selectionSet: {
+                                            kind: "SelectionSet",
+                                            selections: [
+                                              {
+                                                kind: "Field",
+                                                name: {
+                                                  kind: "Name",
+                                                  value: "deep",
+                                                },
+                                              },
+                                              {
+                                                kind: "Field",
+                                                name: {
+                                                  kind: "Name",
+                                                  value: "light",
+                                                },
+                                              },
+                                              {
+                                                kind: "Field",
+                                                name: {
+                                                  kind: "Name",
+                                                  value: "rem",
+                                                },
+                                              },
+                                              {
+                                                kind: "Field",
+                                                name: {
+                                                  kind: "Name",
+                                                  value: "asleep",
+                                                },
+                                              },
+                                              {
+                                                kind: "Field",
+                                                name: {
+                                                  kind: "Name",
+                                                  value: "awake",
+                                                },
+                                              },
+                                              {
+                                                kind: "Field",
+                                                name: {
+                                                  kind: "Name",
+                                                  value: "unknown",
+                                                },
+                                              },
+                                            ],
+                                          },
+                                        },
+                                      ],
+                                    },
+                                  },
+                                  {
+                                    kind: "Field",
+                                    name: { kind: "Name", value: "sleepNeed" },
+                                    selectionSet: {
+                                      kind: "SelectionSet",
+                                      selections: [
+                                        {
+                                          kind: "Field",
+                                          name: {
+                                            kind: "Name",
+                                            value: "status",
+                                          },
+                                        },
+                                        {
+                                          kind: "Field",
+                                          name: {
+                                            kind: "Name",
+                                            value: "value",
+                                          },
+                                        },
+                                        {
+                                          kind: "Field",
+                                          name: { kind: "Name", value: "note" },
+                                        },
+                                      ],
+                                    },
+                                  },
+                                  {
+                                    kind: "Field",
+                                    name: { kind: "Name", value: "recovery" },
+                                    selectionSet: {
+                                      kind: "SelectionSet",
+                                      selections: [
+                                        {
+                                          kind: "Field",
+                                          name: {
+                                            kind: "Name",
+                                            value: "status",
+                                          },
+                                        },
+                                        {
+                                          kind: "Field",
+                                          name: {
+                                            kind: "Name",
+                                            value: "value",
+                                          },
+                                        },
+                                        {
+                                          kind: "Field",
+                                          name: { kind: "Name", value: "note" },
+                                        },
+                                      ],
+                                    },
+                                  },
+                                  {
+                                    kind: "Field",
+                                    name: { kind: "Name", value: "strain" },
+                                    selectionSet: {
+                                      kind: "SelectionSet",
+                                      selections: [
+                                        {
+                                          kind: "Field",
+                                          name: {
+                                            kind: "Name",
+                                            value: "status",
+                                          },
+                                        },
+                                        {
+                                          kind: "Field",
+                                          name: {
+                                            kind: "Name",
+                                            value: "value",
+                                          },
+                                        },
+                                        {
+                                          kind: "Field",
+                                          name: { kind: "Name", value: "note" },
+                                        },
+                                      ],
+                                    },
+                                  },
+                                  {
+                                    kind: "Field",
+                                    name: {
+                                      kind: "Name",
+                                      value: "strainTarget",
+                                    },
+                                    selectionSet: {
+                                      kind: "SelectionSet",
+                                      selections: [
+                                        {
+                                          kind: "Field",
+                                          name: {
+                                            kind: "Name",
+                                            value: "status",
+                                          },
+                                        },
+                                        {
+                                          kind: "Field",
+                                          name: {
+                                            kind: "Name",
+                                            value: "value",
+                                          },
+                                        },
+                                        {
+                                          kind: "Field",
+                                          name: { kind: "Name", value: "note" },
+                                        },
+                                      ],
+                                    },
+                                  },
+                                ],
+                              },
+                            },
+                            {
+                              kind: "Field",
+                              name: {
+                                kind: "Name",
+                                value: "supportingMetrics",
+                              },
+                              selectionSet: {
+                                kind: "SelectionSet",
+                                selections: [
+                                  {
+                                    kind: "Field",
+                                    name: { kind: "Name", value: "hrv" },
+                                    selectionSet: {
+                                      kind: "SelectionSet",
+                                      selections: [
+                                        {
+                                          kind: "Field",
+                                          name: {
+                                            kind: "Name",
+                                            value: "status",
+                                          },
+                                        },
+                                        {
+                                          kind: "Field",
+                                          name: {
+                                            kind: "Name",
+                                            value: "value",
+                                          },
+                                        },
+                                        {
+                                          kind: "Field",
+                                          name: { kind: "Name", value: "note" },
+                                        },
+                                      ],
+                                    },
+                                  },
+                                  {
+                                    kind: "Field",
+                                    name: {
+                                      kind: "Name",
+                                      value: "restingHeartRate",
+                                    },
+                                    selectionSet: {
+                                      kind: "SelectionSet",
+                                      selections: [
+                                        {
+                                          kind: "Field",
+                                          name: {
+                                            kind: "Name",
+                                            value: "status",
+                                          },
+                                        },
+                                        {
+                                          kind: "Field",
+                                          name: {
+                                            kind: "Name",
+                                            value: "value",
+                                          },
+                                        },
+                                        {
+                                          kind: "Field",
+                                          name: { kind: "Name", value: "note" },
+                                        },
+                                      ],
+                                    },
+                                  },
+                                  {
+                                    kind: "Field",
+                                    name: {
+                                      kind: "Name",
+                                      value: "respiratoryRate",
+                                    },
+                                    selectionSet: {
+                                      kind: "SelectionSet",
+                                      selections: [
+                                        {
+                                          kind: "Field",
+                                          name: {
+                                            kind: "Name",
+                                            value: "status",
+                                          },
+                                        },
+                                        {
+                                          kind: "Field",
+                                          name: {
+                                            kind: "Name",
+                                            value: "value",
+                                          },
+                                        },
+                                        {
+                                          kind: "Field",
+                                          name: { kind: "Name", value: "note" },
+                                        },
+                                      ],
+                                    },
+                                  },
+                                  {
+                                    kind: "Field",
+                                    name: {
+                                      kind: "Name",
+                                      value: "oxygenSaturation",
+                                    },
+                                    selectionSet: {
+                                      kind: "SelectionSet",
+                                      selections: [
+                                        {
+                                          kind: "Field",
+                                          name: {
+                                            kind: "Name",
+                                            value: "status",
+                                          },
+                                        },
+                                        {
+                                          kind: "Field",
+                                          name: {
+                                            kind: "Name",
+                                            value: "value",
+                                          },
+                                        },
+                                        {
+                                          kind: "Field",
+                                          name: { kind: "Name", value: "note" },
+                                        },
+                                      ],
+                                    },
+                                  },
+                                  {
+                                    kind: "Field",
+                                    name: {
+                                      kind: "Name",
+                                      value: "skinTemperatureDeviation",
+                                    },
+                                    selectionSet: {
+                                      kind: "SelectionSet",
+                                      selections: [
+                                        {
+                                          kind: "Field",
+                                          name: {
+                                            kind: "Name",
+                                            value: "status",
+                                          },
+                                        },
+                                        {
+                                          kind: "Field",
+                                          name: {
+                                            kind: "Name",
+                                            value: "value",
+                                          },
+                                        },
+                                        {
+                                          kind: "Field",
+                                          name: { kind: "Name", value: "note" },
+                                        },
+                                      ],
+                                    },
+                                  },
+                                  {
+                                    kind: "Field",
+                                    name: { kind: "Name", value: "steps" },
+                                    selectionSet: {
+                                      kind: "SelectionSet",
+                                      selections: [
+                                        {
+                                          kind: "Field",
+                                          name: {
+                                            kind: "Name",
+                                            value: "status",
+                                          },
+                                        },
+                                        {
+                                          kind: "Field",
+                                          name: {
+                                            kind: "Name",
+                                            value: "value",
+                                          },
+                                        },
+                                        {
+                                          kind: "Field",
+                                          name: { kind: "Name", value: "note" },
+                                        },
+                                      ],
+                                    },
+                                  },
+                                  {
+                                    kind: "Field",
+                                    name: { kind: "Name", value: "calories" },
+                                    selectionSet: {
+                                      kind: "SelectionSet",
+                                      selections: [
+                                        {
+                                          kind: "Field",
+                                          name: {
+                                            kind: "Name",
+                                            value: "status",
+                                          },
+                                        },
+                                        {
+                                          kind: "Field",
+                                          name: {
+                                            kind: "Name",
+                                            value: "value",
+                                          },
+                                        },
+                                        {
+                                          kind: "Field",
+                                          name: { kind: "Name", value: "note" },
+                                        },
+                                      ],
+                                    },
+                                  },
+                                  {
+                                    kind: "Field",
+                                    name: {
+                                      kind: "Name",
+                                      value: "zone3AndAbove",
+                                    },
+                                    selectionSet: {
+                                      kind: "SelectionSet",
+                                      selections: [
+                                        {
+                                          kind: "Field",
+                                          name: {
+                                            kind: "Name",
+                                            value: "status",
+                                          },
+                                        },
+                                        {
+                                          kind: "Field",
+                                          name: {
+                                            kind: "Name",
+                                            value: "value",
+                                          },
+                                        },
+                                        {
+                                          kind: "Field",
+                                          name: { kind: "Name", value: "note" },
+                                        },
+                                      ],
+                                    },
+                                  },
+                                ],
+                              },
+                            },
+                            {
+                              kind: "Field",
+                              name: { kind: "Name", value: "heartRateZones" },
+                              selectionSet: {
+                                kind: "SelectionSet",
+                                selections: [
+                                  {
+                                    kind: "Field",
+                                    name: { kind: "Name", value: "status" },
+                                  },
+                                  {
+                                    kind: "Field",
+                                    name: { kind: "Name", value: "note" },
+                                  },
+                                ],
+                              },
+                            },
+                            {
+                              kind: "Field",
+                              name: { kind: "Name", value: "timeline" },
+                              selectionSet: {
+                                kind: "SelectionSet",
+                                selections: [
+                                  {
+                                    kind: "Field",
+                                    name: { kind: "Name", value: "heartRate" },
+                                    selectionSet: {
+                                      kind: "SelectionSet",
+                                      selections: [
+                                        {
+                                          kind: "Field",
+                                          name: {
+                                            kind: "Name",
+                                            value: "status",
+                                          },
+                                        },
+                                        {
+                                          kind: "Field",
+                                          name: { kind: "Name", value: "note" },
+                                        },
+                                        {
+                                          kind: "Field",
+                                          name: {
+                                            kind: "Name",
+                                            value: "hours",
+                                          },
+                                          selectionSet: {
+                                            kind: "SelectionSet",
+                                            selections: [
+                                              {
+                                                kind: "Field",
+                                                name: {
+                                                  kind: "Name",
+                                                  value: "hour",
+                                                },
+                                              },
+                                              {
+                                                kind: "Field",
+                                                name: {
+                                                  kind: "Name",
+                                                  value: "status",
+                                                },
+                                              },
+                                              {
+                                                kind: "Field",
+                                                name: {
+                                                  kind: "Name",
+                                                  value: "sampleCount",
+                                                },
+                                              },
+                                              {
+                                                kind: "Field",
+                                                name: {
+                                                  kind: "Name",
+                                                  value: "min",
+                                                },
+                                              },
+                                              {
+                                                kind: "Field",
+                                                name: {
+                                                  kind: "Name",
+                                                  value: "p25",
+                                                },
+                                              },
+                                              {
+                                                kind: "Field",
+                                                name: {
+                                                  kind: "Name",
+                                                  value: "mean",
+                                                },
+                                              },
+                                              {
+                                                kind: "Field",
+                                                name: {
+                                                  kind: "Name",
+                                                  value: "p75",
+                                                },
+                                              },
+                                              {
+                                                kind: "Field",
+                                                name: {
+                                                  kind: "Name",
+                                                  value: "max",
+                                                },
+                                              },
+                                            ],
+                                          },
+                                        },
+                                      ],
+                                    },
+                                  },
+                                  {
+                                    kind: "Field",
+                                    name: {
+                                      kind: "Name",
+                                      value: "sleepStages",
+                                    },
+                                    selectionSet: {
+                                      kind: "SelectionSet",
+                                      selections: [
+                                        {
+                                          kind: "Field",
+                                          name: {
+                                            kind: "Name",
+                                            value: "startAt",
+                                          },
+                                        },
+                                        {
+                                          kind: "Field",
+                                          name: {
+                                            kind: "Name",
+                                            value: "endAt",
+                                          },
+                                        },
+                                        {
+                                          kind: "Field",
+                                          name: { kind: "Name", value: "kind" },
+                                        },
+                                      ],
+                                    },
+                                  },
+                                  {
+                                    kind: "Field",
+                                    name: { kind: "Name", value: "steps" },
+                                    selectionSet: {
+                                      kind: "SelectionSet",
+                                      selections: [
+                                        {
+                                          kind: "Field",
+                                          name: { kind: "Name", value: "hour" },
+                                        },
+                                        {
+                                          kind: "Field",
+                                          name: {
+                                            kind: "Name",
+                                            value: "count",
+                                          },
+                                        },
+                                        {
+                                          kind: "Field",
+                                          name: {
+                                            kind: "Name",
+                                            value: "status",
+                                          },
+                                        },
+                                      ],
+                                    },
+                                  },
+                                  {
+                                    kind: "Field",
+                                    name: { kind: "Name", value: "schedule" },
+                                    selectionSet: {
+                                      kind: "SelectionSet",
+                                      selections: [
+                                        {
+                                          kind: "Field",
+                                          name: {
+                                            kind: "Name",
+                                            value: "status",
+                                          },
+                                        },
+                                        {
+                                          kind: "Field",
+                                          name: { kind: "Name", value: "note" },
+                                        },
+                                      ],
+                                    },
+                                  },
+                                  {
+                                    kind: "Field",
+                                    name: {
+                                      kind: "Name",
+                                      value: "targetWakeTime",
+                                    },
+                                    selectionSet: {
+                                      kind: "SelectionSet",
+                                      selections: [
+                                        {
+                                          kind: "Field",
+                                          name: {
+                                            kind: "Name",
+                                            value: "status",
+                                          },
+                                        },
+                                        {
+                                          kind: "Field",
+                                          name: { kind: "Name", value: "note" },
+                                        },
+                                      ],
+                                    },
+                                  },
+                                  {
+                                    kind: "Field",
+                                    name: {
+                                      kind: "Name",
+                                      value: "targetBedTime",
+                                    },
+                                    selectionSet: {
+                                      kind: "SelectionSet",
+                                      selections: [
+                                        {
+                                          kind: "Field",
+                                          name: {
+                                            kind: "Name",
+                                            value: "status",
+                                          },
+                                        },
+                                        {
+                                          kind: "Field",
+                                          name: { kind: "Name", value: "note" },
+                                        },
+                                      ],
+                                    },
+                                  },
+                                ],
+                              },
+                            },
+                          ],
+                        },
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "days" },
+                        arguments: [
+                          {
+                            kind: "Argument",
+                            name: { kind: "Name", value: "range" },
+                            value: {
+                              kind: "Variable",
+                              name: { kind: "Name", value: "range" },
+                            },
+                          },
+                        ],
+                        selectionSet: {
+                          kind: "SelectionSet",
+                          selections: [
+                            {
+                              kind: "Field",
+                              name: { kind: "Name", value: "id" },
+                            },
+                            {
+                              kind: "Field",
+                              name: { kind: "Name", value: "date" },
+                            },
+                            {
+                              kind: "Field",
+                              name: { kind: "Name", value: "dayState" },
+                            },
+                            {
+                              kind: "Field",
+                              name: { kind: "Name", value: "headlineScores" },
+                              selectionSet: {
+                                kind: "SelectionSet",
+                                selections: [
+                                  {
+                                    kind: "Field",
+                                    name: {
+                                      kind: "Name",
+                                      value: "sleepDuration",
+                                    },
+                                    selectionSet: {
+                                      kind: "SelectionSet",
+                                      selections: [
+                                        {
+                                          kind: "Field",
+                                          name: {
+                                            kind: "Name",
+                                            value: "status",
+                                          },
+                                        },
+                                        {
+                                          kind: "Field",
+                                          name: {
+                                            kind: "Name",
+                                            value: "value",
+                                          },
+                                        },
+                                      ],
+                                    },
+                                  },
+                                  {
+                                    kind: "Field",
+                                    name: { kind: "Name", value: "recovery" },
+                                    selectionSet: {
+                                      kind: "SelectionSet",
+                                      selections: [
+                                        {
+                                          kind: "Field",
+                                          name: {
+                                            kind: "Name",
+                                            value: "status",
+                                          },
+                                        },
+                                        {
+                                          kind: "Field",
+                                          name: {
+                                            kind: "Name",
+                                            value: "value",
+                                          },
+                                        },
+                                      ],
+                                    },
+                                  },
+                                  {
+                                    kind: "Field",
+                                    name: { kind: "Name", value: "strain" },
+                                    selectionSet: {
+                                      kind: "SelectionSet",
+                                      selections: [
+                                        {
+                                          kind: "Field",
+                                          name: {
+                                            kind: "Name",
+                                            value: "status",
+                                          },
+                                        },
+                                        {
+                                          kind: "Field",
+                                          name: {
+                                            kind: "Name",
+                                            value: "value",
+                                          },
+                                        },
+                                      ],
+                                    },
+                                  },
+                                ],
+                              },
+                            },
+                          ],
+                        },
+                      },
+                    ],
+                  },
+                },
+              ],
+            },
+          },
+        ],
+      },
+    },
+  ],
+} as unknown as DocumentNode<DayPageQuery, DayPageQueryVariables>;
+export const DayHeartRateSamplesDocument = {
+  kind: "Document",
+  definitions: [
+    {
+      kind: "OperationDefinition",
+      operation: "query",
+      name: { kind: "Name", value: "DayHeartRateSamples" },
+      variableDefinitions: [
+        {
+          kind: "VariableDefinition",
+          variable: {
+            kind: "Variable",
+            name: { kind: "Name", value: "range" },
+          },
+          type: {
+            kind: "NonNullType",
+            type: {
+              kind: "NamedType",
+              name: { kind: "Name", value: "TimeRange" },
+            },
+          },
+        },
+      ],
+      selectionSet: {
+        kind: "SelectionSet",
+        selections: [
+          {
+            kind: "Field",
+            name: { kind: "Name", value: "viewer" },
+            selectionSet: {
+              kind: "SelectionSet",
+              selections: [
+                {
+                  kind: "Field",
+                  name: { kind: "Name", value: "sourceRecords" },
+                  selectionSet: {
+                    kind: "SelectionSet",
+                    selections: [
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "heartRate" },
+                        arguments: [
+                          {
+                            kind: "Argument",
+                            name: { kind: "Name", value: "range" },
+                            value: {
+                              kind: "Variable",
+                              name: { kind: "Name", value: "range" },
+                            },
+                          },
+                        ],
+                        selectionSet: {
+                          kind: "SelectionSet",
+                          selections: [
+                            {
+                              kind: "Field",
+                              name: { kind: "Name", value: "records" },
+                              selectionSet: {
+                                kind: "SelectionSet",
+                                selections: [
+                                  {
+                                    kind: "Field",
+                                    name: { kind: "Name", value: "id" },
+                                  },
+                                  {
+                                    kind: "Field",
+                                    name: { kind: "Name", value: "source" },
+                                  },
+                                  {
+                                    kind: "Field",
+                                    name: { kind: "Name", value: "samples" },
+                                    selectionSet: {
+                                      kind: "SelectionSet",
+                                      selections: [
+                                        {
+                                          kind: "Field",
+                                          name: {
+                                            kind: "Name",
+                                            value: "observedAt",
+                                          },
+                                        },
+                                        {
+                                          kind: "Field",
+                                          name: { kind: "Name", value: "bpm" },
+                                        },
+                                      ],
+                                    },
+                                  },
+                                ],
+                              },
+                            },
+                          ],
+                        },
+                      },
+                    ],
+                  },
+                },
+              ],
+            },
+          },
+        ],
+      },
+    },
+  ],
+} as unknown as DocumentNode<
+  DayHeartRateSamplesQuery,
+  DayHeartRateSamplesQueryVariables
+>;
+export const DayIndexTimeZoneDocument = {
+  kind: "Document",
+  definitions: [
+    {
+      kind: "OperationDefinition",
+      operation: "query",
+      name: { kind: "Name", value: "DayIndexTimeZone" },
+      selectionSet: {
+        kind: "SelectionSet",
+        selections: [
+          {
+            kind: "Field",
+            name: { kind: "Name", value: "viewer" },
+            selectionSet: {
+              kind: "SelectionSet",
+              selections: [
+                {
+                  kind: "Field",
+                  name: { kind: "Name", value: "analytics" },
+                  selectionSet: {
+                    kind: "SelectionSet",
+                    selections: [
+                      { kind: "Field", name: { kind: "Name", value: "id" } },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "timeZone" },
+                      },
+                    ],
+                  },
+                },
+              ],
+            },
+          },
+        ],
+      },
+    },
+  ],
+} as unknown as DocumentNode<
+  DayIndexTimeZoneQuery,
+  DayIndexTimeZoneQueryVariables
+>;
+export const ExplorePageDocument = {
+  kind: "Document",
+  definitions: [
+    {
+      kind: "OperationDefinition",
+      operation: "query",
+      name: { kind: "Name", value: "ExplorePage" },
+      variableDefinitions: [
+        {
+          kind: "VariableDefinition",
+          variable: {
+            kind: "Variable",
+            name: { kind: "Name", value: "range" },
+          },
+          type: {
+            kind: "NamedType",
+            name: { kind: "Name", value: "TimeRange" },
+          },
+        },
+      ],
+      selectionSet: {
+        kind: "SelectionSet",
+        selections: [
+          {
+            kind: "Field",
+            name: { kind: "Name", value: "viewer" },
+            selectionSet: {
+              kind: "SelectionSet",
+              selections: [
+                {
+                  kind: "Field",
+                  name: { kind: "Name", value: "habits" },
+                  arguments: [
+                    {
+                      kind: "Argument",
+                      name: { kind: "Name", value: "range" },
+                      value: {
+                        kind: "Variable",
+                        name: { kind: "Name", value: "range" },
+                      },
+                    },
+                  ],
+                  selectionSet: {
+                    kind: "SelectionSet",
+                    selections: [
+                      { kind: "Field", name: { kind: "Name", value: "id" } },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "question" },
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "firstSeenDate" },
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "lastSeenDate" },
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "entryCount" },
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "entries" },
+                        selectionSet: {
+                          kind: "SelectionSet",
+                          selections: [
+                            {
+                              kind: "Field",
+                              name: { kind: "Name", value: "id" },
+                            },
+                            {
+                              kind: "Field",
+                              name: { kind: "Name", value: "date" },
+                            },
+                            {
+                              kind: "Field",
+                              name: { kind: "Name", value: "answeredYes" },
+                            },
+                          ],
+                        },
+                      },
+                    ],
+                  },
+                },
+                {
+                  kind: "Field",
+                  name: { kind: "Name", value: "analytics" },
+                  selectionSet: {
+                    kind: "SelectionSet",
+                    selections: [
+                      { kind: "Field", name: { kind: "Name", value: "id" } },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "timeZone" },
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "steps" },
+                        selectionSet: {
+                          kind: "SelectionSet",
+                          selections: [
+                            {
+                              kind: "Field",
+                              name: { kind: "Name", value: "daily" },
+                              arguments: [
+                                {
+                                  kind: "Argument",
+                                  name: { kind: "Name", value: "range" },
+                                  value: {
+                                    kind: "Variable",
+                                    name: { kind: "Name", value: "range" },
+                                  },
+                                },
+                              ],
+                              selectionSet: {
+                                kind: "SelectionSet",
+                                selections: [
+                                  {
+                                    kind: "Field",
+                                    name: { kind: "Name", value: "id" },
+                                  },
+                                  {
+                                    kind: "Field",
+                                    name: { kind: "Name", value: "date" },
+                                  },
+                                  {
+                                    kind: "Field",
+                                    name: { kind: "Name", value: "value" },
+                                  },
+                                ],
+                              },
+                            },
+                          ],
+                        },
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "activeCalories" },
+                        selectionSet: {
+                          kind: "SelectionSet",
+                          selections: [
+                            {
+                              kind: "Field",
+                              name: { kind: "Name", value: "daily" },
+                              arguments: [
+                                {
+                                  kind: "Argument",
+                                  name: { kind: "Name", value: "range" },
+                                  value: {
+                                    kind: "Variable",
+                                    name: { kind: "Name", value: "range" },
+                                  },
+                                },
+                              ],
+                              selectionSet: {
+                                kind: "SelectionSet",
+                                selections: [
+                                  {
+                                    kind: "Field",
+                                    name: { kind: "Name", value: "id" },
+                                  },
+                                  {
+                                    kind: "Field",
+                                    name: { kind: "Name", value: "date" },
+                                  },
+                                  {
+                                    kind: "Field",
+                                    name: { kind: "Name", value: "value" },
+                                  },
+                                ],
+                              },
+                            },
+                          ],
+                        },
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "totalCalories" },
+                        selectionSet: {
+                          kind: "SelectionSet",
+                          selections: [
+                            {
+                              kind: "Field",
+                              name: { kind: "Name", value: "daily" },
+                              arguments: [
+                                {
+                                  kind: "Argument",
+                                  name: { kind: "Name", value: "range" },
+                                  value: {
+                                    kind: "Variable",
+                                    name: { kind: "Name", value: "range" },
+                                  },
+                                },
+                              ],
+                              selectionSet: {
+                                kind: "SelectionSet",
+                                selections: [
+                                  {
+                                    kind: "Field",
+                                    name: { kind: "Name", value: "id" },
+                                  },
+                                  {
+                                    kind: "Field",
+                                    name: { kind: "Name", value: "date" },
+                                  },
+                                  {
+                                    kind: "Field",
+                                    name: { kind: "Name", value: "value" },
+                                  },
+                                ],
+                              },
+                            },
+                          ],
+                        },
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "restingHeartRate" },
+                        selectionSet: {
+                          kind: "SelectionSet",
+                          selections: [
+                            {
+                              kind: "Field",
+                              name: { kind: "Name", value: "daily" },
+                              arguments: [
+                                {
+                                  kind: "Argument",
+                                  name: { kind: "Name", value: "range" },
+                                  value: {
+                                    kind: "Variable",
+                                    name: { kind: "Name", value: "range" },
+                                  },
+                                },
+                              ],
+                              selectionSet: {
+                                kind: "SelectionSet",
+                                selections: [
+                                  {
+                                    kind: "Field",
+                                    name: { kind: "Name", value: "id" },
+                                  },
+                                  {
+                                    kind: "Field",
+                                    name: { kind: "Name", value: "date" },
+                                  },
+                                  {
+                                    kind: "Field",
+                                    name: { kind: "Name", value: "value" },
+                                  },
+                                ],
+                              },
+                            },
+                          ],
+                        },
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "heartRateVariability" },
+                        selectionSet: {
+                          kind: "SelectionSet",
+                          selections: [
+                            {
+                              kind: "Field",
+                              name: { kind: "Name", value: "daily" },
+                              arguments: [
+                                {
+                                  kind: "Argument",
+                                  name: { kind: "Name", value: "range" },
+                                  value: {
+                                    kind: "Variable",
+                                    name: { kind: "Name", value: "range" },
+                                  },
+                                },
+                              ],
+                              selectionSet: {
+                                kind: "SelectionSet",
+                                selections: [
+                                  {
+                                    kind: "Field",
+                                    name: { kind: "Name", value: "id" },
+                                  },
+                                  {
+                                    kind: "Field",
+                                    name: { kind: "Name", value: "date" },
+                                  },
+                                  {
+                                    kind: "Field",
+                                    name: { kind: "Name", value: "value" },
+                                  },
+                                ],
+                              },
+                            },
+                          ],
+                        },
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "skinTemperature" },
+                        selectionSet: {
+                          kind: "SelectionSet",
+                          selections: [
+                            {
+                              kind: "Field",
+                              name: { kind: "Name", value: "daily" },
+                              arguments: [
+                                {
+                                  kind: "Argument",
+                                  name: { kind: "Name", value: "range" },
+                                  value: {
+                                    kind: "Variable",
+                                    name: { kind: "Name", value: "range" },
+                                  },
+                                },
+                              ],
+                              selectionSet: {
+                                kind: "SelectionSet",
+                                selections: [
+                                  {
+                                    kind: "Field",
+                                    name: { kind: "Name", value: "id" },
+                                  },
+                                  {
+                                    kind: "Field",
+                                    name: { kind: "Name", value: "date" },
+                                  },
+                                  {
+                                    kind: "Field",
+                                    name: { kind: "Name", value: "value" },
+                                  },
+                                ],
+                              },
+                            },
+                          ],
+                        },
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "weight" },
+                        selectionSet: {
+                          kind: "SelectionSet",
+                          selections: [
+                            {
+                              kind: "Field",
+                              name: { kind: "Name", value: "daily" },
+                              arguments: [
+                                {
+                                  kind: "Argument",
+                                  name: { kind: "Name", value: "range" },
+                                  value: {
+                                    kind: "Variable",
+                                    name: { kind: "Name", value: "range" },
+                                  },
+                                },
+                              ],
+                              selectionSet: {
+                                kind: "SelectionSet",
+                                selections: [
+                                  {
+                                    kind: "Field",
+                                    name: { kind: "Name", value: "id" },
+                                  },
+                                  {
+                                    kind: "Field",
+                                    name: { kind: "Name", value: "date" },
+                                  },
+                                  {
+                                    kind: "Field",
+                                    name: { kind: "Name", value: "value" },
+                                  },
+                                ],
+                              },
+                            },
+                          ],
+                        },
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "sleepDebt" },
+                        selectionSet: {
+                          kind: "SelectionSet",
+                          selections: [
+                            {
+                              kind: "Field",
+                              name: { kind: "Name", value: "daily" },
+                              arguments: [
+                                {
+                                  kind: "Argument",
+                                  name: { kind: "Name", value: "range" },
+                                  value: {
+                                    kind: "Variable",
+                                    name: { kind: "Name", value: "range" },
+                                  },
+                                },
+                              ],
+                              selectionSet: {
+                                kind: "SelectionSet",
+                                selections: [
+                                  {
+                                    kind: "Field",
+                                    name: { kind: "Name", value: "id" },
+                                  },
+                                  {
+                                    kind: "Field",
+                                    name: { kind: "Name", value: "date" },
+                                  },
+                                  {
+                                    kind: "Field",
+                                    name: {
+                                      kind: "Name",
+                                      value: "sleepMinutes",
+                                    },
+                                  },
+                                  {
+                                    kind: "Field",
+                                    name: {
+                                      kind: "Name",
+                                      value: "debtMinutes",
+                                    },
+                                  },
+                                ],
+                              },
+                            },
+                          ],
+                        },
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "sleepConsistency" },
+                        selectionSet: {
+                          kind: "SelectionSet",
+                          selections: [
+                            {
+                              kind: "Field",
+                              name: { kind: "Name", value: "daily" },
+                              arguments: [
+                                {
+                                  kind: "Argument",
+                                  name: { kind: "Name", value: "range" },
+                                  value: {
+                                    kind: "Variable",
+                                    name: { kind: "Name", value: "range" },
+                                  },
+                                },
+                              ],
+                              selectionSet: {
+                                kind: "SelectionSet",
+                                selections: [
+                                  {
+                                    kind: "Field",
+                                    name: { kind: "Name", value: "id" },
+                                  },
+                                  {
+                                    kind: "Field",
+                                    name: { kind: "Name", value: "date" },
+                                  },
+                                  {
+                                    kind: "Field",
+                                    name: { kind: "Name", value: "score" },
+                                  },
+                                  {
+                                    kind: "Field",
+                                    name: {
+                                      kind: "Name",
+                                      value: "bedtimeMinutesLocal",
+                                    },
+                                  },
+                                  {
+                                    kind: "Field",
+                                    name: {
+                                      kind: "Name",
+                                      value: "wakeMinutesLocal",
+                                    },
+                                  },
+                                ],
+                              },
+                            },
+                          ],
+                        },
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "healthspan" },
+                        selectionSet: {
+                          kind: "SelectionSet",
+                          selections: [
+                            {
+                              kind: "Field",
+                              name: { kind: "Name", value: "trend" },
+                              arguments: [
+                                {
+                                  kind: "Argument",
+                                  name: { kind: "Name", value: "range" },
+                                  value: {
+                                    kind: "Variable",
+                                    name: { kind: "Name", value: "range" },
+                                  },
+                                },
+                              ],
+                              selectionSet: {
+                                kind: "SelectionSet",
+                                selections: [
+                                  {
+                                    kind: "Field",
+                                    name: { kind: "Name", value: "id" },
+                                  },
+                                  {
+                                    kind: "Field",
+                                    name: { kind: "Name", value: "date" },
+                                  },
+                                  {
+                                    kind: "Field",
+                                    name: {
+                                      kind: "Name",
+                                      value: "healthAgeYears",
+                                    },
+                                  },
+                                  {
+                                    kind: "Field",
+                                    name: {
+                                      kind: "Name",
+                                      value: "ageDeltaYears",
+                                    },
+                                  },
+                                  {
+                                    kind: "Field",
+                                    name: {
+                                      kind: "Name",
+                                      value: "paceOfAging",
+                                    },
+                                  },
+                                ],
+                              },
+                            },
+                          ],
+                        },
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "strain" },
+                        selectionSet: {
+                          kind: "SelectionSet",
+                          selections: [
+                            {
+                              kind: "Field",
+                              name: { kind: "Name", value: "daily" },
+                              arguments: [
+                                {
+                                  kind: "Argument",
+                                  name: { kind: "Name", value: "range" },
+                                  value: {
+                                    kind: "Variable",
+                                    name: { kind: "Name", value: "range" },
+                                  },
+                                },
+                              ],
+                              selectionSet: {
+                                kind: "SelectionSet",
+                                selections: [
+                                  {
+                                    kind: "Field",
+                                    name: { kind: "Name", value: "id" },
+                                  },
+                                  {
+                                    kind: "Field",
+                                    name: { kind: "Name", value: "date" },
+                                  },
+                                  {
+                                    kind: "Field",
+                                    name: { kind: "Name", value: "score" },
+                                  },
+                                  {
+                                    kind: "Field",
+                                    name: { kind: "Name", value: "quality" },
+                                    selectionSet: {
+                                      kind: "SelectionSet",
+                                      selections: [
+                                        {
+                                          kind: "Field",
+                                          name: {
+                                            kind: "Name",
+                                            value: "publishable",
+                                          },
+                                        },
+                                      ],
+                                    },
+                                  },
+                                ],
+                              },
+                            },
+                          ],
+                        },
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "recovery" },
+                        selectionSet: {
+                          kind: "SelectionSet",
+                          selections: [
+                            {
+                              kind: "Field",
+                              name: { kind: "Name", value: "daily" },
+                              arguments: [
+                                {
+                                  kind: "Argument",
+                                  name: { kind: "Name", value: "range" },
+                                  value: {
+                                    kind: "Variable",
+                                    name: { kind: "Name", value: "range" },
+                                  },
+                                },
+                              ],
+                              selectionSet: {
+                                kind: "SelectionSet",
+                                selections: [
+                                  {
+                                    kind: "Field",
+                                    name: { kind: "Name", value: "id" },
+                                  },
+                                  {
+                                    kind: "Field",
+                                    name: { kind: "Name", value: "date" },
+                                  },
+                                  {
+                                    kind: "Field",
+                                    name: { kind: "Name", value: "score" },
+                                  },
+                                  {
+                                    kind: "Field",
+                                    name: { kind: "Name", value: "status" },
+                                  },
+                                  {
+                                    kind: "Field",
+                                    name: { kind: "Name", value: "quality" },
+                                    selectionSet: {
+                                      kind: "SelectionSet",
+                                      selections: [
+                                        {
+                                          kind: "Field",
+                                          name: {
+                                            kind: "Name",
+                                            value: "publishable",
+                                          },
+                                        },
+                                      ],
+                                    },
+                                  },
+                                ],
+                              },
+                            },
+                          ],
+                        },
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "days" },
+                        arguments: [
+                          {
+                            kind: "Argument",
+                            name: { kind: "Name", value: "range" },
+                            value: {
+                              kind: "Variable",
+                              name: { kind: "Name", value: "range" },
+                            },
+                          },
+                        ],
+                        selectionSet: {
+                          kind: "SelectionSet",
+                          selections: [
+                            {
+                              kind: "Field",
+                              name: { kind: "Name", value: "id" },
+                            },
+                            {
+                              kind: "Field",
+                              name: { kind: "Name", value: "date" },
+                            },
+                            {
+                              kind: "Field",
+                              name: {
+                                kind: "Name",
+                                value: "supportingMetrics",
+                              },
+                              selectionSet: {
+                                kind: "SelectionSet",
+                                selections: [
+                                  {
+                                    kind: "Field",
+                                    name: {
+                                      kind: "Name",
+                                      value: "respiratoryRate",
+                                    },
+                                    selectionSet: {
+                                      kind: "SelectionSet",
+                                      selections: [
+                                        {
+                                          kind: "Field",
+                                          name: {
+                                            kind: "Name",
+                                            value: "status",
+                                          },
+                                        },
+                                        {
+                                          kind: "Field",
+                                          name: {
+                                            kind: "Name",
+                                            value: "value",
+                                          },
+                                        },
+                                      ],
+                                    },
+                                  },
+                                  {
+                                    kind: "Field",
+                                    name: {
+                                      kind: "Name",
+                                      value: "oxygenSaturation",
+                                    },
+                                    selectionSet: {
+                                      kind: "SelectionSet",
+                                      selections: [
+                                        {
+                                          kind: "Field",
+                                          name: {
+                                            kind: "Name",
+                                            value: "status",
+                                          },
+                                        },
+                                        {
+                                          kind: "Field",
+                                          name: {
+                                            kind: "Name",
+                                            value: "value",
+                                          },
+                                        },
+                                      ],
+                                    },
+                                  },
+                                  {
+                                    kind: "Field",
+                                    name: {
+                                      kind: "Name",
+                                      value: "zone3AndAbove",
+                                    },
+                                    selectionSet: {
+                                      kind: "SelectionSet",
+                                      selections: [
+                                        {
+                                          kind: "Field",
+                                          name: {
+                                            kind: "Name",
+                                            value: "status",
+                                          },
+                                        },
+                                        {
+                                          kind: "Field",
+                                          name: {
+                                            kind: "Name",
+                                            value: "value",
+                                          },
+                                        },
+                                      ],
+                                    },
+                                  },
+                                ],
+                              },
+                            },
+                          ],
+                        },
+                      },
+                    ],
+                  },
+                },
+              ],
+            },
+          },
+        ],
+      },
+    },
+  ],
+} as unknown as DocumentNode<ExplorePageQuery, ExplorePageQueryVariables>;
+export const HabitsPageDocument = {
+  kind: "Document",
+  definitions: [
+    {
+      kind: "OperationDefinition",
+      operation: "query",
+      name: { kind: "Name", value: "HabitsPage" },
+      variableDefinitions: [
+        {
+          kind: "VariableDefinition",
+          variable: {
+            kind: "Variable",
+            name: { kind: "Name", value: "range" },
+          },
+          type: {
+            kind: "NamedType",
+            name: { kind: "Name", value: "TimeRange" },
+          },
+        },
+      ],
+      selectionSet: {
+        kind: "SelectionSet",
+        selections: [
+          {
+            kind: "Field",
+            name: { kind: "Name", value: "viewer" },
+            selectionSet: {
+              kind: "SelectionSet",
+              selections: [
+                {
+                  kind: "Field",
+                  name: { kind: "Name", value: "habits" },
+                  arguments: [
+                    {
+                      kind: "Argument",
+                      name: { kind: "Name", value: "range" },
+                      value: {
+                        kind: "Variable",
+                        name: { kind: "Name", value: "range" },
+                      },
+                    },
+                  ],
+                  selectionSet: {
+                    kind: "SelectionSet",
+                    selections: [
+                      { kind: "Field", name: { kind: "Name", value: "id" } },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "source" },
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "question" },
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "firstSeenDate" },
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "lastSeenDate" },
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "entryCount" },
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "entries" },
+                        selectionSet: {
+                          kind: "SelectionSet",
+                          selections: [
+                            {
+                              kind: "Field",
+                              name: { kind: "Name", value: "id" },
+                            },
+                            {
+                              kind: "Field",
+                              name: { kind: "Name", value: "date" },
+                            },
+                            {
+                              kind: "Field",
+                              name: { kind: "Name", value: "cycleStartLocal" },
+                            },
+                            {
+                              kind: "Field",
+                              name: { kind: "Name", value: "cycleEndLocal" },
+                            },
+                            {
+                              kind: "Field",
+                              name: { kind: "Name", value: "answeredYes" },
+                            },
+                            {
+                              kind: "Field",
+                              name: { kind: "Name", value: "notes" },
+                            },
+                          ],
+                        },
+                      },
+                    ],
+                  },
+                },
+              ],
+            },
+          },
+        ],
+      },
+    },
+  ],
+} as unknown as DocumentNode<HabitsPageQuery, HabitsPageQueryVariables>;
+export const HabitsLatestDocument = {
+  kind: "Document",
+  definitions: [
+    {
+      kind: "OperationDefinition",
+      operation: "query",
+      name: { kind: "Name", value: "HabitsLatest" },
+      selectionSet: {
+        kind: "SelectionSet",
+        selections: [
+          {
+            kind: "Field",
+            name: { kind: "Name", value: "viewer" },
+            selectionSet: {
+              kind: "SelectionSet",
+              selections: [
+                {
+                  kind: "Field",
+                  name: { kind: "Name", value: "habits" },
+                  selectionSet: {
+                    kind: "SelectionSet",
+                    selections: [
+                      { kind: "Field", name: { kind: "Name", value: "id" } },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "lastSeenDate" },
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "entryCount" },
+                      },
+                    ],
+                  },
+                },
+              ],
+            },
+          },
+        ],
+      },
+    },
+  ],
+} as unknown as DocumentNode<HabitsLatestQuery, HabitsLatestQueryVariables>;
+export const HealthspanPageDocument = {
+  kind: "Document",
+  definitions: [
+    {
+      kind: "OperationDefinition",
+      operation: "query",
+      name: { kind: "Name", value: "HealthspanPage" },
+      selectionSet: {
+        kind: "SelectionSet",
+        selections: [
+          {
+            kind: "Field",
+            name: { kind: "Name", value: "viewer" },
+            selectionSet: {
+              kind: "SelectionSet",
+              selections: [
+                {
+                  kind: "Field",
+                  name: { kind: "Name", value: "analytics" },
+                  selectionSet: {
+                    kind: "SelectionSet",
+                    selections: [
+                      { kind: "Field", name: { kind: "Name", value: "id" } },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "timeZone" },
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "healthspan" },
+                        selectionSet: {
+                          kind: "SelectionSet",
+                          selections: [
+                            {
+                              kind: "Field",
+                              name: { kind: "Name", value: "modelVersion" },
+                            },
+                            {
+                              kind: "Field",
+                              name: { kind: "Name", value: "status" },
+                            },
+                            {
+                              kind: "Field",
+                              name: {
+                                kind: "Name",
+                                value: "birthDateConfigured",
+                              },
+                            },
+                            {
+                              kind: "Field",
+                              name: { kind: "Name", value: "methodology" },
+                            },
+                            {
+                              kind: "Field",
+                              name: {
+                                kind: "Name",
+                                value: "calibrationReasons",
+                              },
+                            },
+                            {
+                              kind: "Field",
+                              name: { kind: "Name", value: "paceOfAging" },
+                            },
+                            {
+                              kind: "Field",
+                              name: { kind: "Name", value: "paceWindowDays" },
+                            },
+                            {
+                              kind: "Field",
+                              name: { kind: "Name", value: "latest" },
+                              selectionSet: {
+                                kind: "SelectionSet",
+                                selections: [
+                                  {
+                                    kind: "Field",
+                                    name: { kind: "Name", value: "id" },
+                                  },
+                                  {
+                                    kind: "Field",
+                                    name: { kind: "Name", value: "date" },
+                                  },
+                                  {
+                                    kind: "Field",
+                                    name: {
+                                      kind: "Name",
+                                      value: "chronologicalAgeYears",
+                                    },
+                                  },
+                                  {
+                                    kind: "Field",
+                                    name: {
+                                      kind: "Name",
+                                      value: "healthAgeYears",
+                                    },
+                                  },
+                                  {
+                                    kind: "Field",
+                                    name: {
+                                      kind: "Name",
+                                      value: "ageDeltaYears",
+                                    },
+                                  },
+                                  {
+                                    kind: "Field",
+                                    name: {
+                                      kind: "Name",
+                                      value: "paceOfAging",
+                                    },
+                                  },
+                                  {
+                                    kind: "Field",
+                                    name: {
+                                      kind: "Name",
+                                      value: "qualityFlags",
+                                    },
+                                  },
+                                  {
+                                    kind: "Field",
+                                    name: { kind: "Name", value: "factors" },
+                                    selectionSet: {
+                                      kind: "SelectionSet",
+                                      selections: [
+                                        {
+                                          kind: "Field",
+                                          name: { kind: "Name", value: "id" },
+                                        },
+                                        {
+                                          kind: "Field",
+                                          name: { kind: "Name", value: "key" },
+                                        },
+                                        {
+                                          kind: "Field",
+                                          name: {
+                                            kind: "Name",
+                                            value: "label",
+                                          },
+                                        },
+                                        {
+                                          kind: "Field",
+                                          name: {
+                                            kind: "Name",
+                                            value: "value",
+                                          },
+                                        },
+                                        {
+                                          kind: "Field",
+                                          name: { kind: "Name", value: "unit" },
+                                        },
+                                        {
+                                          kind: "Field",
+                                          name: {
+                                            kind: "Name",
+                                            value: "referenceValue",
+                                          },
+                                        },
+                                        {
+                                          kind: "Field",
+                                          name: {
+                                            kind: "Name",
+                                            value: "ageImpactYears",
+                                          },
+                                        },
+                                        {
+                                          kind: "Field",
+                                          name: {
+                                            kind: "Name",
+                                            value: "coverageDays",
+                                          },
+                                        },
+                                      ],
+                                    },
+                                  },
+                                ],
+                              },
+                            },
+                            {
+                              kind: "Field",
+                              name: { kind: "Name", value: "trend" },
+                              selectionSet: {
+                                kind: "SelectionSet",
+                                selections: [
+                                  {
+                                    kind: "Field",
+                                    name: { kind: "Name", value: "id" },
+                                  },
+                                  {
+                                    kind: "Field",
+                                    name: { kind: "Name", value: "date" },
+                                  },
+                                  {
+                                    kind: "Field",
+                                    name: {
+                                      kind: "Name",
+                                      value: "chronologicalAgeYears",
+                                    },
+                                  },
+                                  {
+                                    kind: "Field",
+                                    name: {
+                                      kind: "Name",
+                                      value: "healthAgeYears",
+                                    },
+                                  },
+                                  {
+                                    kind: "Field",
+                                    name: {
+                                      kind: "Name",
+                                      value: "ageDeltaYears",
+                                    },
+                                  },
+                                  {
+                                    kind: "Field",
+                                    name: {
+                                      kind: "Name",
+                                      value: "paceOfAging",
+                                    },
+                                  },
+                                  {
+                                    kind: "Field",
+                                    name: {
+                                      kind: "Name",
+                                      value: "qualityFlags",
+                                    },
+                                  },
+                                ],
+                              },
+                            },
+                          ],
+                        },
+                      },
+                    ],
+                  },
+                },
+              ],
+            },
+          },
+        ],
+      },
+    },
+  ],
+} as unknown as DocumentNode<HealthspanPageQuery, HealthspanPageQueryVariables>;
+export const MetricSeriesPageDocument = {
+  kind: "Document",
+  definitions: [
+    {
+      kind: "OperationDefinition",
+      operation: "query",
+      name: { kind: "Name", value: "MetricSeriesPage" },
+      variableDefinitions: [
+        {
+          kind: "VariableDefinition",
+          variable: {
+            kind: "Variable",
+            name: { kind: "Name", value: "steps" },
+          },
+          type: {
+            kind: "NonNullType",
+            type: {
+              kind: "NamedType",
+              name: { kind: "Name", value: "Boolean" },
+            },
+          },
+        },
+        {
+          kind: "VariableDefinition",
+          variable: {
+            kind: "Variable",
+            name: { kind: "Name", value: "activeCalories" },
+          },
+          type: {
+            kind: "NonNullType",
+            type: {
+              kind: "NamedType",
+              name: { kind: "Name", value: "Boolean" },
+            },
+          },
+        },
+        {
+          kind: "VariableDefinition",
+          variable: {
+            kind: "Variable",
+            name: { kind: "Name", value: "totalCalories" },
+          },
+          type: {
+            kind: "NonNullType",
+            type: {
+              kind: "NamedType",
+              name: { kind: "Name", value: "Boolean" },
+            },
+          },
+        },
+        {
+          kind: "VariableDefinition",
+          variable: {
+            kind: "Variable",
+            name: { kind: "Name", value: "restingHeartRate" },
+          },
+          type: {
+            kind: "NonNullType",
+            type: {
+              kind: "NamedType",
+              name: { kind: "Name", value: "Boolean" },
+            },
+          },
+        },
+        {
+          kind: "VariableDefinition",
+          variable: {
+            kind: "Variable",
+            name: { kind: "Name", value: "weight" },
+          },
+          type: {
+            kind: "NonNullType",
+            type: {
+              kind: "NamedType",
+              name: { kind: "Name", value: "Boolean" },
+            },
+          },
+        },
+        {
+          kind: "VariableDefinition",
+          variable: {
+            kind: "Variable",
+            name: { kind: "Name", value: "heartRateVariability" },
+          },
+          type: {
+            kind: "NonNullType",
+            type: {
+              kind: "NamedType",
+              name: { kind: "Name", value: "Boolean" },
+            },
+          },
+        },
+        {
+          kind: "VariableDefinition",
+          variable: {
+            kind: "Variable",
+            name: { kind: "Name", value: "skinTemperature" },
+          },
+          type: {
+            kind: "NonNullType",
+            type: {
+              kind: "NamedType",
+              name: { kind: "Name", value: "Boolean" },
+            },
+          },
+        },
+      ],
+      selectionSet: {
+        kind: "SelectionSet",
+        selections: [
+          {
+            kind: "Field",
+            name: { kind: "Name", value: "viewer" },
+            selectionSet: {
+              kind: "SelectionSet",
+              selections: [
+                {
+                  kind: "Field",
+                  name: { kind: "Name", value: "analytics" },
+                  selectionSet: {
+                    kind: "SelectionSet",
+                    selections: [
+                      { kind: "Field", name: { kind: "Name", value: "id" } },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "timeZone" },
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "steps" },
+                        directives: [
+                          {
+                            kind: "Directive",
+                            name: { kind: "Name", value: "include" },
+                            arguments: [
+                              {
+                                kind: "Argument",
+                                name: { kind: "Name", value: "if" },
+                                value: {
+                                  kind: "Variable",
+                                  name: { kind: "Name", value: "steps" },
+                                },
+                              },
+                            ],
+                          },
+                        ],
+                        selectionSet: {
+                          kind: "SelectionSet",
+                          selections: [
+                            {
+                              kind: "Field",
+                              name: { kind: "Name", value: "unit" },
+                            },
+                            {
+                              kind: "Field",
+                              name: { kind: "Name", value: "daily" },
+                              selectionSet: {
+                                kind: "SelectionSet",
+                                selections: [
+                                  {
+                                    kind: "Field",
+                                    name: { kind: "Name", value: "id" },
+                                  },
+                                  {
+                                    kind: "Field",
+                                    name: { kind: "Name", value: "date" },
+                                  },
+                                  {
+                                    kind: "Field",
+                                    name: { kind: "Name", value: "value" },
+                                  },
+                                  {
+                                    kind: "Field",
+                                    name: { kind: "Name", value: "source" },
+                                  },
+                                  {
+                                    kind: "Field",
+                                    name: {
+                                      kind: "Name",
+                                      value: "qualityFlags",
+                                    },
+                                  },
+                                  {
+                                    kind: "Field",
+                                    name: { kind: "Name", value: "bySource" },
+                                    selectionSet: {
+                                      kind: "SelectionSet",
+                                      selections: [
+                                        {
+                                          kind: "Field",
+                                          name: {
+                                            kind: "Name",
+                                            value: "source",
+                                          },
+                                        },
+                                        {
+                                          kind: "Field",
+                                          name: {
+                                            kind: "Name",
+                                            value: "value",
+                                          },
+                                        },
+                                        {
+                                          kind: "Field",
+                                          name: {
+                                            kind: "Name",
+                                            value: "observationCount",
+                                          },
+                                        },
+                                        {
+                                          kind: "Field",
+                                          name: {
+                                            kind: "Name",
+                                            value: "coverageMinutes",
+                                          },
+                                        },
+                                      ],
+                                    },
+                                  },
+                                ],
+                              },
+                            },
+                            {
+                              kind: "Field",
+                              name: { kind: "Name", value: "overview" },
+                              selectionSet: {
+                                kind: "SelectionSet",
+                                selections: [
+                                  {
+                                    kind: "Field",
+                                    name: { kind: "Name", value: "latest" },
+                                    selectionSet: {
+                                      kind: "SelectionSet",
+                                      selections: [
+                                        {
+                                          kind: "Field",
+                                          name: { kind: "Name", value: "id" },
+                                        },
+                                        {
+                                          kind: "Field",
+                                          name: { kind: "Name", value: "date" },
+                                        },
+                                        {
+                                          kind: "Field",
+                                          name: {
+                                            kind: "Name",
+                                            value: "value",
+                                          },
+                                        },
+                                        {
+                                          kind: "Field",
+                                          name: {
+                                            kind: "Name",
+                                            value: "source",
+                                          },
+                                        },
+                                        {
+                                          kind: "Field",
+                                          name: {
+                                            kind: "Name",
+                                            value: "qualityFlags",
+                                          },
+                                        },
+                                        {
+                                          kind: "Field",
+                                          name: {
+                                            kind: "Name",
+                                            value: "bySource",
+                                          },
+                                          selectionSet: {
+                                            kind: "SelectionSet",
+                                            selections: [
+                                              {
+                                                kind: "Field",
+                                                name: {
+                                                  kind: "Name",
+                                                  value: "source",
+                                                },
+                                              },
+                                              {
+                                                kind: "Field",
+                                                name: {
+                                                  kind: "Name",
+                                                  value: "value",
+                                                },
+                                              },
+                                              {
+                                                kind: "Field",
+                                                name: {
+                                                  kind: "Name",
+                                                  value: "observationCount",
+                                                },
+                                              },
+                                              {
+                                                kind: "Field",
+                                                name: {
+                                                  kind: "Name",
+                                                  value: "coverageMinutes",
+                                                },
+                                              },
+                                            ],
+                                          },
+                                        },
+                                      ],
+                                    },
+                                  },
+                                  {
+                                    kind: "Field",
+                                    name: { kind: "Name", value: "previous" },
+                                    selectionSet: {
+                                      kind: "SelectionSet",
+                                      selections: [
+                                        {
+                                          kind: "Field",
+                                          name: { kind: "Name", value: "id" },
+                                        },
+                                        {
+                                          kind: "Field",
+                                          name: { kind: "Name", value: "date" },
+                                        },
+                                        {
+                                          kind: "Field",
+                                          name: {
+                                            kind: "Name",
+                                            value: "value",
+                                          },
+                                        },
+                                        {
+                                          kind: "Field",
+                                          name: {
+                                            kind: "Name",
+                                            value: "source",
+                                          },
+                                        },
+                                        {
+                                          kind: "Field",
+                                          name: {
+                                            kind: "Name",
+                                            value: "qualityFlags",
+                                          },
+                                        },
+                                        {
+                                          kind: "Field",
+                                          name: {
+                                            kind: "Name",
+                                            value: "bySource",
+                                          },
+                                          selectionSet: {
+                                            kind: "SelectionSet",
+                                            selections: [
+                                              {
+                                                kind: "Field",
+                                                name: {
+                                                  kind: "Name",
+                                                  value: "source",
+                                                },
+                                              },
+                                              {
+                                                kind: "Field",
+                                                name: {
+                                                  kind: "Name",
+                                                  value: "value",
+                                                },
+                                              },
+                                              {
+                                                kind: "Field",
+                                                name: {
+                                                  kind: "Name",
+                                                  value: "observationCount",
+                                                },
+                                              },
+                                              {
+                                                kind: "Field",
+                                                name: {
+                                                  kind: "Name",
+                                                  value: "coverageMinutes",
+                                                },
+                                              },
+                                            ],
+                                          },
+                                        },
+                                      ],
+                                    },
+                                  },
+                                  {
+                                    kind: "Field",
+                                    name: {
+                                      kind: "Name",
+                                      value: "average7Day",
+                                    },
+                                  },
+                                  {
+                                    kind: "Field",
+                                    name: {
+                                      kind: "Name",
+                                      value: "average30Day",
+                                    },
+                                  },
+                                  {
+                                    kind: "Field",
+                                    name: {
+                                      kind: "Name",
+                                      value: "changeFromPrevious",
+                                    },
+                                  },
+                                  {
+                                    kind: "Field",
+                                    name: {
+                                      kind: "Name",
+                                      value: "sampleCount",
+                                    },
+                                  },
+                                ],
+                              },
+                            },
+                            {
+                              kind: "Field",
+                              name: { kind: "Name", value: "rolling7Day" },
+                              selectionSet: {
+                                kind: "SelectionSet",
+                                selections: [
+                                  {
+                                    kind: "Field",
+                                    name: { kind: "Name", value: "id" },
+                                  },
+                                  {
+                                    kind: "Field",
+                                    name: { kind: "Name", value: "date" },
+                                  },
+                                  {
+                                    kind: "Field",
+                                    name: { kind: "Name", value: "value" },
+                                  },
+                                  {
+                                    kind: "Field",
+                                    name: {
+                                      kind: "Name",
+                                      value: "sampleCount",
+                                    },
+                                  },
+                                ],
+                              },
+                            },
+                            {
+                              kind: "Field",
+                              name: { kind: "Name", value: "monthly" },
+                              selectionSet: {
+                                kind: "SelectionSet",
+                                selections: [
+                                  {
+                                    kind: "Field",
+                                    name: { kind: "Name", value: "id" },
+                                  },
+                                  {
+                                    kind: "Field",
+                                    name: { kind: "Name", value: "month" },
+                                  },
+                                  {
+                                    kind: "Field",
+                                    name: { kind: "Name", value: "value" },
+                                  },
+                                  {
+                                    kind: "Field",
+                                    name: {
+                                      kind: "Name",
+                                      value: "sampleCount",
+                                    },
+                                  },
+                                ],
+                              },
+                            },
+                          ],
+                        },
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "activeCalories" },
+                        directives: [
+                          {
+                            kind: "Directive",
+                            name: { kind: "Name", value: "include" },
+                            arguments: [
+                              {
+                                kind: "Argument",
+                                name: { kind: "Name", value: "if" },
+                                value: {
+                                  kind: "Variable",
+                                  name: {
+                                    kind: "Name",
+                                    value: "activeCalories",
+                                  },
+                                },
+                              },
+                            ],
+                          },
+                        ],
+                        selectionSet: {
+                          kind: "SelectionSet",
+                          selections: [
+                            {
+                              kind: "Field",
+                              name: { kind: "Name", value: "unit" },
+                            },
+                            {
+                              kind: "Field",
+                              name: { kind: "Name", value: "daily" },
+                              selectionSet: {
+                                kind: "SelectionSet",
+                                selections: [
+                                  {
+                                    kind: "Field",
+                                    name: { kind: "Name", value: "id" },
+                                  },
+                                  {
+                                    kind: "Field",
+                                    name: { kind: "Name", value: "date" },
+                                  },
+                                  {
+                                    kind: "Field",
+                                    name: { kind: "Name", value: "value" },
+                                  },
+                                  {
+                                    kind: "Field",
+                                    name: { kind: "Name", value: "source" },
+                                  },
+                                  {
+                                    kind: "Field",
+                                    name: {
+                                      kind: "Name",
+                                      value: "qualityFlags",
+                                    },
+                                  },
+                                  {
+                                    kind: "Field",
+                                    name: { kind: "Name", value: "bySource" },
+                                    selectionSet: {
+                                      kind: "SelectionSet",
+                                      selections: [
+                                        {
+                                          kind: "Field",
+                                          name: {
+                                            kind: "Name",
+                                            value: "source",
+                                          },
+                                        },
+                                        {
+                                          kind: "Field",
+                                          name: {
+                                            kind: "Name",
+                                            value: "value",
+                                          },
+                                        },
+                                        {
+                                          kind: "Field",
+                                          name: {
+                                            kind: "Name",
+                                            value: "observationCount",
+                                          },
+                                        },
+                                        {
+                                          kind: "Field",
+                                          name: {
+                                            kind: "Name",
+                                            value: "coverageMinutes",
+                                          },
+                                        },
+                                      ],
+                                    },
+                                  },
+                                ],
+                              },
+                            },
+                            {
+                              kind: "Field",
+                              name: { kind: "Name", value: "overview" },
+                              selectionSet: {
+                                kind: "SelectionSet",
+                                selections: [
+                                  {
+                                    kind: "Field",
+                                    name: { kind: "Name", value: "latest" },
+                                    selectionSet: {
+                                      kind: "SelectionSet",
+                                      selections: [
+                                        {
+                                          kind: "Field",
+                                          name: { kind: "Name", value: "id" },
+                                        },
+                                        {
+                                          kind: "Field",
+                                          name: { kind: "Name", value: "date" },
+                                        },
+                                        {
+                                          kind: "Field",
+                                          name: {
+                                            kind: "Name",
+                                            value: "value",
+                                          },
+                                        },
+                                        {
+                                          kind: "Field",
+                                          name: {
+                                            kind: "Name",
+                                            value: "source",
+                                          },
+                                        },
+                                        {
+                                          kind: "Field",
+                                          name: {
+                                            kind: "Name",
+                                            value: "qualityFlags",
+                                          },
+                                        },
+                                        {
+                                          kind: "Field",
+                                          name: {
+                                            kind: "Name",
+                                            value: "bySource",
+                                          },
+                                          selectionSet: {
+                                            kind: "SelectionSet",
+                                            selections: [
+                                              {
+                                                kind: "Field",
+                                                name: {
+                                                  kind: "Name",
+                                                  value: "source",
+                                                },
+                                              },
+                                              {
+                                                kind: "Field",
+                                                name: {
+                                                  kind: "Name",
+                                                  value: "value",
+                                                },
+                                              },
+                                              {
+                                                kind: "Field",
+                                                name: {
+                                                  kind: "Name",
+                                                  value: "observationCount",
+                                                },
+                                              },
+                                              {
+                                                kind: "Field",
+                                                name: {
+                                                  kind: "Name",
+                                                  value: "coverageMinutes",
+                                                },
+                                              },
+                                            ],
+                                          },
+                                        },
+                                      ],
+                                    },
+                                  },
+                                  {
+                                    kind: "Field",
+                                    name: { kind: "Name", value: "previous" },
+                                    selectionSet: {
+                                      kind: "SelectionSet",
+                                      selections: [
+                                        {
+                                          kind: "Field",
+                                          name: { kind: "Name", value: "id" },
+                                        },
+                                        {
+                                          kind: "Field",
+                                          name: { kind: "Name", value: "date" },
+                                        },
+                                        {
+                                          kind: "Field",
+                                          name: {
+                                            kind: "Name",
+                                            value: "value",
+                                          },
+                                        },
+                                        {
+                                          kind: "Field",
+                                          name: {
+                                            kind: "Name",
+                                            value: "source",
+                                          },
+                                        },
+                                        {
+                                          kind: "Field",
+                                          name: {
+                                            kind: "Name",
+                                            value: "qualityFlags",
+                                          },
+                                        },
+                                        {
+                                          kind: "Field",
+                                          name: {
+                                            kind: "Name",
+                                            value: "bySource",
+                                          },
+                                          selectionSet: {
+                                            kind: "SelectionSet",
+                                            selections: [
+                                              {
+                                                kind: "Field",
+                                                name: {
+                                                  kind: "Name",
+                                                  value: "source",
+                                                },
+                                              },
+                                              {
+                                                kind: "Field",
+                                                name: {
+                                                  kind: "Name",
+                                                  value: "value",
+                                                },
+                                              },
+                                              {
+                                                kind: "Field",
+                                                name: {
+                                                  kind: "Name",
+                                                  value: "observationCount",
+                                                },
+                                              },
+                                              {
+                                                kind: "Field",
+                                                name: {
+                                                  kind: "Name",
+                                                  value: "coverageMinutes",
+                                                },
+                                              },
+                                            ],
+                                          },
+                                        },
+                                      ],
+                                    },
+                                  },
+                                  {
+                                    kind: "Field",
+                                    name: {
+                                      kind: "Name",
+                                      value: "average7Day",
+                                    },
+                                  },
+                                  {
+                                    kind: "Field",
+                                    name: {
+                                      kind: "Name",
+                                      value: "average30Day",
+                                    },
+                                  },
+                                  {
+                                    kind: "Field",
+                                    name: {
+                                      kind: "Name",
+                                      value: "changeFromPrevious",
+                                    },
+                                  },
+                                  {
+                                    kind: "Field",
+                                    name: {
+                                      kind: "Name",
+                                      value: "sampleCount",
+                                    },
+                                  },
+                                ],
+                              },
+                            },
+                            {
+                              kind: "Field",
+                              name: { kind: "Name", value: "rolling7Day" },
+                              selectionSet: {
+                                kind: "SelectionSet",
+                                selections: [
+                                  {
+                                    kind: "Field",
+                                    name: { kind: "Name", value: "id" },
+                                  },
+                                  {
+                                    kind: "Field",
+                                    name: { kind: "Name", value: "date" },
+                                  },
+                                  {
+                                    kind: "Field",
+                                    name: { kind: "Name", value: "value" },
+                                  },
+                                  {
+                                    kind: "Field",
+                                    name: {
+                                      kind: "Name",
+                                      value: "sampleCount",
+                                    },
+                                  },
+                                ],
+                              },
+                            },
+                            {
+                              kind: "Field",
+                              name: { kind: "Name", value: "monthly" },
+                              selectionSet: {
+                                kind: "SelectionSet",
+                                selections: [
+                                  {
+                                    kind: "Field",
+                                    name: { kind: "Name", value: "id" },
+                                  },
+                                  {
+                                    kind: "Field",
+                                    name: { kind: "Name", value: "month" },
+                                  },
+                                  {
+                                    kind: "Field",
+                                    name: { kind: "Name", value: "value" },
+                                  },
+                                  {
+                                    kind: "Field",
+                                    name: {
+                                      kind: "Name",
+                                      value: "sampleCount",
+                                    },
+                                  },
+                                ],
+                              },
+                            },
+                          ],
+                        },
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "totalCalories" },
+                        directives: [
+                          {
+                            kind: "Directive",
+                            name: { kind: "Name", value: "include" },
+                            arguments: [
+                              {
+                                kind: "Argument",
+                                name: { kind: "Name", value: "if" },
+                                value: {
+                                  kind: "Variable",
+                                  name: {
+                                    kind: "Name",
+                                    value: "totalCalories",
+                                  },
+                                },
+                              },
+                            ],
+                          },
+                        ],
+                        selectionSet: {
+                          kind: "SelectionSet",
+                          selections: [
+                            {
+                              kind: "Field",
+                              name: { kind: "Name", value: "unit" },
+                            },
+                            {
+                              kind: "Field",
+                              name: { kind: "Name", value: "daily" },
+                              selectionSet: {
+                                kind: "SelectionSet",
+                                selections: [
+                                  {
+                                    kind: "Field",
+                                    name: { kind: "Name", value: "id" },
+                                  },
+                                  {
+                                    kind: "Field",
+                                    name: { kind: "Name", value: "date" },
+                                  },
+                                  {
+                                    kind: "Field",
+                                    name: { kind: "Name", value: "value" },
+                                  },
+                                  {
+                                    kind: "Field",
+                                    name: { kind: "Name", value: "source" },
+                                  },
+                                  {
+                                    kind: "Field",
+                                    name: {
+                                      kind: "Name",
+                                      value: "qualityFlags",
+                                    },
+                                  },
+                                  {
+                                    kind: "Field",
+                                    name: { kind: "Name", value: "bySource" },
+                                    selectionSet: {
+                                      kind: "SelectionSet",
+                                      selections: [
+                                        {
+                                          kind: "Field",
+                                          name: {
+                                            kind: "Name",
+                                            value: "source",
+                                          },
+                                        },
+                                        {
+                                          kind: "Field",
+                                          name: {
+                                            kind: "Name",
+                                            value: "value",
+                                          },
+                                        },
+                                        {
+                                          kind: "Field",
+                                          name: {
+                                            kind: "Name",
+                                            value: "observationCount",
+                                          },
+                                        },
+                                        {
+                                          kind: "Field",
+                                          name: {
+                                            kind: "Name",
+                                            value: "coverageMinutes",
+                                          },
+                                        },
+                                      ],
+                                    },
+                                  },
+                                ],
+                              },
+                            },
+                            {
+                              kind: "Field",
+                              name: { kind: "Name", value: "overview" },
+                              selectionSet: {
+                                kind: "SelectionSet",
+                                selections: [
+                                  {
+                                    kind: "Field",
+                                    name: { kind: "Name", value: "latest" },
+                                    selectionSet: {
+                                      kind: "SelectionSet",
+                                      selections: [
+                                        {
+                                          kind: "Field",
+                                          name: { kind: "Name", value: "id" },
+                                        },
+                                        {
+                                          kind: "Field",
+                                          name: { kind: "Name", value: "date" },
+                                        },
+                                        {
+                                          kind: "Field",
+                                          name: {
+                                            kind: "Name",
+                                            value: "value",
+                                          },
+                                        },
+                                        {
+                                          kind: "Field",
+                                          name: {
+                                            kind: "Name",
+                                            value: "source",
+                                          },
+                                        },
+                                        {
+                                          kind: "Field",
+                                          name: {
+                                            kind: "Name",
+                                            value: "qualityFlags",
+                                          },
+                                        },
+                                        {
+                                          kind: "Field",
+                                          name: {
+                                            kind: "Name",
+                                            value: "bySource",
+                                          },
+                                          selectionSet: {
+                                            kind: "SelectionSet",
+                                            selections: [
+                                              {
+                                                kind: "Field",
+                                                name: {
+                                                  kind: "Name",
+                                                  value: "source",
+                                                },
+                                              },
+                                              {
+                                                kind: "Field",
+                                                name: {
+                                                  kind: "Name",
+                                                  value: "value",
+                                                },
+                                              },
+                                              {
+                                                kind: "Field",
+                                                name: {
+                                                  kind: "Name",
+                                                  value: "observationCount",
+                                                },
+                                              },
+                                              {
+                                                kind: "Field",
+                                                name: {
+                                                  kind: "Name",
+                                                  value: "coverageMinutes",
+                                                },
+                                              },
+                                            ],
+                                          },
+                                        },
+                                      ],
+                                    },
+                                  },
+                                  {
+                                    kind: "Field",
+                                    name: { kind: "Name", value: "previous" },
+                                    selectionSet: {
+                                      kind: "SelectionSet",
+                                      selections: [
+                                        {
+                                          kind: "Field",
+                                          name: { kind: "Name", value: "id" },
+                                        },
+                                        {
+                                          kind: "Field",
+                                          name: { kind: "Name", value: "date" },
+                                        },
+                                        {
+                                          kind: "Field",
+                                          name: {
+                                            kind: "Name",
+                                            value: "value",
+                                          },
+                                        },
+                                        {
+                                          kind: "Field",
+                                          name: {
+                                            kind: "Name",
+                                            value: "source",
+                                          },
+                                        },
+                                        {
+                                          kind: "Field",
+                                          name: {
+                                            kind: "Name",
+                                            value: "qualityFlags",
+                                          },
+                                        },
+                                        {
+                                          kind: "Field",
+                                          name: {
+                                            kind: "Name",
+                                            value: "bySource",
+                                          },
+                                          selectionSet: {
+                                            kind: "SelectionSet",
+                                            selections: [
+                                              {
+                                                kind: "Field",
+                                                name: {
+                                                  kind: "Name",
+                                                  value: "source",
+                                                },
+                                              },
+                                              {
+                                                kind: "Field",
+                                                name: {
+                                                  kind: "Name",
+                                                  value: "value",
+                                                },
+                                              },
+                                              {
+                                                kind: "Field",
+                                                name: {
+                                                  kind: "Name",
+                                                  value: "observationCount",
+                                                },
+                                              },
+                                              {
+                                                kind: "Field",
+                                                name: {
+                                                  kind: "Name",
+                                                  value: "coverageMinutes",
+                                                },
+                                              },
+                                            ],
+                                          },
+                                        },
+                                      ],
+                                    },
+                                  },
+                                  {
+                                    kind: "Field",
+                                    name: {
+                                      kind: "Name",
+                                      value: "average7Day",
+                                    },
+                                  },
+                                  {
+                                    kind: "Field",
+                                    name: {
+                                      kind: "Name",
+                                      value: "average30Day",
+                                    },
+                                  },
+                                  {
+                                    kind: "Field",
+                                    name: {
+                                      kind: "Name",
+                                      value: "changeFromPrevious",
+                                    },
+                                  },
+                                  {
+                                    kind: "Field",
+                                    name: {
+                                      kind: "Name",
+                                      value: "sampleCount",
+                                    },
+                                  },
+                                ],
+                              },
+                            },
+                            {
+                              kind: "Field",
+                              name: { kind: "Name", value: "rolling7Day" },
+                              selectionSet: {
+                                kind: "SelectionSet",
+                                selections: [
+                                  {
+                                    kind: "Field",
+                                    name: { kind: "Name", value: "id" },
+                                  },
+                                  {
+                                    kind: "Field",
+                                    name: { kind: "Name", value: "date" },
+                                  },
+                                  {
+                                    kind: "Field",
+                                    name: { kind: "Name", value: "value" },
+                                  },
+                                  {
+                                    kind: "Field",
+                                    name: {
+                                      kind: "Name",
+                                      value: "sampleCount",
+                                    },
+                                  },
+                                ],
+                              },
+                            },
+                            {
+                              kind: "Field",
+                              name: { kind: "Name", value: "monthly" },
+                              selectionSet: {
+                                kind: "SelectionSet",
+                                selections: [
+                                  {
+                                    kind: "Field",
+                                    name: { kind: "Name", value: "id" },
+                                  },
+                                  {
+                                    kind: "Field",
+                                    name: { kind: "Name", value: "month" },
+                                  },
+                                  {
+                                    kind: "Field",
+                                    name: { kind: "Name", value: "value" },
+                                  },
+                                  {
+                                    kind: "Field",
+                                    name: {
+                                      kind: "Name",
+                                      value: "sampleCount",
+                                    },
+                                  },
+                                ],
+                              },
+                            },
+                          ],
+                        },
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "restingHeartRate" },
+                        directives: [
+                          {
+                            kind: "Directive",
+                            name: { kind: "Name", value: "include" },
+                            arguments: [
+                              {
+                                kind: "Argument",
+                                name: { kind: "Name", value: "if" },
+                                value: {
+                                  kind: "Variable",
+                                  name: {
+                                    kind: "Name",
+                                    value: "restingHeartRate",
+                                  },
+                                },
+                              },
+                            ],
+                          },
+                        ],
+                        selectionSet: {
+                          kind: "SelectionSet",
+                          selections: [
+                            {
+                              kind: "Field",
+                              name: { kind: "Name", value: "unit" },
+                            },
+                            {
+                              kind: "Field",
+                              name: { kind: "Name", value: "daily" },
+                              selectionSet: {
+                                kind: "SelectionSet",
+                                selections: [
+                                  {
+                                    kind: "Field",
+                                    name: { kind: "Name", value: "id" },
+                                  },
+                                  {
+                                    kind: "Field",
+                                    name: { kind: "Name", value: "date" },
+                                  },
+                                  {
+                                    kind: "Field",
+                                    name: { kind: "Name", value: "value" },
+                                  },
+                                  {
+                                    kind: "Field",
+                                    name: { kind: "Name", value: "source" },
+                                  },
+                                  {
+                                    kind: "Field",
+                                    name: {
+                                      kind: "Name",
+                                      value: "qualityFlags",
+                                    },
+                                  },
+                                  {
+                                    kind: "Field",
+                                    name: { kind: "Name", value: "bySource" },
+                                    selectionSet: {
+                                      kind: "SelectionSet",
+                                      selections: [
+                                        {
+                                          kind: "Field",
+                                          name: {
+                                            kind: "Name",
+                                            value: "source",
+                                          },
+                                        },
+                                        {
+                                          kind: "Field",
+                                          name: {
+                                            kind: "Name",
+                                            value: "value",
+                                          },
+                                        },
+                                        {
+                                          kind: "Field",
+                                          name: {
+                                            kind: "Name",
+                                            value: "observationCount",
+                                          },
+                                        },
+                                        {
+                                          kind: "Field",
+                                          name: {
+                                            kind: "Name",
+                                            value: "coverageMinutes",
+                                          },
+                                        },
+                                      ],
+                                    },
+                                  },
+                                ],
+                              },
+                            },
+                            {
+                              kind: "Field",
+                              name: { kind: "Name", value: "overview" },
+                              selectionSet: {
+                                kind: "SelectionSet",
+                                selections: [
+                                  {
+                                    kind: "Field",
+                                    name: { kind: "Name", value: "latest" },
+                                    selectionSet: {
+                                      kind: "SelectionSet",
+                                      selections: [
+                                        {
+                                          kind: "Field",
+                                          name: { kind: "Name", value: "id" },
+                                        },
+                                        {
+                                          kind: "Field",
+                                          name: { kind: "Name", value: "date" },
+                                        },
+                                        {
+                                          kind: "Field",
+                                          name: {
+                                            kind: "Name",
+                                            value: "value",
+                                          },
+                                        },
+                                        {
+                                          kind: "Field",
+                                          name: {
+                                            kind: "Name",
+                                            value: "source",
+                                          },
+                                        },
+                                        {
+                                          kind: "Field",
+                                          name: {
+                                            kind: "Name",
+                                            value: "qualityFlags",
+                                          },
+                                        },
+                                        {
+                                          kind: "Field",
+                                          name: {
+                                            kind: "Name",
+                                            value: "bySource",
+                                          },
+                                          selectionSet: {
+                                            kind: "SelectionSet",
+                                            selections: [
+                                              {
+                                                kind: "Field",
+                                                name: {
+                                                  kind: "Name",
+                                                  value: "source",
+                                                },
+                                              },
+                                              {
+                                                kind: "Field",
+                                                name: {
+                                                  kind: "Name",
+                                                  value: "value",
+                                                },
+                                              },
+                                              {
+                                                kind: "Field",
+                                                name: {
+                                                  kind: "Name",
+                                                  value: "observationCount",
+                                                },
+                                              },
+                                              {
+                                                kind: "Field",
+                                                name: {
+                                                  kind: "Name",
+                                                  value: "coverageMinutes",
+                                                },
+                                              },
+                                            ],
+                                          },
+                                        },
+                                      ],
+                                    },
+                                  },
+                                  {
+                                    kind: "Field",
+                                    name: { kind: "Name", value: "previous" },
+                                    selectionSet: {
+                                      kind: "SelectionSet",
+                                      selections: [
+                                        {
+                                          kind: "Field",
+                                          name: { kind: "Name", value: "id" },
+                                        },
+                                        {
+                                          kind: "Field",
+                                          name: { kind: "Name", value: "date" },
+                                        },
+                                        {
+                                          kind: "Field",
+                                          name: {
+                                            kind: "Name",
+                                            value: "value",
+                                          },
+                                        },
+                                        {
+                                          kind: "Field",
+                                          name: {
+                                            kind: "Name",
+                                            value: "source",
+                                          },
+                                        },
+                                        {
+                                          kind: "Field",
+                                          name: {
+                                            kind: "Name",
+                                            value: "qualityFlags",
+                                          },
+                                        },
+                                        {
+                                          kind: "Field",
+                                          name: {
+                                            kind: "Name",
+                                            value: "bySource",
+                                          },
+                                          selectionSet: {
+                                            kind: "SelectionSet",
+                                            selections: [
+                                              {
+                                                kind: "Field",
+                                                name: {
+                                                  kind: "Name",
+                                                  value: "source",
+                                                },
+                                              },
+                                              {
+                                                kind: "Field",
+                                                name: {
+                                                  kind: "Name",
+                                                  value: "value",
+                                                },
+                                              },
+                                              {
+                                                kind: "Field",
+                                                name: {
+                                                  kind: "Name",
+                                                  value: "observationCount",
+                                                },
+                                              },
+                                              {
+                                                kind: "Field",
+                                                name: {
+                                                  kind: "Name",
+                                                  value: "coverageMinutes",
+                                                },
+                                              },
+                                            ],
+                                          },
+                                        },
+                                      ],
+                                    },
+                                  },
+                                  {
+                                    kind: "Field",
+                                    name: {
+                                      kind: "Name",
+                                      value: "average7Day",
+                                    },
+                                  },
+                                  {
+                                    kind: "Field",
+                                    name: {
+                                      kind: "Name",
+                                      value: "average30Day",
+                                    },
+                                  },
+                                  {
+                                    kind: "Field",
+                                    name: {
+                                      kind: "Name",
+                                      value: "changeFromPrevious",
+                                    },
+                                  },
+                                  {
+                                    kind: "Field",
+                                    name: {
+                                      kind: "Name",
+                                      value: "sampleCount",
+                                    },
+                                  },
+                                ],
+                              },
+                            },
+                            {
+                              kind: "Field",
+                              name: { kind: "Name", value: "rolling7Day" },
+                              selectionSet: {
+                                kind: "SelectionSet",
+                                selections: [
+                                  {
+                                    kind: "Field",
+                                    name: { kind: "Name", value: "id" },
+                                  },
+                                  {
+                                    kind: "Field",
+                                    name: { kind: "Name", value: "date" },
+                                  },
+                                  {
+                                    kind: "Field",
+                                    name: { kind: "Name", value: "value" },
+                                  },
+                                  {
+                                    kind: "Field",
+                                    name: {
+                                      kind: "Name",
+                                      value: "sampleCount",
+                                    },
+                                  },
+                                ],
+                              },
+                            },
+                            {
+                              kind: "Field",
+                              name: { kind: "Name", value: "monthly" },
+                              selectionSet: {
+                                kind: "SelectionSet",
+                                selections: [
+                                  {
+                                    kind: "Field",
+                                    name: { kind: "Name", value: "id" },
+                                  },
+                                  {
+                                    kind: "Field",
+                                    name: { kind: "Name", value: "month" },
+                                  },
+                                  {
+                                    kind: "Field",
+                                    name: { kind: "Name", value: "value" },
+                                  },
+                                  {
+                                    kind: "Field",
+                                    name: {
+                                      kind: "Name",
+                                      value: "sampleCount",
+                                    },
+                                  },
+                                ],
+                              },
+                            },
+                          ],
+                        },
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "weight" },
+                        directives: [
+                          {
+                            kind: "Directive",
+                            name: { kind: "Name", value: "include" },
+                            arguments: [
+                              {
+                                kind: "Argument",
+                                name: { kind: "Name", value: "if" },
+                                value: {
+                                  kind: "Variable",
+                                  name: { kind: "Name", value: "weight" },
+                                },
+                              },
+                            ],
+                          },
+                        ],
+                        selectionSet: {
+                          kind: "SelectionSet",
+                          selections: [
+                            {
+                              kind: "Field",
+                              name: { kind: "Name", value: "unit" },
+                            },
+                            {
+                              kind: "Field",
+                              name: { kind: "Name", value: "daily" },
+                              selectionSet: {
+                                kind: "SelectionSet",
+                                selections: [
+                                  {
+                                    kind: "Field",
+                                    name: { kind: "Name", value: "id" },
+                                  },
+                                  {
+                                    kind: "Field",
+                                    name: { kind: "Name", value: "date" },
+                                  },
+                                  {
+                                    kind: "Field",
+                                    name: { kind: "Name", value: "value" },
+                                  },
+                                  {
+                                    kind: "Field",
+                                    name: { kind: "Name", value: "source" },
+                                  },
+                                  {
+                                    kind: "Field",
+                                    name: {
+                                      kind: "Name",
+                                      value: "qualityFlags",
+                                    },
+                                  },
+                                  {
+                                    kind: "Field",
+                                    name: { kind: "Name", value: "bySource" },
+                                    selectionSet: {
+                                      kind: "SelectionSet",
+                                      selections: [
+                                        {
+                                          kind: "Field",
+                                          name: {
+                                            kind: "Name",
+                                            value: "source",
+                                          },
+                                        },
+                                        {
+                                          kind: "Field",
+                                          name: {
+                                            kind: "Name",
+                                            value: "value",
+                                          },
+                                        },
+                                        {
+                                          kind: "Field",
+                                          name: {
+                                            kind: "Name",
+                                            value: "observationCount",
+                                          },
+                                        },
+                                        {
+                                          kind: "Field",
+                                          name: {
+                                            kind: "Name",
+                                            value: "coverageMinutes",
+                                          },
+                                        },
+                                      ],
+                                    },
+                                  },
+                                ],
+                              },
+                            },
+                            {
+                              kind: "Field",
+                              name: { kind: "Name", value: "overview" },
+                              selectionSet: {
+                                kind: "SelectionSet",
+                                selections: [
+                                  {
+                                    kind: "Field",
+                                    name: { kind: "Name", value: "latest" },
+                                    selectionSet: {
+                                      kind: "SelectionSet",
+                                      selections: [
+                                        {
+                                          kind: "Field",
+                                          name: { kind: "Name", value: "id" },
+                                        },
+                                        {
+                                          kind: "Field",
+                                          name: { kind: "Name", value: "date" },
+                                        },
+                                        {
+                                          kind: "Field",
+                                          name: {
+                                            kind: "Name",
+                                            value: "value",
+                                          },
+                                        },
+                                        {
+                                          kind: "Field",
+                                          name: {
+                                            kind: "Name",
+                                            value: "source",
+                                          },
+                                        },
+                                        {
+                                          kind: "Field",
+                                          name: {
+                                            kind: "Name",
+                                            value: "qualityFlags",
+                                          },
+                                        },
+                                        {
+                                          kind: "Field",
+                                          name: {
+                                            kind: "Name",
+                                            value: "bySource",
+                                          },
+                                          selectionSet: {
+                                            kind: "SelectionSet",
+                                            selections: [
+                                              {
+                                                kind: "Field",
+                                                name: {
+                                                  kind: "Name",
+                                                  value: "source",
+                                                },
+                                              },
+                                              {
+                                                kind: "Field",
+                                                name: {
+                                                  kind: "Name",
+                                                  value: "value",
+                                                },
+                                              },
+                                              {
+                                                kind: "Field",
+                                                name: {
+                                                  kind: "Name",
+                                                  value: "observationCount",
+                                                },
+                                              },
+                                              {
+                                                kind: "Field",
+                                                name: {
+                                                  kind: "Name",
+                                                  value: "coverageMinutes",
+                                                },
+                                              },
+                                            ],
+                                          },
+                                        },
+                                      ],
+                                    },
+                                  },
+                                  {
+                                    kind: "Field",
+                                    name: { kind: "Name", value: "previous" },
+                                    selectionSet: {
+                                      kind: "SelectionSet",
+                                      selections: [
+                                        {
+                                          kind: "Field",
+                                          name: { kind: "Name", value: "id" },
+                                        },
+                                        {
+                                          kind: "Field",
+                                          name: { kind: "Name", value: "date" },
+                                        },
+                                        {
+                                          kind: "Field",
+                                          name: {
+                                            kind: "Name",
+                                            value: "value",
+                                          },
+                                        },
+                                        {
+                                          kind: "Field",
+                                          name: {
+                                            kind: "Name",
+                                            value: "source",
+                                          },
+                                        },
+                                        {
+                                          kind: "Field",
+                                          name: {
+                                            kind: "Name",
+                                            value: "qualityFlags",
+                                          },
+                                        },
+                                        {
+                                          kind: "Field",
+                                          name: {
+                                            kind: "Name",
+                                            value: "bySource",
+                                          },
+                                          selectionSet: {
+                                            kind: "SelectionSet",
+                                            selections: [
+                                              {
+                                                kind: "Field",
+                                                name: {
+                                                  kind: "Name",
+                                                  value: "source",
+                                                },
+                                              },
+                                              {
+                                                kind: "Field",
+                                                name: {
+                                                  kind: "Name",
+                                                  value: "value",
+                                                },
+                                              },
+                                              {
+                                                kind: "Field",
+                                                name: {
+                                                  kind: "Name",
+                                                  value: "observationCount",
+                                                },
+                                              },
+                                              {
+                                                kind: "Field",
+                                                name: {
+                                                  kind: "Name",
+                                                  value: "coverageMinutes",
+                                                },
+                                              },
+                                            ],
+                                          },
+                                        },
+                                      ],
+                                    },
+                                  },
+                                  {
+                                    kind: "Field",
+                                    name: {
+                                      kind: "Name",
+                                      value: "average7Day",
+                                    },
+                                  },
+                                  {
+                                    kind: "Field",
+                                    name: {
+                                      kind: "Name",
+                                      value: "average30Day",
+                                    },
+                                  },
+                                  {
+                                    kind: "Field",
+                                    name: {
+                                      kind: "Name",
+                                      value: "changeFromPrevious",
+                                    },
+                                  },
+                                  {
+                                    kind: "Field",
+                                    name: {
+                                      kind: "Name",
+                                      value: "sampleCount",
+                                    },
+                                  },
+                                ],
+                              },
+                            },
+                            {
+                              kind: "Field",
+                              name: { kind: "Name", value: "rolling7Day" },
+                              selectionSet: {
+                                kind: "SelectionSet",
+                                selections: [
+                                  {
+                                    kind: "Field",
+                                    name: { kind: "Name", value: "id" },
+                                  },
+                                  {
+                                    kind: "Field",
+                                    name: { kind: "Name", value: "date" },
+                                  },
+                                  {
+                                    kind: "Field",
+                                    name: { kind: "Name", value: "value" },
+                                  },
+                                  {
+                                    kind: "Field",
+                                    name: {
+                                      kind: "Name",
+                                      value: "sampleCount",
+                                    },
+                                  },
+                                ],
+                              },
+                            },
+                            {
+                              kind: "Field",
+                              name: { kind: "Name", value: "monthly" },
+                              selectionSet: {
+                                kind: "SelectionSet",
+                                selections: [
+                                  {
+                                    kind: "Field",
+                                    name: { kind: "Name", value: "id" },
+                                  },
+                                  {
+                                    kind: "Field",
+                                    name: { kind: "Name", value: "month" },
+                                  },
+                                  {
+                                    kind: "Field",
+                                    name: { kind: "Name", value: "value" },
+                                  },
+                                  {
+                                    kind: "Field",
+                                    name: {
+                                      kind: "Name",
+                                      value: "sampleCount",
+                                    },
+                                  },
+                                ],
+                              },
+                            },
+                          ],
+                        },
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "heartRateVariability" },
+                        directives: [
+                          {
+                            kind: "Directive",
+                            name: { kind: "Name", value: "include" },
+                            arguments: [
+                              {
+                                kind: "Argument",
+                                name: { kind: "Name", value: "if" },
+                                value: {
+                                  kind: "Variable",
+                                  name: {
+                                    kind: "Name",
+                                    value: "heartRateVariability",
+                                  },
+                                },
+                              },
+                            ],
+                          },
+                        ],
+                        selectionSet: {
+                          kind: "SelectionSet",
+                          selections: [
+                            {
+                              kind: "Field",
+                              name: { kind: "Name", value: "unit" },
+                            },
+                            {
+                              kind: "Field",
+                              name: { kind: "Name", value: "daily" },
+                              selectionSet: {
+                                kind: "SelectionSet",
+                                selections: [
+                                  {
+                                    kind: "Field",
+                                    name: { kind: "Name", value: "id" },
+                                  },
+                                  {
+                                    kind: "Field",
+                                    name: { kind: "Name", value: "date" },
+                                  },
+                                  {
+                                    kind: "Field",
+                                    name: { kind: "Name", value: "value" },
+                                  },
+                                  {
+                                    kind: "Field",
+                                    name: { kind: "Name", value: "source" },
+                                  },
+                                  {
+                                    kind: "Field",
+                                    name: {
+                                      kind: "Name",
+                                      value: "qualityFlags",
+                                    },
+                                  },
+                                  {
+                                    kind: "Field",
+                                    name: { kind: "Name", value: "bySource" },
+                                    selectionSet: {
+                                      kind: "SelectionSet",
+                                      selections: [
+                                        {
+                                          kind: "Field",
+                                          name: {
+                                            kind: "Name",
+                                            value: "source",
+                                          },
+                                        },
+                                        {
+                                          kind: "Field",
+                                          name: {
+                                            kind: "Name",
+                                            value: "value",
+                                          },
+                                        },
+                                        {
+                                          kind: "Field",
+                                          name: {
+                                            kind: "Name",
+                                            value: "observationCount",
+                                          },
+                                        },
+                                        {
+                                          kind: "Field",
+                                          name: {
+                                            kind: "Name",
+                                            value: "coverageMinutes",
+                                          },
+                                        },
+                                      ],
+                                    },
+                                  },
+                                ],
+                              },
+                            },
+                            {
+                              kind: "Field",
+                              name: { kind: "Name", value: "overview" },
+                              selectionSet: {
+                                kind: "SelectionSet",
+                                selections: [
+                                  {
+                                    kind: "Field",
+                                    name: { kind: "Name", value: "latest" },
+                                    selectionSet: {
+                                      kind: "SelectionSet",
+                                      selections: [
+                                        {
+                                          kind: "Field",
+                                          name: { kind: "Name", value: "id" },
+                                        },
+                                        {
+                                          kind: "Field",
+                                          name: { kind: "Name", value: "date" },
+                                        },
+                                        {
+                                          kind: "Field",
+                                          name: {
+                                            kind: "Name",
+                                            value: "value",
+                                          },
+                                        },
+                                        {
+                                          kind: "Field",
+                                          name: {
+                                            kind: "Name",
+                                            value: "source",
+                                          },
+                                        },
+                                        {
+                                          kind: "Field",
+                                          name: {
+                                            kind: "Name",
+                                            value: "qualityFlags",
+                                          },
+                                        },
+                                        {
+                                          kind: "Field",
+                                          name: {
+                                            kind: "Name",
+                                            value: "bySource",
+                                          },
+                                          selectionSet: {
+                                            kind: "SelectionSet",
+                                            selections: [
+                                              {
+                                                kind: "Field",
+                                                name: {
+                                                  kind: "Name",
+                                                  value: "source",
+                                                },
+                                              },
+                                              {
+                                                kind: "Field",
+                                                name: {
+                                                  kind: "Name",
+                                                  value: "value",
+                                                },
+                                              },
+                                              {
+                                                kind: "Field",
+                                                name: {
+                                                  kind: "Name",
+                                                  value: "observationCount",
+                                                },
+                                              },
+                                              {
+                                                kind: "Field",
+                                                name: {
+                                                  kind: "Name",
+                                                  value: "coverageMinutes",
+                                                },
+                                              },
+                                            ],
+                                          },
+                                        },
+                                      ],
+                                    },
+                                  },
+                                  {
+                                    kind: "Field",
+                                    name: { kind: "Name", value: "previous" },
+                                    selectionSet: {
+                                      kind: "SelectionSet",
+                                      selections: [
+                                        {
+                                          kind: "Field",
+                                          name: { kind: "Name", value: "id" },
+                                        },
+                                        {
+                                          kind: "Field",
+                                          name: { kind: "Name", value: "date" },
+                                        },
+                                        {
+                                          kind: "Field",
+                                          name: {
+                                            kind: "Name",
+                                            value: "value",
+                                          },
+                                        },
+                                        {
+                                          kind: "Field",
+                                          name: {
+                                            kind: "Name",
+                                            value: "source",
+                                          },
+                                        },
+                                        {
+                                          kind: "Field",
+                                          name: {
+                                            kind: "Name",
+                                            value: "qualityFlags",
+                                          },
+                                        },
+                                        {
+                                          kind: "Field",
+                                          name: {
+                                            kind: "Name",
+                                            value: "bySource",
+                                          },
+                                          selectionSet: {
+                                            kind: "SelectionSet",
+                                            selections: [
+                                              {
+                                                kind: "Field",
+                                                name: {
+                                                  kind: "Name",
+                                                  value: "source",
+                                                },
+                                              },
+                                              {
+                                                kind: "Field",
+                                                name: {
+                                                  kind: "Name",
+                                                  value: "value",
+                                                },
+                                              },
+                                              {
+                                                kind: "Field",
+                                                name: {
+                                                  kind: "Name",
+                                                  value: "observationCount",
+                                                },
+                                              },
+                                              {
+                                                kind: "Field",
+                                                name: {
+                                                  kind: "Name",
+                                                  value: "coverageMinutes",
+                                                },
+                                              },
+                                            ],
+                                          },
+                                        },
+                                      ],
+                                    },
+                                  },
+                                  {
+                                    kind: "Field",
+                                    name: {
+                                      kind: "Name",
+                                      value: "average7Day",
+                                    },
+                                  },
+                                  {
+                                    kind: "Field",
+                                    name: {
+                                      kind: "Name",
+                                      value: "average30Day",
+                                    },
+                                  },
+                                  {
+                                    kind: "Field",
+                                    name: {
+                                      kind: "Name",
+                                      value: "changeFromPrevious",
+                                    },
+                                  },
+                                  {
+                                    kind: "Field",
+                                    name: {
+                                      kind: "Name",
+                                      value: "sampleCount",
+                                    },
+                                  },
+                                ],
+                              },
+                            },
+                            {
+                              kind: "Field",
+                              name: { kind: "Name", value: "rolling7Day" },
+                              selectionSet: {
+                                kind: "SelectionSet",
+                                selections: [
+                                  {
+                                    kind: "Field",
+                                    name: { kind: "Name", value: "id" },
+                                  },
+                                  {
+                                    kind: "Field",
+                                    name: { kind: "Name", value: "date" },
+                                  },
+                                  {
+                                    kind: "Field",
+                                    name: { kind: "Name", value: "value" },
+                                  },
+                                  {
+                                    kind: "Field",
+                                    name: {
+                                      kind: "Name",
+                                      value: "sampleCount",
+                                    },
+                                  },
+                                ],
+                              },
+                            },
+                            {
+                              kind: "Field",
+                              name: { kind: "Name", value: "monthly" },
+                              selectionSet: {
+                                kind: "SelectionSet",
+                                selections: [
+                                  {
+                                    kind: "Field",
+                                    name: { kind: "Name", value: "id" },
+                                  },
+                                  {
+                                    kind: "Field",
+                                    name: { kind: "Name", value: "month" },
+                                  },
+                                  {
+                                    kind: "Field",
+                                    name: { kind: "Name", value: "value" },
+                                  },
+                                  {
+                                    kind: "Field",
+                                    name: {
+                                      kind: "Name",
+                                      value: "sampleCount",
+                                    },
+                                  },
+                                ],
+                              },
+                            },
+                          ],
+                        },
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "skinTemperature" },
+                        directives: [
+                          {
+                            kind: "Directive",
+                            name: { kind: "Name", value: "include" },
+                            arguments: [
+                              {
+                                kind: "Argument",
+                                name: { kind: "Name", value: "if" },
+                                value: {
+                                  kind: "Variable",
+                                  name: {
+                                    kind: "Name",
+                                    value: "skinTemperature",
+                                  },
+                                },
+                              },
+                            ],
+                          },
+                        ],
+                        selectionSet: {
+                          kind: "SelectionSet",
+                          selections: [
+                            {
+                              kind: "Field",
+                              name: { kind: "Name", value: "unit" },
+                            },
+                            {
+                              kind: "Field",
+                              name: { kind: "Name", value: "daily" },
+                              selectionSet: {
+                                kind: "SelectionSet",
+                                selections: [
+                                  {
+                                    kind: "Field",
+                                    name: { kind: "Name", value: "id" },
+                                  },
+                                  {
+                                    kind: "Field",
+                                    name: { kind: "Name", value: "date" },
+                                  },
+                                  {
+                                    kind: "Field",
+                                    name: { kind: "Name", value: "value" },
+                                  },
+                                  {
+                                    kind: "Field",
+                                    name: { kind: "Name", value: "source" },
+                                  },
+                                  {
+                                    kind: "Field",
+                                    name: {
+                                      kind: "Name",
+                                      value: "qualityFlags",
+                                    },
+                                  },
+                                  {
+                                    kind: "Field",
+                                    name: { kind: "Name", value: "bySource" },
+                                    selectionSet: {
+                                      kind: "SelectionSet",
+                                      selections: [
+                                        {
+                                          kind: "Field",
+                                          name: {
+                                            kind: "Name",
+                                            value: "source",
+                                          },
+                                        },
+                                        {
+                                          kind: "Field",
+                                          name: {
+                                            kind: "Name",
+                                            value: "value",
+                                          },
+                                        },
+                                        {
+                                          kind: "Field",
+                                          name: {
+                                            kind: "Name",
+                                            value: "observationCount",
+                                          },
+                                        },
+                                        {
+                                          kind: "Field",
+                                          name: {
+                                            kind: "Name",
+                                            value: "coverageMinutes",
+                                          },
+                                        },
+                                      ],
+                                    },
+                                  },
+                                ],
+                              },
+                            },
+                            {
+                              kind: "Field",
+                              name: { kind: "Name", value: "overview" },
+                              selectionSet: {
+                                kind: "SelectionSet",
+                                selections: [
+                                  {
+                                    kind: "Field",
+                                    name: { kind: "Name", value: "latest" },
+                                    selectionSet: {
+                                      kind: "SelectionSet",
+                                      selections: [
+                                        {
+                                          kind: "Field",
+                                          name: { kind: "Name", value: "id" },
+                                        },
+                                        {
+                                          kind: "Field",
+                                          name: { kind: "Name", value: "date" },
+                                        },
+                                        {
+                                          kind: "Field",
+                                          name: {
+                                            kind: "Name",
+                                            value: "value",
+                                          },
+                                        },
+                                        {
+                                          kind: "Field",
+                                          name: {
+                                            kind: "Name",
+                                            value: "source",
+                                          },
+                                        },
+                                        {
+                                          kind: "Field",
+                                          name: {
+                                            kind: "Name",
+                                            value: "qualityFlags",
+                                          },
+                                        },
+                                        {
+                                          kind: "Field",
+                                          name: {
+                                            kind: "Name",
+                                            value: "bySource",
+                                          },
+                                          selectionSet: {
+                                            kind: "SelectionSet",
+                                            selections: [
+                                              {
+                                                kind: "Field",
+                                                name: {
+                                                  kind: "Name",
+                                                  value: "source",
+                                                },
+                                              },
+                                              {
+                                                kind: "Field",
+                                                name: {
+                                                  kind: "Name",
+                                                  value: "value",
+                                                },
+                                              },
+                                              {
+                                                kind: "Field",
+                                                name: {
+                                                  kind: "Name",
+                                                  value: "observationCount",
+                                                },
+                                              },
+                                              {
+                                                kind: "Field",
+                                                name: {
+                                                  kind: "Name",
+                                                  value: "coverageMinutes",
+                                                },
+                                              },
+                                            ],
+                                          },
+                                        },
+                                      ],
+                                    },
+                                  },
+                                  {
+                                    kind: "Field",
+                                    name: { kind: "Name", value: "previous" },
+                                    selectionSet: {
+                                      kind: "SelectionSet",
+                                      selections: [
+                                        {
+                                          kind: "Field",
+                                          name: { kind: "Name", value: "id" },
+                                        },
+                                        {
+                                          kind: "Field",
+                                          name: { kind: "Name", value: "date" },
+                                        },
+                                        {
+                                          kind: "Field",
+                                          name: {
+                                            kind: "Name",
+                                            value: "value",
+                                          },
+                                        },
+                                        {
+                                          kind: "Field",
+                                          name: {
+                                            kind: "Name",
+                                            value: "source",
+                                          },
+                                        },
+                                        {
+                                          kind: "Field",
+                                          name: {
+                                            kind: "Name",
+                                            value: "qualityFlags",
+                                          },
+                                        },
+                                        {
+                                          kind: "Field",
+                                          name: {
+                                            kind: "Name",
+                                            value: "bySource",
+                                          },
+                                          selectionSet: {
+                                            kind: "SelectionSet",
+                                            selections: [
+                                              {
+                                                kind: "Field",
+                                                name: {
+                                                  kind: "Name",
+                                                  value: "source",
+                                                },
+                                              },
+                                              {
+                                                kind: "Field",
+                                                name: {
+                                                  kind: "Name",
+                                                  value: "value",
+                                                },
+                                              },
+                                              {
+                                                kind: "Field",
+                                                name: {
+                                                  kind: "Name",
+                                                  value: "observationCount",
+                                                },
+                                              },
+                                              {
+                                                kind: "Field",
+                                                name: {
+                                                  kind: "Name",
+                                                  value: "coverageMinutes",
+                                                },
+                                              },
+                                            ],
+                                          },
+                                        },
+                                      ],
+                                    },
+                                  },
+                                  {
+                                    kind: "Field",
+                                    name: {
+                                      kind: "Name",
+                                      value: "average7Day",
+                                    },
+                                  },
+                                  {
+                                    kind: "Field",
+                                    name: {
+                                      kind: "Name",
+                                      value: "average30Day",
+                                    },
+                                  },
+                                  {
+                                    kind: "Field",
+                                    name: {
+                                      kind: "Name",
+                                      value: "changeFromPrevious",
+                                    },
+                                  },
+                                  {
+                                    kind: "Field",
+                                    name: {
+                                      kind: "Name",
+                                      value: "sampleCount",
+                                    },
+                                  },
+                                ],
+                              },
+                            },
+                            {
+                              kind: "Field",
+                              name: { kind: "Name", value: "rolling7Day" },
+                              selectionSet: {
+                                kind: "SelectionSet",
+                                selections: [
+                                  {
+                                    kind: "Field",
+                                    name: { kind: "Name", value: "id" },
+                                  },
+                                  {
+                                    kind: "Field",
+                                    name: { kind: "Name", value: "date" },
+                                  },
+                                  {
+                                    kind: "Field",
+                                    name: { kind: "Name", value: "value" },
+                                  },
+                                  {
+                                    kind: "Field",
+                                    name: {
+                                      kind: "Name",
+                                      value: "sampleCount",
+                                    },
+                                  },
+                                ],
+                              },
+                            },
+                            {
+                              kind: "Field",
+                              name: { kind: "Name", value: "monthly" },
+                              selectionSet: {
+                                kind: "SelectionSet",
+                                selections: [
+                                  {
+                                    kind: "Field",
+                                    name: { kind: "Name", value: "id" },
+                                  },
+                                  {
+                                    kind: "Field",
+                                    name: { kind: "Name", value: "month" },
+                                  },
+                                  {
+                                    kind: "Field",
+                                    name: { kind: "Name", value: "value" },
+                                  },
+                                  {
+                                    kind: "Field",
+                                    name: {
+                                      kind: "Name",
+                                      value: "sampleCount",
+                                    },
+                                  },
+                                ],
+                              },
+                            },
+                          ],
+                        },
+                      },
+                    ],
+                  },
+                },
+              ],
+            },
+          },
+        ],
+      },
+    },
+  ],
+} as unknown as DocumentNode<
+  MetricSeriesPageQuery,
+  MetricSeriesPageQueryVariables
+>;
+export const OverviewPageDocument = {
+  kind: "Document",
+  definitions: [
+    {
+      kind: "OperationDefinition",
+      operation: "query",
+      name: { kind: "Name", value: "OverviewPage" },
+      selectionSet: {
+        kind: "SelectionSet",
+        selections: [
+          {
+            kind: "Field",
+            name: { kind: "Name", value: "viewer" },
+            selectionSet: {
+              kind: "SelectionSet",
+              selections: [
+                {
+                  kind: "Field",
+                  name: { kind: "Name", value: "analytics" },
+                  selectionSet: {
+                    kind: "SelectionSet",
+                    selections: [
+                      { kind: "Field", name: { kind: "Name", value: "id" } },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "timeZone" },
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "processedAt" },
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "sleepEvents" },
+                        selectionSet: {
+                          kind: "SelectionSet",
+                          selections: [
+                            {
+                              kind: "Field",
+                              name: { kind: "Name", value: "id" },
+                            },
+                            {
+                              kind: "Field",
+                              name: { kind: "Name", value: "date" },
+                            },
+                            {
+                              kind: "Field",
+                              name: { kind: "Name", value: "primary" },
+                              selectionSet: {
+                                kind: "SelectionSet",
+                                selections: [
+                                  {
+                                    kind: "Field",
+                                    name: { kind: "Name", value: "id" },
+                                  },
+                                  {
+                                    kind: "Field",
+                                    name: { kind: "Name", value: "source" },
+                                  },
+                                  {
+                                    kind: "Field",
+                                    name: { kind: "Name", value: "startAt" },
+                                  },
+                                  {
+                                    kind: "Field",
+                                    name: { kind: "Name", value: "endAt" },
+                                  },
+                                  {
+                                    kind: "Field",
+                                    name: { kind: "Name", value: "title" },
+                                  },
+                                  {
+                                    kind: "Field",
+                                    name: { kind: "Name", value: "notes" },
+                                  },
+                                ],
+                              },
+                            },
+                            {
+                              kind: "Field",
+                              name: { kind: "Name", value: "recordings" },
+                              selectionSet: {
+                                kind: "SelectionSet",
+                                selections: [
+                                  {
+                                    kind: "Field",
+                                    name: { kind: "Name", value: "id" },
+                                  },
+                                  {
+                                    kind: "Field",
+                                    name: { kind: "Name", value: "source" },
+                                  },
+                                  {
+                                    kind: "Field",
+                                    name: { kind: "Name", value: "startAt" },
+                                  },
+                                  {
+                                    kind: "Field",
+                                    name: { kind: "Name", value: "endAt" },
+                                  },
+                                  {
+                                    kind: "Field",
+                                    name: { kind: "Name", value: "title" },
+                                  },
+                                  {
+                                    kind: "Field",
+                                    name: { kind: "Name", value: "notes" },
+                                  },
+                                ],
+                              },
+                            },
+                          ],
+                        },
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "deviceSleepComparisons" },
+                        selectionSet: {
+                          kind: "SelectionSet",
+                          selections: [
+                            {
+                              kind: "Field",
+                              name: { kind: "Name", value: "source" },
+                            },
+                            {
+                              kind: "Field",
+                              name: { kind: "Name", value: "recordingCount" },
+                            },
+                            {
+                              kind: "Field",
+                              name: {
+                                kind: "Name",
+                                value: "averageSleepMinutes",
+                              },
+                            },
+                            {
+                              kind: "Field",
+                              name: { kind: "Name", value: "comparisonCount" },
+                            },
+                            {
+                              kind: "Field",
+                              name: {
+                                kind: "Name",
+                                value: "averageDifferenceMinutes",
+                              },
+                            },
+                          ],
+                        },
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "days" },
+                        selectionSet: {
+                          kind: "SelectionSet",
+                          selections: [
+                            {
+                              kind: "Field",
+                              name: { kind: "Name", value: "id" },
+                            },
+                            {
+                              kind: "Field",
+                              name: { kind: "Name", value: "date" },
+                            },
+                            {
+                              kind: "Field",
+                              name: { kind: "Name", value: "headlineScores" },
+                              selectionSet: {
+                                kind: "SelectionSet",
+                                selections: [
+                                  {
+                                    kind: "Field",
+                                    name: {
+                                      kind: "Name",
+                                      value: "sleepDuration",
+                                    },
+                                    selectionSet: {
+                                      kind: "SelectionSet",
+                                      selections: [
+                                        {
+                                          kind: "Field",
+                                          name: {
+                                            kind: "Name",
+                                            value: "status",
+                                          },
+                                        },
+                                        {
+                                          kind: "Field",
+                                          name: {
+                                            kind: "Name",
+                                            value: "value",
+                                          },
+                                        },
+                                        {
+                                          kind: "Field",
+                                          name: {
+                                            kind: "Name",
+                                            value: "eventCount",
+                                          },
+                                        },
+                                        {
+                                          kind: "Field",
+                                          name: {
+                                            kind: "Name",
+                                            value: "recordingCount",
+                                          },
+                                        },
+                                      ],
+                                    },
+                                  },
+                                ],
+                              },
+                            },
+                          ],
+                        },
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "sleepDebt" },
+                        selectionSet: {
+                          kind: "SelectionSet",
+                          selections: [
+                            {
+                              kind: "Field",
+                              name: { kind: "Name", value: "targetMinutes" },
+                            },
+                            {
+                              kind: "Field",
+                              name: { kind: "Name", value: "methodology" },
+                            },
+                            {
+                              kind: "Field",
+                              name: {
+                                kind: "Name",
+                                value: "average7DayMinutes",
+                              },
+                            },
+                            {
+                              kind: "Field",
+                              name: {
+                                kind: "Name",
+                                value: "average30DayMinutes",
+                              },
+                            },
+                            {
+                              kind: "Field",
+                              name: {
+                                kind: "Name",
+                                value: "previous30DayAverageMinutes",
+                              },
+                            },
+                            {
+                              kind: "Field",
+                              name: { kind: "Name", value: "breakdown30Day" },
+                              selectionSet: {
+                                kind: "SelectionSet",
+                                selections: [
+                                  {
+                                    kind: "Field",
+                                    name: {
+                                      kind: "Name",
+                                      value: "recordedDays",
+                                    },
+                                  },
+                                  {
+                                    kind: "Field",
+                                    name: { kind: "Name", value: "none" },
+                                  },
+                                  {
+                                    kind: "Field",
+                                    name: { kind: "Name", value: "low" },
+                                  },
+                                  {
+                                    kind: "Field",
+                                    name: { kind: "Name", value: "moderate" },
+                                  },
+                                  {
+                                    kind: "Field",
+                                    name: { kind: "Name", value: "high" },
+                                  },
+                                ],
+                              },
+                            },
+                            {
+                              kind: "Field",
+                              name: { kind: "Name", value: "daily" },
+                              selectionSet: {
+                                kind: "SelectionSet",
+                                selections: [
+                                  {
+                                    kind: "Field",
+                                    name: { kind: "Name", value: "id" },
+                                  },
+                                  {
+                                    kind: "Field",
+                                    name: { kind: "Name", value: "date" },
+                                  },
+                                  {
+                                    kind: "Field",
+                                    name: {
+                                      kind: "Name",
+                                      value: "sleepMinutes",
+                                    },
+                                  },
+                                  {
+                                    kind: "Field",
+                                    name: {
+                                      kind: "Name",
+                                      value: "targetMinutes",
+                                    },
+                                  },
+                                  {
+                                    kind: "Field",
+                                    name: {
+                                      kind: "Name",
+                                      value: "debtMinutes",
+                                    },
+                                  },
+                                  {
+                                    kind: "Field",
+                                    name: {
+                                      kind: "Name",
+                                      value: "surplusMinutes",
+                                    },
+                                  },
+                                  {
+                                    kind: "Field",
+                                    name: { kind: "Name", value: "category" },
+                                  },
+                                  {
+                                    kind: "Field",
+                                    name: {
+                                      kind: "Name",
+                                      value: "rolling7DayAverageMinutes",
+                                    },
+                                  },
+                                  {
+                                    kind: "Field",
+                                    name: {
+                                      kind: "Name",
+                                      value: "rolling7DayTotalMinutes",
+                                    },
+                                  },
+                                  {
+                                    kind: "Field",
+                                    name: {
+                                      kind: "Name",
+                                      value: "rolling30DayAverageMinutes",
+                                    },
+                                  },
+                                ],
+                              },
+                            },
+                          ],
+                        },
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "sleepConsistency" },
+                        selectionSet: {
+                          kind: "SelectionSet",
+                          selections: [
+                            {
+                              kind: "Field",
+                              name: {
+                                kind: "Name",
+                                value: "baselineWindowDays",
+                              },
+                            },
+                            {
+                              kind: "Field",
+                              name: {
+                                kind: "Name",
+                                value: "minimumBaselineNights",
+                              },
+                            },
+                            {
+                              kind: "Field",
+                              name: { kind: "Name", value: "methodology" },
+                            },
+                            {
+                              kind: "Field",
+                              name: { kind: "Name", value: "average7DayScore" },
+                            },
+                            {
+                              kind: "Field",
+                              name: {
+                                kind: "Name",
+                                value: "average30DayScore",
+                              },
+                            },
+                            {
+                              kind: "Field",
+                              name: {
+                                kind: "Name",
+                                value: "previous30DayAverageScore",
+                              },
+                            },
+                            {
+                              kind: "Field",
+                              name: { kind: "Name", value: "breakdown30Day" },
+                              selectionSet: {
+                                kind: "SelectionSet",
+                                selections: [
+                                  {
+                                    kind: "Field",
+                                    name: { kind: "Name", value: "scoredDays" },
+                                  },
+                                  {
+                                    kind: "Field",
+                                    name: { kind: "Name", value: "optimal" },
+                                  },
+                                  {
+                                    kind: "Field",
+                                    name: { kind: "Name", value: "sufficient" },
+                                  },
+                                  {
+                                    kind: "Field",
+                                    name: { kind: "Name", value: "poor" },
+                                  },
+                                ],
+                              },
+                            },
+                            {
+                              kind: "Field",
+                              name: { kind: "Name", value: "daily" },
+                              selectionSet: {
+                                kind: "SelectionSet",
+                                selections: [
+                                  {
+                                    kind: "Field",
+                                    name: { kind: "Name", value: "id" },
+                                  },
+                                  {
+                                    kind: "Field",
+                                    name: { kind: "Name", value: "date" },
+                                  },
+                                  {
+                                    kind: "Field",
+                                    name: { kind: "Name", value: "source" },
+                                  },
+                                  {
+                                    kind: "Field",
+                                    name: { kind: "Name", value: "bedtimeAt" },
+                                  },
+                                  {
+                                    kind: "Field",
+                                    name: { kind: "Name", value: "wakeAt" },
+                                  },
+                                  {
+                                    kind: "Field",
+                                    name: {
+                                      kind: "Name",
+                                      value: "bedtimeMinutesLocal",
+                                    },
+                                  },
+                                  {
+                                    kind: "Field",
+                                    name: {
+                                      kind: "Name",
+                                      value: "wakeMinutesLocal",
+                                    },
+                                  },
+                                  {
+                                    kind: "Field",
+                                    name: {
+                                      kind: "Name",
+                                      value: "baselineBedtimeMinutesLocal",
+                                    },
+                                  },
+                                  {
+                                    kind: "Field",
+                                    name: {
+                                      kind: "Name",
+                                      value: "baselineWakeMinutesLocal",
+                                    },
+                                  },
+                                  {
+                                    kind: "Field",
+                                    name: {
+                                      kind: "Name",
+                                      value: "bedtimeDeviationMinutes",
+                                    },
+                                  },
+                                  {
+                                    kind: "Field",
+                                    name: {
+                                      kind: "Name",
+                                      value: "wakeDeviationMinutes",
+                                    },
+                                  },
+                                  {
+                                    kind: "Field",
+                                    name: {
+                                      kind: "Name",
+                                      value: "baselineNightCount",
+                                    },
+                                  },
+                                  {
+                                    kind: "Field",
+                                    name: { kind: "Name", value: "score" },
+                                  },
+                                  {
+                                    kind: "Field",
+                                    name: { kind: "Name", value: "category" },
+                                  },
+                                  {
+                                    kind: "Field",
+                                    name: {
+                                      kind: "Name",
+                                      value: "rolling7DayAverageScore",
+                                    },
+                                  },
+                                  {
+                                    kind: "Field",
+                                    name: {
+                                      kind: "Name",
+                                      value: "rolling30DayAverageScore",
+                                    },
+                                  },
+                                  {
+                                    kind: "Field",
+                                    name: {
+                                      kind: "Name",
+                                      value: "qualityFlags",
+                                    },
+                                  },
+                                ],
+                              },
+                            },
+                          ],
+                        },
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "healthspan" },
+                        selectionSet: {
+                          kind: "SelectionSet",
+                          selections: [
+                            {
+                              kind: "Field",
+                              name: { kind: "Name", value: "modelVersion" },
+                            },
+                            {
+                              kind: "Field",
+                              name: { kind: "Name", value: "status" },
+                            },
+                            {
+                              kind: "Field",
+                              name: {
+                                kind: "Name",
+                                value: "birthDateConfigured",
+                              },
+                            },
+                            {
+                              kind: "Field",
+                              name: { kind: "Name", value: "methodology" },
+                            },
+                            {
+                              kind: "Field",
+                              name: {
+                                kind: "Name",
+                                value: "calibrationReasons",
+                              },
+                            },
+                            {
+                              kind: "Field",
+                              name: { kind: "Name", value: "paceOfAging" },
+                            },
+                            {
+                              kind: "Field",
+                              name: { kind: "Name", value: "paceWindowDays" },
+                            },
+                            {
+                              kind: "Field",
+                              name: { kind: "Name", value: "latest" },
+                              selectionSet: {
+                                kind: "SelectionSet",
+                                selections: [
+                                  {
+                                    kind: "Field",
+                                    name: { kind: "Name", value: "id" },
+                                  },
+                                  {
+                                    kind: "Field",
+                                    name: { kind: "Name", value: "date" },
+                                  },
+                                  {
+                                    kind: "Field",
+                                    name: {
+                                      kind: "Name",
+                                      value: "chronologicalAgeYears",
+                                    },
+                                  },
+                                  {
+                                    kind: "Field",
+                                    name: {
+                                      kind: "Name",
+                                      value: "healthAgeYears",
+                                    },
+                                  },
+                                  {
+                                    kind: "Field",
+                                    name: {
+                                      kind: "Name",
+                                      value: "ageDeltaYears",
+                                    },
+                                  },
+                                  {
+                                    kind: "Field",
+                                    name: {
+                                      kind: "Name",
+                                      value: "paceOfAging",
+                                    },
+                                  },
+                                  {
+                                    kind: "Field",
+                                    name: {
+                                      kind: "Name",
+                                      value: "qualityFlags",
+                                    },
+                                  },
+                                  {
+                                    kind: "Field",
+                                    name: { kind: "Name", value: "factors" },
+                                    selectionSet: {
+                                      kind: "SelectionSet",
+                                      selections: [
+                                        {
+                                          kind: "Field",
+                                          name: { kind: "Name", value: "id" },
+                                        },
+                                        {
+                                          kind: "Field",
+                                          name: { kind: "Name", value: "key" },
+                                        },
+                                        {
+                                          kind: "Field",
+                                          name: {
+                                            kind: "Name",
+                                            value: "label",
+                                          },
+                                        },
+                                        {
+                                          kind: "Field",
+                                          name: {
+                                            kind: "Name",
+                                            value: "value",
+                                          },
+                                        },
+                                        {
+                                          kind: "Field",
+                                          name: { kind: "Name", value: "unit" },
+                                        },
+                                        {
+                                          kind: "Field",
+                                          name: {
+                                            kind: "Name",
+                                            value: "referenceValue",
+                                          },
+                                        },
+                                        {
+                                          kind: "Field",
+                                          name: {
+                                            kind: "Name",
+                                            value: "ageImpactYears",
+                                          },
+                                        },
+                                        {
+                                          kind: "Field",
+                                          name: {
+                                            kind: "Name",
+                                            value: "coverageDays",
+                                          },
+                                        },
+                                      ],
+                                    },
+                                  },
+                                ],
+                              },
+                            },
+                          ],
+                        },
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "steps" },
+                        selectionSet: {
+                          kind: "SelectionSet",
+                          selections: [
+                            {
+                              kind: "Field",
+                              name: { kind: "Name", value: "unit" },
+                            },
+                            {
+                              kind: "Field",
+                              name: { kind: "Name", value: "overview" },
+                              selectionSet: {
+                                kind: "SelectionSet",
+                                selections: [
+                                  {
+                                    kind: "Field",
+                                    name: {
+                                      kind: "Name",
+                                      value: "average7Day",
+                                    },
+                                  },
+                                  {
+                                    kind: "Field",
+                                    name: {
+                                      kind: "Name",
+                                      value: "average30Day",
+                                    },
+                                  },
+                                  {
+                                    kind: "Field",
+                                    name: {
+                                      kind: "Name",
+                                      value: "changeFromPrevious",
+                                    },
+                                  },
+                                  {
+                                    kind: "Field",
+                                    name: {
+                                      kind: "Name",
+                                      value: "sampleCount",
+                                    },
+                                  },
+                                  {
+                                    kind: "Field",
+                                    name: { kind: "Name", value: "latest" },
+                                    selectionSet: {
+                                      kind: "SelectionSet",
+                                      selections: [
+                                        {
+                                          kind: "Field",
+                                          name: { kind: "Name", value: "id" },
+                                        },
+                                        {
+                                          kind: "Field",
+                                          name: { kind: "Name", value: "date" },
+                                        },
+                                        {
+                                          kind: "Field",
+                                          name: {
+                                            kind: "Name",
+                                            value: "value",
+                                          },
+                                        },
+                                        {
+                                          kind: "Field",
+                                          name: {
+                                            kind: "Name",
+                                            value: "source",
+                                          },
+                                        },
+                                        {
+                                          kind: "Field",
+                                          name: {
+                                            kind: "Name",
+                                            value: "qualityFlags",
+                                          },
+                                        },
+                                      ],
+                                    },
+                                  },
+                                  {
+                                    kind: "Field",
+                                    name: { kind: "Name", value: "previous" },
+                                    selectionSet: {
+                                      kind: "SelectionSet",
+                                      selections: [
+                                        {
+                                          kind: "Field",
+                                          name: { kind: "Name", value: "id" },
+                                        },
+                                        {
+                                          kind: "Field",
+                                          name: { kind: "Name", value: "date" },
+                                        },
+                                        {
+                                          kind: "Field",
+                                          name: {
+                                            kind: "Name",
+                                            value: "value",
+                                          },
+                                        },
+                                        {
+                                          kind: "Field",
+                                          name: {
+                                            kind: "Name",
+                                            value: "source",
+                                          },
+                                        },
+                                        {
+                                          kind: "Field",
+                                          name: {
+                                            kind: "Name",
+                                            value: "qualityFlags",
+                                          },
+                                        },
+                                      ],
+                                    },
+                                  },
+                                ],
+                              },
+                            },
+                            {
+                              kind: "Field",
+                              name: { kind: "Name", value: "daily" },
+                              selectionSet: {
+                                kind: "SelectionSet",
+                                selections: [
+                                  {
+                                    kind: "Field",
+                                    name: { kind: "Name", value: "id" },
+                                  },
+                                  {
+                                    kind: "Field",
+                                    name: { kind: "Name", value: "date" },
+                                  },
+                                  {
+                                    kind: "Field",
+                                    name: { kind: "Name", value: "value" },
+                                  },
+                                  {
+                                    kind: "Field",
+                                    name: { kind: "Name", value: "source" },
+                                  },
+                                  {
+                                    kind: "Field",
+                                    name: {
+                                      kind: "Name",
+                                      value: "qualityFlags",
+                                    },
+                                  },
+                                ],
+                              },
+                            },
+                          ],
+                        },
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "activeCalories" },
+                        selectionSet: {
+                          kind: "SelectionSet",
+                          selections: [
+                            {
+                              kind: "Field",
+                              name: { kind: "Name", value: "unit" },
+                            },
+                            {
+                              kind: "Field",
+                              name: { kind: "Name", value: "overview" },
+                              selectionSet: {
+                                kind: "SelectionSet",
+                                selections: [
+                                  {
+                                    kind: "Field",
+                                    name: {
+                                      kind: "Name",
+                                      value: "average7Day",
+                                    },
+                                  },
+                                  {
+                                    kind: "Field",
+                                    name: {
+                                      kind: "Name",
+                                      value: "average30Day",
+                                    },
+                                  },
+                                  {
+                                    kind: "Field",
+                                    name: {
+                                      kind: "Name",
+                                      value: "changeFromPrevious",
+                                    },
+                                  },
+                                  {
+                                    kind: "Field",
+                                    name: {
+                                      kind: "Name",
+                                      value: "sampleCount",
+                                    },
+                                  },
+                                  {
+                                    kind: "Field",
+                                    name: { kind: "Name", value: "latest" },
+                                    selectionSet: {
+                                      kind: "SelectionSet",
+                                      selections: [
+                                        {
+                                          kind: "Field",
+                                          name: { kind: "Name", value: "id" },
+                                        },
+                                        {
+                                          kind: "Field",
+                                          name: { kind: "Name", value: "date" },
+                                        },
+                                        {
+                                          kind: "Field",
+                                          name: {
+                                            kind: "Name",
+                                            value: "value",
+                                          },
+                                        },
+                                        {
+                                          kind: "Field",
+                                          name: {
+                                            kind: "Name",
+                                            value: "source",
+                                          },
+                                        },
+                                        {
+                                          kind: "Field",
+                                          name: {
+                                            kind: "Name",
+                                            value: "qualityFlags",
+                                          },
+                                        },
+                                      ],
+                                    },
+                                  },
+                                  {
+                                    kind: "Field",
+                                    name: { kind: "Name", value: "previous" },
+                                    selectionSet: {
+                                      kind: "SelectionSet",
+                                      selections: [
+                                        {
+                                          kind: "Field",
+                                          name: { kind: "Name", value: "id" },
+                                        },
+                                        {
+                                          kind: "Field",
+                                          name: { kind: "Name", value: "date" },
+                                        },
+                                        {
+                                          kind: "Field",
+                                          name: {
+                                            kind: "Name",
+                                            value: "value",
+                                          },
+                                        },
+                                        {
+                                          kind: "Field",
+                                          name: {
+                                            kind: "Name",
+                                            value: "source",
+                                          },
+                                        },
+                                        {
+                                          kind: "Field",
+                                          name: {
+                                            kind: "Name",
+                                            value: "qualityFlags",
+                                          },
+                                        },
+                                      ],
+                                    },
+                                  },
+                                ],
+                              },
+                            },
+                            {
+                              kind: "Field",
+                              name: { kind: "Name", value: "daily" },
+                              selectionSet: {
+                                kind: "SelectionSet",
+                                selections: [
+                                  {
+                                    kind: "Field",
+                                    name: { kind: "Name", value: "id" },
+                                  },
+                                  {
+                                    kind: "Field",
+                                    name: { kind: "Name", value: "date" },
+                                  },
+                                  {
+                                    kind: "Field",
+                                    name: { kind: "Name", value: "value" },
+                                  },
+                                  {
+                                    kind: "Field",
+                                    name: { kind: "Name", value: "source" },
+                                  },
+                                  {
+                                    kind: "Field",
+                                    name: {
+                                      kind: "Name",
+                                      value: "qualityFlags",
+                                    },
+                                  },
+                                ],
+                              },
+                            },
+                          ],
+                        },
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "totalCalories" },
+                        selectionSet: {
+                          kind: "SelectionSet",
+                          selections: [
+                            {
+                              kind: "Field",
+                              name: { kind: "Name", value: "unit" },
+                            },
+                            {
+                              kind: "Field",
+                              name: { kind: "Name", value: "overview" },
+                              selectionSet: {
+                                kind: "SelectionSet",
+                                selections: [
+                                  {
+                                    kind: "Field",
+                                    name: {
+                                      kind: "Name",
+                                      value: "average7Day",
+                                    },
+                                  },
+                                  {
+                                    kind: "Field",
+                                    name: {
+                                      kind: "Name",
+                                      value: "average30Day",
+                                    },
+                                  },
+                                  {
+                                    kind: "Field",
+                                    name: {
+                                      kind: "Name",
+                                      value: "changeFromPrevious",
+                                    },
+                                  },
+                                  {
+                                    kind: "Field",
+                                    name: {
+                                      kind: "Name",
+                                      value: "sampleCount",
+                                    },
+                                  },
+                                  {
+                                    kind: "Field",
+                                    name: { kind: "Name", value: "latest" },
+                                    selectionSet: {
+                                      kind: "SelectionSet",
+                                      selections: [
+                                        {
+                                          kind: "Field",
+                                          name: { kind: "Name", value: "id" },
+                                        },
+                                        {
+                                          kind: "Field",
+                                          name: { kind: "Name", value: "date" },
+                                        },
+                                        {
+                                          kind: "Field",
+                                          name: {
+                                            kind: "Name",
+                                            value: "value",
+                                          },
+                                        },
+                                        {
+                                          kind: "Field",
+                                          name: {
+                                            kind: "Name",
+                                            value: "source",
+                                          },
+                                        },
+                                        {
+                                          kind: "Field",
+                                          name: {
+                                            kind: "Name",
+                                            value: "qualityFlags",
+                                          },
+                                        },
+                                      ],
+                                    },
+                                  },
+                                  {
+                                    kind: "Field",
+                                    name: { kind: "Name", value: "previous" },
+                                    selectionSet: {
+                                      kind: "SelectionSet",
+                                      selections: [
+                                        {
+                                          kind: "Field",
+                                          name: { kind: "Name", value: "id" },
+                                        },
+                                        {
+                                          kind: "Field",
+                                          name: { kind: "Name", value: "date" },
+                                        },
+                                        {
+                                          kind: "Field",
+                                          name: {
+                                            kind: "Name",
+                                            value: "value",
+                                          },
+                                        },
+                                        {
+                                          kind: "Field",
+                                          name: {
+                                            kind: "Name",
+                                            value: "source",
+                                          },
+                                        },
+                                        {
+                                          kind: "Field",
+                                          name: {
+                                            kind: "Name",
+                                            value: "qualityFlags",
+                                          },
+                                        },
+                                      ],
+                                    },
+                                  },
+                                ],
+                              },
+                            },
+                            {
+                              kind: "Field",
+                              name: { kind: "Name", value: "daily" },
+                              selectionSet: {
+                                kind: "SelectionSet",
+                                selections: [
+                                  {
+                                    kind: "Field",
+                                    name: { kind: "Name", value: "id" },
+                                  },
+                                  {
+                                    kind: "Field",
+                                    name: { kind: "Name", value: "date" },
+                                  },
+                                  {
+                                    kind: "Field",
+                                    name: { kind: "Name", value: "value" },
+                                  },
+                                  {
+                                    kind: "Field",
+                                    name: { kind: "Name", value: "source" },
+                                  },
+                                  {
+                                    kind: "Field",
+                                    name: {
+                                      kind: "Name",
+                                      value: "qualityFlags",
+                                    },
+                                  },
+                                ],
+                              },
+                            },
+                          ],
+                        },
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "restingHeartRate" },
+                        selectionSet: {
+                          kind: "SelectionSet",
+                          selections: [
+                            {
+                              kind: "Field",
+                              name: { kind: "Name", value: "unit" },
+                            },
+                            {
+                              kind: "Field",
+                              name: { kind: "Name", value: "overview" },
+                              selectionSet: {
+                                kind: "SelectionSet",
+                                selections: [
+                                  {
+                                    kind: "Field",
+                                    name: {
+                                      kind: "Name",
+                                      value: "average7Day",
+                                    },
+                                  },
+                                  {
+                                    kind: "Field",
+                                    name: {
+                                      kind: "Name",
+                                      value: "average30Day",
+                                    },
+                                  },
+                                  {
+                                    kind: "Field",
+                                    name: {
+                                      kind: "Name",
+                                      value: "changeFromPrevious",
+                                    },
+                                  },
+                                  {
+                                    kind: "Field",
+                                    name: {
+                                      kind: "Name",
+                                      value: "sampleCount",
+                                    },
+                                  },
+                                  {
+                                    kind: "Field",
+                                    name: { kind: "Name", value: "latest" },
+                                    selectionSet: {
+                                      kind: "SelectionSet",
+                                      selections: [
+                                        {
+                                          kind: "Field",
+                                          name: { kind: "Name", value: "id" },
+                                        },
+                                        {
+                                          kind: "Field",
+                                          name: { kind: "Name", value: "date" },
+                                        },
+                                        {
+                                          kind: "Field",
+                                          name: {
+                                            kind: "Name",
+                                            value: "value",
+                                          },
+                                        },
+                                        {
+                                          kind: "Field",
+                                          name: {
+                                            kind: "Name",
+                                            value: "source",
+                                          },
+                                        },
+                                        {
+                                          kind: "Field",
+                                          name: {
+                                            kind: "Name",
+                                            value: "qualityFlags",
+                                          },
+                                        },
+                                      ],
+                                    },
+                                  },
+                                  {
+                                    kind: "Field",
+                                    name: { kind: "Name", value: "previous" },
+                                    selectionSet: {
+                                      kind: "SelectionSet",
+                                      selections: [
+                                        {
+                                          kind: "Field",
+                                          name: { kind: "Name", value: "id" },
+                                        },
+                                        {
+                                          kind: "Field",
+                                          name: { kind: "Name", value: "date" },
+                                        },
+                                        {
+                                          kind: "Field",
+                                          name: {
+                                            kind: "Name",
+                                            value: "value",
+                                          },
+                                        },
+                                        {
+                                          kind: "Field",
+                                          name: {
+                                            kind: "Name",
+                                            value: "source",
+                                          },
+                                        },
+                                        {
+                                          kind: "Field",
+                                          name: {
+                                            kind: "Name",
+                                            value: "qualityFlags",
+                                          },
+                                        },
+                                      ],
+                                    },
+                                  },
+                                ],
+                              },
+                            },
+                            {
+                              kind: "Field",
+                              name: { kind: "Name", value: "daily" },
+                              selectionSet: {
+                                kind: "SelectionSet",
+                                selections: [
+                                  {
+                                    kind: "Field",
+                                    name: { kind: "Name", value: "id" },
+                                  },
+                                  {
+                                    kind: "Field",
+                                    name: { kind: "Name", value: "date" },
+                                  },
+                                  {
+                                    kind: "Field",
+                                    name: { kind: "Name", value: "value" },
+                                  },
+                                  {
+                                    kind: "Field",
+                                    name: { kind: "Name", value: "source" },
+                                  },
+                                  {
+                                    kind: "Field",
+                                    name: {
+                                      kind: "Name",
+                                      value: "qualityFlags",
+                                    },
+                                  },
+                                ],
+                              },
+                            },
+                          ],
+                        },
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "weight" },
+                        selectionSet: {
+                          kind: "SelectionSet",
+                          selections: [
+                            {
+                              kind: "Field",
+                              name: { kind: "Name", value: "unit" },
+                            },
+                            {
+                              kind: "Field",
+                              name: { kind: "Name", value: "overview" },
+                              selectionSet: {
+                                kind: "SelectionSet",
+                                selections: [
+                                  {
+                                    kind: "Field",
+                                    name: {
+                                      kind: "Name",
+                                      value: "average7Day",
+                                    },
+                                  },
+                                  {
+                                    kind: "Field",
+                                    name: {
+                                      kind: "Name",
+                                      value: "average30Day",
+                                    },
+                                  },
+                                  {
+                                    kind: "Field",
+                                    name: {
+                                      kind: "Name",
+                                      value: "changeFromPrevious",
+                                    },
+                                  },
+                                  {
+                                    kind: "Field",
+                                    name: {
+                                      kind: "Name",
+                                      value: "sampleCount",
+                                    },
+                                  },
+                                  {
+                                    kind: "Field",
+                                    name: { kind: "Name", value: "latest" },
+                                    selectionSet: {
+                                      kind: "SelectionSet",
+                                      selections: [
+                                        {
+                                          kind: "Field",
+                                          name: { kind: "Name", value: "id" },
+                                        },
+                                        {
+                                          kind: "Field",
+                                          name: { kind: "Name", value: "date" },
+                                        },
+                                        {
+                                          kind: "Field",
+                                          name: {
+                                            kind: "Name",
+                                            value: "value",
+                                          },
+                                        },
+                                        {
+                                          kind: "Field",
+                                          name: {
+                                            kind: "Name",
+                                            value: "source",
+                                          },
+                                        },
+                                        {
+                                          kind: "Field",
+                                          name: {
+                                            kind: "Name",
+                                            value: "qualityFlags",
+                                          },
+                                        },
+                                      ],
+                                    },
+                                  },
+                                  {
+                                    kind: "Field",
+                                    name: { kind: "Name", value: "previous" },
+                                    selectionSet: {
+                                      kind: "SelectionSet",
+                                      selections: [
+                                        {
+                                          kind: "Field",
+                                          name: { kind: "Name", value: "id" },
+                                        },
+                                        {
+                                          kind: "Field",
+                                          name: { kind: "Name", value: "date" },
+                                        },
+                                        {
+                                          kind: "Field",
+                                          name: {
+                                            kind: "Name",
+                                            value: "value",
+                                          },
+                                        },
+                                        {
+                                          kind: "Field",
+                                          name: {
+                                            kind: "Name",
+                                            value: "source",
+                                          },
+                                        },
+                                        {
+                                          kind: "Field",
+                                          name: {
+                                            kind: "Name",
+                                            value: "qualityFlags",
+                                          },
+                                        },
+                                      ],
+                                    },
+                                  },
+                                ],
+                              },
+                            },
+                            {
+                              kind: "Field",
+                              name: { kind: "Name", value: "daily" },
+                              selectionSet: {
+                                kind: "SelectionSet",
+                                selections: [
+                                  {
+                                    kind: "Field",
+                                    name: { kind: "Name", value: "id" },
+                                  },
+                                  {
+                                    kind: "Field",
+                                    name: { kind: "Name", value: "date" },
+                                  },
+                                  {
+                                    kind: "Field",
+                                    name: { kind: "Name", value: "value" },
+                                  },
+                                  {
+                                    kind: "Field",
+                                    name: { kind: "Name", value: "source" },
+                                  },
+                                  {
+                                    kind: "Field",
+                                    name: {
+                                      kind: "Name",
+                                      value: "qualityFlags",
+                                    },
+                                  },
+                                ],
+                              },
+                            },
+                          ],
+                        },
+                      },
+                    ],
+                  },
+                },
+              ],
+            },
+          },
+        ],
+      },
+    },
+  ],
+} as unknown as DocumentNode<OverviewPageQuery, OverviewPageQueryVariables>;
+export const RecoveryPageDocument = {
+  kind: "Document",
+  definitions: [
+    {
+      kind: "OperationDefinition",
+      operation: "query",
+      name: { kind: "Name", value: "RecoveryPage" },
+      selectionSet: {
+        kind: "SelectionSet",
+        selections: [
+          {
+            kind: "Field",
+            name: { kind: "Name", value: "viewer" },
+            selectionSet: {
+              kind: "SelectionSet",
+              selections: [
+                {
+                  kind: "Field",
+                  name: { kind: "Name", value: "analytics" },
+                  selectionSet: {
+                    kind: "SelectionSet",
+                    selections: [
+                      { kind: "Field", name: { kind: "Name", value: "id" } },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "timeZone" },
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "recovery" },
+                        selectionSet: {
+                          kind: "SelectionSet",
+                          selections: [
+                            {
+                              kind: "Field",
+                              name: { kind: "Name", value: "algorithmVersion" },
+                            },
+                            {
+                              kind: "Field",
+                              name: { kind: "Name", value: "status" },
+                            },
+                            {
+                              kind: "Field",
+                              name: { kind: "Name", value: "provisional" },
+                            },
+                            {
+                              kind: "Field",
+                              name: { kind: "Name", value: "methodology" },
+                            },
+                            {
+                              kind: "Field",
+                              name: { kind: "Name", value: "limitations" },
+                            },
+                            {
+                              kind: "Field",
+                              name: { kind: "Name", value: "weights" },
+                              selectionSet: {
+                                kind: "SelectionSet",
+                                selections: [
+                                  {
+                                    kind: "Field",
+                                    name: { kind: "Name", value: "sleep" },
+                                  },
+                                  {
+                                    kind: "Field",
+                                    name: { kind: "Name", value: "hrv" },
+                                  },
+                                  {
+                                    kind: "Field",
+                                    name: {
+                                      kind: "Name",
+                                      value: "restingHeartRate",
+                                    },
+                                  },
+                                  {
+                                    kind: "Field",
+                                    name: {
+                                      kind: "Name",
+                                      value: "sleepConsistency",
+                                    },
+                                  },
+                                ],
+                              },
+                            },
+                            {
+                              kind: "Field",
+                              name: { kind: "Name", value: "availability" },
+                              selectionSet: {
+                                kind: "SelectionSet",
+                                selections: [
+                                  {
+                                    kind: "Field",
+                                    name: { kind: "Name", value: "available" },
+                                  },
+                                  {
+                                    kind: "Field",
+                                    name: {
+                                      kind: "Name",
+                                      value: "publishableDayCount",
+                                    },
+                                  },
+                                  {
+                                    kind: "Field",
+                                    name: {
+                                      kind: "Name",
+                                      value: "completeDayCount",
+                                    },
+                                  },
+                                  {
+                                    kind: "Field",
+                                    name: { kind: "Name", value: "reasons" },
+                                  },
+                                ],
+                              },
+                            },
+                            {
+                              kind: "Field",
+                              name: { kind: "Name", value: "daily" },
+                              selectionSet: {
+                                kind: "SelectionSet",
+                                selections: [
+                                  {
+                                    kind: "Field",
+                                    name: { kind: "Name", value: "id" },
+                                  },
+                                  {
+                                    kind: "Field",
+                                    name: { kind: "Name", value: "date" },
+                                  },
+                                  {
+                                    kind: "Field",
+                                    name: { kind: "Name", value: "score" },
+                                  },
+                                  {
+                                    kind: "Field",
+                                    name: { kind: "Name", value: "band" },
+                                  },
+                                  {
+                                    kind: "Field",
+                                    name: { kind: "Name", value: "status" },
+                                  },
+                                  {
+                                    kind: "Field",
+                                    name: {
+                                      kind: "Name",
+                                      value: "provisional",
+                                    },
+                                  },
+                                  {
+                                    kind: "Field",
+                                    name: { kind: "Name", value: "components" },
+                                    selectionSet: {
+                                      kind: "SelectionSet",
+                                      selections: [
+                                        {
+                                          kind: "Field",
+                                          name: {
+                                            kind: "Name",
+                                            value: "sleep",
+                                          },
+                                          selectionSet: {
+                                            kind: "SelectionSet",
+                                            selections: [
+                                              {
+                                                kind: "Field",
+                                                name: {
+                                                  kind: "Name",
+                                                  value: "score",
+                                                },
+                                              },
+                                              {
+                                                kind: "Field",
+                                                name: {
+                                                  kind: "Name",
+                                                  value: "value",
+                                                },
+                                              },
+                                              {
+                                                kind: "Field",
+                                                name: {
+                                                  kind: "Name",
+                                                  value: "baseline",
+                                                },
+                                              },
+                                              {
+                                                kind: "Field",
+                                                name: {
+                                                  kind: "Name",
+                                                  value: "unit",
+                                                },
+                                              },
+                                              {
+                                                kind: "Field",
+                                                name: {
+                                                  kind: "Name",
+                                                  value: "baselineDays",
+                                                },
+                                              },
+                                            ],
+                                          },
+                                        },
+                                        {
+                                          kind: "Field",
+                                          name: {
+                                            kind: "Name",
+                                            value: "restingHeartRate",
+                                          },
+                                          selectionSet: {
+                                            kind: "SelectionSet",
+                                            selections: [
+                                              {
+                                                kind: "Field",
+                                                name: {
+                                                  kind: "Name",
+                                                  value: "score",
+                                                },
+                                              },
+                                              {
+                                                kind: "Field",
+                                                name: {
+                                                  kind: "Name",
+                                                  value: "value",
+                                                },
+                                              },
+                                              {
+                                                kind: "Field",
+                                                name: {
+                                                  kind: "Name",
+                                                  value: "baseline",
+                                                },
+                                              },
+                                              {
+                                                kind: "Field",
+                                                name: {
+                                                  kind: "Name",
+                                                  value: "unit",
+                                                },
+                                              },
+                                              {
+                                                kind: "Field",
+                                                name: {
+                                                  kind: "Name",
+                                                  value: "baselineDays",
+                                                },
+                                              },
+                                            ],
+                                          },
+                                        },
+                                        {
+                                          kind: "Field",
+                                          name: { kind: "Name", value: "hrv" },
+                                          selectionSet: {
+                                            kind: "SelectionSet",
+                                            selections: [
+                                              {
+                                                kind: "Field",
+                                                name: {
+                                                  kind: "Name",
+                                                  value: "score",
+                                                },
+                                              },
+                                              {
+                                                kind: "Field",
+                                                name: {
+                                                  kind: "Name",
+                                                  value: "value",
+                                                },
+                                              },
+                                              {
+                                                kind: "Field",
+                                                name: {
+                                                  kind: "Name",
+                                                  value: "baseline",
+                                                },
+                                              },
+                                              {
+                                                kind: "Field",
+                                                name: {
+                                                  kind: "Name",
+                                                  value: "unit",
+                                                },
+                                              },
+                                              {
+                                                kind: "Field",
+                                                name: {
+                                                  kind: "Name",
+                                                  value: "baselineDays",
+                                                },
+                                              },
+                                            ],
+                                          },
+                                        },
+                                        {
+                                          kind: "Field",
+                                          name: {
+                                            kind: "Name",
+                                            value: "sleepConsistency",
+                                          },
+                                          selectionSet: {
+                                            kind: "SelectionSet",
+                                            selections: [
+                                              {
+                                                kind: "Field",
+                                                name: {
+                                                  kind: "Name",
+                                                  value: "score",
+                                                },
+                                              },
+                                              {
+                                                kind: "Field",
+                                                name: {
+                                                  kind: "Name",
+                                                  value: "value",
+                                                },
+                                              },
+                                              {
+                                                kind: "Field",
+                                                name: {
+                                                  kind: "Name",
+                                                  value: "baseline",
+                                                },
+                                              },
+                                              {
+                                                kind: "Field",
+                                                name: {
+                                                  kind: "Name",
+                                                  value: "unit",
+                                                },
+                                              },
+                                              {
+                                                kind: "Field",
+                                                name: {
+                                                  kind: "Name",
+                                                  value: "baselineDays",
+                                                },
+                                              },
+                                            ],
+                                          },
+                                        },
+                                      ],
+                                    },
+                                  },
+                                  {
+                                    kind: "Field",
+                                    name: { kind: "Name", value: "quality" },
+                                    selectionSet: {
+                                      kind: "SelectionSet",
+                                      selections: [
+                                        {
+                                          kind: "Field",
+                                          name: {
+                                            kind: "Name",
+                                            value: "publishable",
+                                          },
+                                        },
+                                        {
+                                          kind: "Field",
+                                          name: {
+                                            kind: "Name",
+                                            value: "complete",
+                                          },
+                                        },
+                                        {
+                                          kind: "Field",
+                                          name: {
+                                            kind: "Name",
+                                            value: "estimateBasis",
+                                          },
+                                        },
+                                        {
+                                          kind: "Field",
+                                          name: {
+                                            kind: "Name",
+                                            value: "availableWeight",
+                                          },
+                                        },
+                                        {
+                                          kind: "Field",
+                                          name: {
+                                            kind: "Name",
+                                            value: "baselineWindowDays",
+                                          },
+                                        },
+                                        {
+                                          kind: "Field",
+                                          name: {
+                                            kind: "Name",
+                                            value: "minimumBaselineDays",
+                                          },
+                                        },
+                                        {
+                                          kind: "Field",
+                                          name: {
+                                            kind: "Name",
+                                            value: "reasons",
+                                          },
+                                        },
+                                      ],
+                                    },
+                                  },
+                                ],
+                              },
+                            },
+                          ],
+                        },
+                      },
+                    ],
+                  },
+                },
+              ],
+            },
+          },
+        ],
+      },
+    },
+  ],
+} as unknown as DocumentNode<RecoveryPageQuery, RecoveryPageQueryVariables>;
+export const SleepConsistencyPageDocument = {
+  kind: "Document",
+  definitions: [
+    {
+      kind: "OperationDefinition",
+      operation: "query",
+      name: { kind: "Name", value: "SleepConsistencyPage" },
+      selectionSet: {
+        kind: "SelectionSet",
+        selections: [
+          {
+            kind: "Field",
+            name: { kind: "Name", value: "viewer" },
+            selectionSet: {
+              kind: "SelectionSet",
+              selections: [
+                {
+                  kind: "Field",
+                  name: { kind: "Name", value: "analytics" },
+                  selectionSet: {
+                    kind: "SelectionSet",
+                    selections: [
+                      { kind: "Field", name: { kind: "Name", value: "id" } },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "timeZone" },
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "sleepConsistency" },
+                        selectionSet: {
+                          kind: "SelectionSet",
+                          selections: [
+                            {
+                              kind: "Field",
+                              name: {
+                                kind: "Name",
+                                value: "baselineWindowDays",
+                              },
+                            },
+                            {
+                              kind: "Field",
+                              name: {
+                                kind: "Name",
+                                value: "minimumBaselineNights",
+                              },
+                            },
+                            {
+                              kind: "Field",
+                              name: { kind: "Name", value: "methodology" },
+                            },
+                            {
+                              kind: "Field",
+                              name: { kind: "Name", value: "average7DayScore" },
+                            },
+                            {
+                              kind: "Field",
+                              name: {
+                                kind: "Name",
+                                value: "average30DayScore",
+                              },
+                            },
+                            {
+                              kind: "Field",
+                              name: {
+                                kind: "Name",
+                                value: "previous30DayAverageScore",
+                              },
+                            },
+                            {
+                              kind: "Field",
+                              name: { kind: "Name", value: "breakdown30Day" },
+                              selectionSet: {
+                                kind: "SelectionSet",
+                                selections: [
+                                  {
+                                    kind: "Field",
+                                    name: { kind: "Name", value: "scoredDays" },
+                                  },
+                                  {
+                                    kind: "Field",
+                                    name: { kind: "Name", value: "optimal" },
+                                  },
+                                  {
+                                    kind: "Field",
+                                    name: { kind: "Name", value: "sufficient" },
+                                  },
+                                  {
+                                    kind: "Field",
+                                    name: { kind: "Name", value: "poor" },
+                                  },
+                                ],
+                              },
+                            },
+                            {
+                              kind: "Field",
+                              name: { kind: "Name", value: "daily" },
+                              selectionSet: {
+                                kind: "SelectionSet",
+                                selections: [
+                                  {
+                                    kind: "Field",
+                                    name: { kind: "Name", value: "id" },
+                                  },
+                                  {
+                                    kind: "Field",
+                                    name: { kind: "Name", value: "date" },
+                                  },
+                                  {
+                                    kind: "Field",
+                                    name: { kind: "Name", value: "source" },
+                                  },
+                                  {
+                                    kind: "Field",
+                                    name: { kind: "Name", value: "bedtimeAt" },
+                                  },
+                                  {
+                                    kind: "Field",
+                                    name: { kind: "Name", value: "wakeAt" },
+                                  },
+                                  {
+                                    kind: "Field",
+                                    name: {
+                                      kind: "Name",
+                                      value: "bedtimeMinutesLocal",
+                                    },
+                                  },
+                                  {
+                                    kind: "Field",
+                                    name: {
+                                      kind: "Name",
+                                      value: "wakeMinutesLocal",
+                                    },
+                                  },
+                                  {
+                                    kind: "Field",
+                                    name: {
+                                      kind: "Name",
+                                      value: "baselineBedtimeMinutesLocal",
+                                    },
+                                  },
+                                  {
+                                    kind: "Field",
+                                    name: {
+                                      kind: "Name",
+                                      value: "baselineWakeMinutesLocal",
+                                    },
+                                  },
+                                  {
+                                    kind: "Field",
+                                    name: {
+                                      kind: "Name",
+                                      value: "bedtimeDeviationMinutes",
+                                    },
+                                  },
+                                  {
+                                    kind: "Field",
+                                    name: {
+                                      kind: "Name",
+                                      value: "wakeDeviationMinutes",
+                                    },
+                                  },
+                                  {
+                                    kind: "Field",
+                                    name: {
+                                      kind: "Name",
+                                      value: "baselineNightCount",
+                                    },
+                                  },
+                                  {
+                                    kind: "Field",
+                                    name: { kind: "Name", value: "score" },
+                                  },
+                                  {
+                                    kind: "Field",
+                                    name: { kind: "Name", value: "category" },
+                                  },
+                                  {
+                                    kind: "Field",
+                                    name: {
+                                      kind: "Name",
+                                      value: "rolling7DayAverageScore",
+                                    },
+                                  },
+                                  {
+                                    kind: "Field",
+                                    name: {
+                                      kind: "Name",
+                                      value: "rolling30DayAverageScore",
+                                    },
+                                  },
+                                  {
+                                    kind: "Field",
+                                    name: {
+                                      kind: "Name",
+                                      value: "qualityFlags",
+                                    },
+                                  },
+                                ],
+                              },
+                            },
+                          ],
+                        },
+                      },
+                    ],
+                  },
+                },
+              ],
+            },
+          },
+        ],
+      },
+    },
+  ],
+} as unknown as DocumentNode<
+  SleepConsistencyPageQuery,
+  SleepConsistencyPageQueryVariables
+>;
+export const SleepDebtPageDocument = {
+  kind: "Document",
+  definitions: [
+    {
+      kind: "OperationDefinition",
+      operation: "query",
+      name: { kind: "Name", value: "SleepDebtPage" },
+      selectionSet: {
+        kind: "SelectionSet",
+        selections: [
+          {
+            kind: "Field",
+            name: { kind: "Name", value: "viewer" },
+            selectionSet: {
+              kind: "SelectionSet",
+              selections: [
+                {
+                  kind: "Field",
+                  name: { kind: "Name", value: "analytics" },
+                  selectionSet: {
+                    kind: "SelectionSet",
+                    selections: [
+                      { kind: "Field", name: { kind: "Name", value: "id" } },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "timeZone" },
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "sleepDebt" },
+                        selectionSet: {
+                          kind: "SelectionSet",
+                          selections: [
+                            {
+                              kind: "Field",
+                              name: { kind: "Name", value: "targetMinutes" },
+                            },
+                            {
+                              kind: "Field",
+                              name: { kind: "Name", value: "methodology" },
+                            },
+                            {
+                              kind: "Field",
+                              name: {
+                                kind: "Name",
+                                value: "average7DayMinutes",
+                              },
+                            },
+                            {
+                              kind: "Field",
+                              name: {
+                                kind: "Name",
+                                value: "average30DayMinutes",
+                              },
+                            },
+                            {
+                              kind: "Field",
+                              name: {
+                                kind: "Name",
+                                value: "previous30DayAverageMinutes",
+                              },
+                            },
+                            {
+                              kind: "Field",
+                              name: { kind: "Name", value: "breakdown30Day" },
+                              selectionSet: {
+                                kind: "SelectionSet",
+                                selections: [
+                                  {
+                                    kind: "Field",
+                                    name: {
+                                      kind: "Name",
+                                      value: "recordedDays",
+                                    },
+                                  },
+                                  {
+                                    kind: "Field",
+                                    name: { kind: "Name", value: "none" },
+                                  },
+                                  {
+                                    kind: "Field",
+                                    name: { kind: "Name", value: "low" },
+                                  },
+                                  {
+                                    kind: "Field",
+                                    name: { kind: "Name", value: "moderate" },
+                                  },
+                                  {
+                                    kind: "Field",
+                                    name: { kind: "Name", value: "high" },
+                                  },
+                                ],
+                              },
+                            },
+                            {
+                              kind: "Field",
+                              name: { kind: "Name", value: "daily" },
+                              selectionSet: {
+                                kind: "SelectionSet",
+                                selections: [
+                                  {
+                                    kind: "Field",
+                                    name: { kind: "Name", value: "id" },
+                                  },
+                                  {
+                                    kind: "Field",
+                                    name: { kind: "Name", value: "date" },
+                                  },
+                                  {
+                                    kind: "Field",
+                                    name: {
+                                      kind: "Name",
+                                      value: "sleepMinutes",
+                                    },
+                                  },
+                                  {
+                                    kind: "Field",
+                                    name: {
+                                      kind: "Name",
+                                      value: "targetMinutes",
+                                    },
+                                  },
+                                  {
+                                    kind: "Field",
+                                    name: {
+                                      kind: "Name",
+                                      value: "debtMinutes",
+                                    },
+                                  },
+                                  {
+                                    kind: "Field",
+                                    name: {
+                                      kind: "Name",
+                                      value: "surplusMinutes",
+                                    },
+                                  },
+                                  {
+                                    kind: "Field",
+                                    name: { kind: "Name", value: "category" },
+                                  },
+                                  {
+                                    kind: "Field",
+                                    name: {
+                                      kind: "Name",
+                                      value: "rolling7DayAverageMinutes",
+                                    },
+                                  },
+                                  {
+                                    kind: "Field",
+                                    name: {
+                                      kind: "Name",
+                                      value: "rolling7DayTotalMinutes",
+                                    },
+                                  },
+                                  {
+                                    kind: "Field",
+                                    name: {
+                                      kind: "Name",
+                                      value: "rolling30DayAverageMinutes",
+                                    },
+                                  },
+                                ],
+                              },
+                            },
+                          ],
+                        },
+                      },
+                    ],
+                  },
+                },
+              ],
+            },
+          },
+        ],
+      },
+    },
+  ],
+} as unknown as DocumentNode<SleepDebtPageQuery, SleepDebtPageQueryVariables>;
+export const SleepStagesDocument = {
+  kind: "Document",
+  definitions: [
+    {
+      kind: "OperationDefinition",
+      operation: "query",
+      name: { kind: "Name", value: "SleepStages" },
+      variableDefinitions: [
+        {
+          kind: "VariableDefinition",
+          variable: {
+            kind: "Variable",
+            name: { kind: "Name", value: "range" },
+          },
+          type: {
+            kind: "NonNullType",
+            type: {
+              kind: "NamedType",
+              name: { kind: "Name", value: "TimeRange" },
+            },
+          },
+        },
+      ],
+      selectionSet: {
+        kind: "SelectionSet",
+        selections: [
+          {
+            kind: "Field",
+            name: { kind: "Name", value: "viewer" },
+            selectionSet: {
+              kind: "SelectionSet",
+              selections: [
+                {
+                  kind: "Field",
+                  name: { kind: "Name", value: "analytics" },
+                  selectionSet: {
+                    kind: "SelectionSet",
+                    selections: [
+                      { kind: "Field", name: { kind: "Name", value: "id" } },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "sleepEvents" },
+                        arguments: [
+                          {
+                            kind: "Argument",
+                            name: { kind: "Name", value: "range" },
+                            value: {
+                              kind: "Variable",
+                              name: { kind: "Name", value: "range" },
+                            },
+                          },
+                        ],
+                        selectionSet: {
+                          kind: "SelectionSet",
+                          selections: [
+                            {
+                              kind: "Field",
+                              name: { kind: "Name", value: "id" },
+                            },
+                            {
+                              kind: "Field",
+                              name: { kind: "Name", value: "recordings" },
+                              selectionSet: {
+                                kind: "SelectionSet",
+                                selections: [
+                                  {
+                                    kind: "Field",
+                                    name: { kind: "Name", value: "id" },
+                                  },
+                                  {
+                                    kind: "Field",
+                                    name: { kind: "Name", value: "stages" },
+                                    selectionSet: {
+                                      kind: "SelectionSet",
+                                      selections: [
+                                        {
+                                          kind: "Field",
+                                          name: {
+                                            kind: "Name",
+                                            value: "startAt",
+                                          },
+                                        },
+                                        {
+                                          kind: "Field",
+                                          name: {
+                                            kind: "Name",
+                                            value: "endAt",
+                                          },
+                                        },
+                                        {
+                                          kind: "Field",
+                                          name: { kind: "Name", value: "kind" },
+                                        },
+                                      ],
+                                    },
+                                  },
+                                ],
+                              },
+                            },
+                          ],
+                        },
+                      },
+                    ],
+                  },
+                },
+              ],
+            },
+          },
+        ],
+      },
+    },
+  ],
+} as unknown as DocumentNode<SleepStagesQuery, SleepStagesQueryVariables>;
+export const SkinTemperatureSourceRecordsDocument = {
+  kind: "Document",
+  definitions: [
+    {
+      kind: "OperationDefinition",
+      operation: "query",
+      name: { kind: "Name", value: "SkinTemperatureSourceRecords" },
+      selectionSet: {
+        kind: "SelectionSet",
+        selections: [
+          {
+            kind: "Field",
+            name: { kind: "Name", value: "viewer" },
+            selectionSet: {
+              kind: "SelectionSet",
+              selections: [
+                {
+                  kind: "Field",
+                  name: { kind: "Name", value: "config" },
+                  selectionSet: {
+                    kind: "SelectionSet",
+                    selections: [
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "homeTimeZone" },
+                      },
+                    ],
+                  },
+                },
+                {
+                  kind: "Field",
+                  name: { kind: "Name", value: "sourceRecords" },
+                  selectionSet: {
+                    kind: "SelectionSet",
+                    selections: [
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "skinTemperature" },
+                        selectionSet: {
+                          kind: "SelectionSet",
+                          selections: [
+                            {
+                              kind: "Field",
+                              name: { kind: "Name", value: "id" },
+                            },
+                            {
+                              kind: "Field",
+                              name: { kind: "Name", value: "source" },
+                            },
+                            {
+                              kind: "Field",
+                              name: { kind: "Name", value: "startAt" },
+                            },
+                            {
+                              kind: "Field",
+                              name: { kind: "Name", value: "endAt" },
+                            },
+                            {
+                              kind: "Field",
+                              name: { kind: "Name", value: "baselineCelsius" },
+                            },
+                            {
+                              kind: "Field",
+                              name: { kind: "Name", value: "deltas" },
+                              selectionSet: {
+                                kind: "SelectionSet",
+                                selections: [
+                                  {
+                                    kind: "Field",
+                                    name: { kind: "Name", value: "observedAt" },
+                                  },
+                                  {
+                                    kind: "Field",
+                                    name: { kind: "Name", value: "celsius" },
+                                  },
+                                ],
+                              },
+                            },
+                            {
+                              kind: "Field",
+                              name: {
+                                kind: "Name",
+                                value: "measurementLocation",
+                              },
+                            },
+                          ],
+                        },
+                      },
+                    ],
+                  },
+                },
+              ],
+            },
+          },
+        ],
+      },
+    },
+  ],
+} as unknown as DocumentNode<
+  SkinTemperatureSourceRecordsQuery,
+  SkinTemperatureSourceRecordsQueryVariables
+>;
+export const HrvSourceReadingsDocument = {
+  kind: "Document",
+  definitions: [
+    {
+      kind: "OperationDefinition",
+      operation: "query",
+      name: { kind: "Name", value: "HrvSourceReadings" },
+      variableDefinitions: [
+        {
+          kind: "VariableDefinition",
+          variable: {
+            kind: "Variable",
+            name: { kind: "Name", value: "range" },
+          },
+          type: {
+            kind: "NamedType",
+            name: { kind: "Name", value: "TimeRange" },
+          },
+        },
+      ],
+      selectionSet: {
+        kind: "SelectionSet",
+        selections: [
+          {
+            kind: "Field",
+            name: { kind: "Name", value: "viewer" },
+            selectionSet: {
+              kind: "SelectionSet",
+              selections: [
+                {
+                  kind: "Field",
+                  name: { kind: "Name", value: "config" },
+                  selectionSet: {
+                    kind: "SelectionSet",
+                    selections: [
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "homeTimeZone" },
+                      },
+                    ],
+                  },
+                },
+                {
+                  kind: "Field",
+                  name: { kind: "Name", value: "sourceRecords" },
+                  selectionSet: {
+                    kind: "SelectionSet",
+                    selections: [
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "heartRateVariability" },
+                        arguments: [
+                          {
+                            kind: "Argument",
+                            name: { kind: "Name", value: "range" },
+                            value: {
+                              kind: "Variable",
+                              name: { kind: "Name", value: "range" },
+                            },
+                          },
+                        ],
+                        selectionSet: {
+                          kind: "SelectionSet",
+                          selections: [
+                            {
+                              kind: "Field",
+                              name: { kind: "Name", value: "id" },
+                            },
+                            {
+                              kind: "Field",
+                              name: { kind: "Name", value: "source" },
+                            },
+                            {
+                              kind: "Field",
+                              name: { kind: "Name", value: "observedAt" },
+                            },
+                            {
+                              kind: "Field",
+                              name: { kind: "Name", value: "milliseconds" },
+                            },
+                          ],
+                        },
+                      },
+                    ],
+                  },
+                },
+              ],
+            },
+          },
+        ],
+      },
+    },
+  ],
+} as unknown as DocumentNode<
+  HrvSourceReadingsQuery,
+  HrvSourceReadingsQueryVariables
+>;
+export const SyncStatusDocument = {
+  kind: "Document",
+  definitions: [
+    {
+      kind: "OperationDefinition",
+      operation: "query",
+      name: { kind: "Name", value: "SyncStatus" },
+      selectionSet: {
+        kind: "SelectionSet",
+        selections: [
+          {
+            kind: "Field",
+            name: { kind: "Name", value: "viewer" },
+            selectionSet: {
+              kind: "SelectionSet",
+              selections: [
+                {
+                  kind: "Field",
+                  name: { kind: "Name", value: "ingestion" },
+                  selectionSet: {
+                    kind: "SelectionSet",
+                    selections: [
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "phoneSync" },
+                        selectionSet: {
+                          kind: "SelectionSet",
+                          selections: [
+                            {
+                              kind: "Field",
+                              name: { kind: "Name", value: "observedActive" },
+                            },
+                            {
+                              kind: "Field",
+                              name: { kind: "Name", value: "state" },
+                            },
+                            {
+                              kind: "Field",
+                              name: { kind: "Name", value: "lastUploadAt" },
+                            },
+                            {
+                              kind: "Field",
+                              name: { kind: "Name", value: "activeUntil" },
+                            },
+                            {
+                              kind: "Field",
+                              name: {
+                                kind: "Name",
+                                value: "secondsSinceLastUpload",
+                              },
+                            },
+                            {
+                              kind: "Field",
+                              name: { kind: "Name", value: "lastRecordType" },
+                            },
+                            {
+                              kind: "Field",
+                              name: { kind: "Name", value: "lastRecordCount" },
+                            },
+                            {
+                              kind: "Field",
+                              name: {
+                                kind: "Name",
+                                value: "totalUploadRequests",
+                              },
+                            },
+                            {
+                              kind: "Field",
+                              name: {
+                                kind: "Name",
+                                value: "totalRecordsReceived",
+                              },
+                            },
+                            {
+                              kind: "Field",
+                              name: {
+                                kind: "Name",
+                                value: "activityWindowSeconds",
+                              },
+                            },
+                            {
+                              kind: "Field",
+                              name: { kind: "Name", value: "note" },
+                            },
+                          ],
+                        },
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "analyticsJob" },
+                        selectionSet: {
+                          kind: "SelectionSet",
+                          selections: [
+                            {
+                              kind: "Field",
+                              name: { kind: "Name", value: "status" },
+                            },
+                            {
+                              kind: "Field",
+                              name: { kind: "Name", value: "reason" },
+                            },
+                            {
+                              kind: "Field",
+                              name: { kind: "Name", value: "requestedAt" },
+                            },
+                            {
+                              kind: "Field",
+                              name: { kind: "Name", value: "startedAt" },
+                            },
+                            {
+                              kind: "Field",
+                              name: { kind: "Name", value: "completedAt" },
+                            },
+                            {
+                              kind: "Field",
+                              name: { kind: "Name", value: "error" },
+                            },
+                          ],
+                        },
+                      },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "current" },
+                        selectionSet: {
+                          kind: "SelectionSet",
+                          selections: [
+                            {
+                              kind: "Field",
+                              name: { kind: "Name", value: "completedAt" },
+                            },
+                          ],
+                        },
+                      },
+                    ],
+                  },
+                },
+              ],
+            },
+          },
+        ],
+      },
+    },
+  ],
+} as unknown as DocumentNode<SyncStatusQuery, SyncStatusQueryVariables>;
+export const DebtDailyDocument = {
+  kind: "Document",
+  definitions: [
+    {
+      kind: "OperationDefinition",
+      operation: "query",
+      name: { kind: "Name", value: "DebtDaily" },
+      selectionSet: {
+        kind: "SelectionSet",
+        selections: [
+          {
+            kind: "Field",
+            name: { kind: "Name", value: "viewer" },
+            selectionSet: {
+              kind: "SelectionSet",
+              selections: [
+                {
+                  kind: "Field",
+                  name: { kind: "Name", value: "analytics" },
+                  selectionSet: {
+                    kind: "SelectionSet",
+                    selections: [
+                      { kind: "Field", name: { kind: "Name", value: "id" } },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "sleepDebt" },
+                        selectionSet: {
+                          kind: "SelectionSet",
+                          selections: [
+                            {
+                              kind: "Field",
+                              name: { kind: "Name", value: "targetMinutes" },
+                            },
+                            {
+                              kind: "Field",
+                              name: { kind: "Name", value: "daily" },
+                              selectionSet: {
+                                kind: "SelectionSet",
+                                selections: [
+                                  {
+                                    kind: "Field",
+                                    name: { kind: "Name", value: "id" },
+                                  },
+                                  {
+                                    kind: "Field",
+                                    name: { kind: "Name", value: "date" },
+                                  },
+                                  {
+                                    kind: "Field",
+                                    name: {
+                                      kind: "Name",
+                                      value: "debtMinutes",
+                                    },
+                                  },
+                                ],
+                              },
+                            },
+                          ],
+                        },
+                      },
+                    ],
+                  },
+                },
+              ],
+            },
+          },
+        ],
+      },
+    },
+  ],
+} as unknown as DocumentNode<DebtDailyQuery, DebtDailyQueryVariables>;
+export const DebtBreakdownDocument = {
+  kind: "Document",
+  definitions: [
+    {
+      kind: "OperationDefinition",
+      operation: "query",
+      name: { kind: "Name", value: "DebtBreakdown" },
+      selectionSet: {
+        kind: "SelectionSet",
+        selections: [
+          {
+            kind: "Field",
+            name: { kind: "Name", value: "viewer" },
+            selectionSet: {
+              kind: "SelectionSet",
+              selections: [
+                {
+                  kind: "Field",
+                  name: { kind: "Name", value: "analytics" },
+                  selectionSet: {
+                    kind: "SelectionSet",
+                    selections: [
+                      { kind: "Field", name: { kind: "Name", value: "id" } },
+                      {
+                        kind: "Field",
+                        name: { kind: "Name", value: "sleepDebt" },
+                        selectionSet: {
+                          kind: "SelectionSet",
+                          selections: [
+                            {
+                              kind: "Field",
+                              name: { kind: "Name", value: "breakdown30Day" },
+                              selectionSet: {
+                                kind: "SelectionSet",
+                                selections: [
+                                  {
+                                    kind: "Field",
+                                    name: {
+                                      kind: "Name",
+                                      value: "recordedDays",
+                                    },
+                                  },
+                                  {
+                                    kind: "Field",
+                                    name: { kind: "Name", value: "high" },
+                                  },
+                                ],
+                              },
+                            },
+                          ],
+                        },
+                      },
+                    ],
+                  },
+                },
+              ],
+            },
+          },
+        ],
+      },
+    },
+  ],
+} as unknown as DocumentNode<DebtBreakdownQuery, DebtBreakdownQueryVariables>;

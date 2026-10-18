@@ -8,20 +8,20 @@ import {
   PILLAR_HEADER_CLASS,
   PILLAR_STAT_CLASS,
 } from "./phoneText";
-import { absenceReason } from "~/domain/dayViewPresentation";
+import {
+  absenceReason,
+  isDisplayableStatus,
+} from "~/domain/dayViewPresentation";
 import type { MetricStatus } from "~/domain/dayView";
 
 /**
  * Shared shell for the RECOVERY and STRAIN pillar cards. Renders the
  * absent/placeholder state (em-dash value, the API's own `note` as the
- * explanation) whenever `status` isn't `"available"` — RECOVERY is
- * currently always in this state on live data (per step 1's testing), but
- * this component doesn't hardcode that; it reads `status` generically so
- * it renders correctly the moment the backend starts returning a real
- * recovery score. When a `value` is supplied (STRAIN once available), it
- * renders as a real stat instead — labeled as an experimental
- * cardiovascular estimate, never "WHOOP Strain" or implying WHOOP parity,
- * per the migration spec.
+ * explanation) whenever there's no displayable `value`. When one is
+ * supplied it renders as a real stat on its own scale (`scaleMax`): RECOVERY
+ * as a provisional 0-100 score, STRAIN as an experimental cardiovascular
+ * estimate, never "WHOOP Strain" or implying WHOOP parity, per the
+ * migration spec.
  */
 export function PlaceholderPillarCard({
   label,
@@ -31,6 +31,8 @@ export function PlaceholderPillarCard({
   note,
   value,
   qualifier,
+  scaleMax = 21,
+  formatValue = (number) => number.toFixed(1),
 }: {
   label: string;
   hue: string;
@@ -39,14 +41,22 @@ export function PlaceholderPillarCard({
   footer: Array<[string, string]>;
   status: MetricStatus;
   note?: string | null;
-  /** A real numeric value to render instead of the placeholder shell —
-   * only pass this when `status === "available"`. */
+  /** A real numeric value to render instead of the placeholder shell; only
+   * used when `status` is displayable (`available` or `partial`). */
   value?: number | null;
   /** Overrides the header qualifier text (e.g. "EXPERIMENTAL ESTIMATE")
    * when rendering a real value. */
   qualifier?: string;
+  /** The top of the value's scale, for the track fill (21 for strain). */
+  scaleMax?: number;
+  formatValue?: (value: number) => string;
 }) {
-  if (status === "available" && value !== null && value !== undefined) {
+  if (
+    isDisplayableStatus(status) &&
+    value !== null &&
+    value !== undefined &&
+    Number.isFinite(value)
+  ) {
     return (
       <Card topAccent={hue}>
         <SectionHeader
@@ -56,9 +66,9 @@ export function PlaceholderPillarCard({
           size="md"
           className={PILLAR_HEADER_CLASS}
         />
-        <StatValue value={value.toFixed(1)} className={PILLAR_STAT_CLASS} />
+        <StatValue value={formatValue(value)} className={PILLAR_STAT_CLASS} />
         <Track
-          fillPercent={Math.min(100, (value / 21) * 100)}
+          fillPercent={Math.min(100, Math.max(0, (value / scaleMax) * 100))}
           fillColor={hue}
           heightPx={7}
         />

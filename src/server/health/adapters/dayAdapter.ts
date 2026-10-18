@@ -297,6 +297,7 @@ export function buildNearbyDays(
         date,
         dayState: focused.dayState,
         sleepDuration: focused.headlineScores.sleepDuration,
+        recovery: focused.headlineScores.recovery,
         strain: focused.headlineScores.strain,
       });
       continue;
@@ -308,12 +309,14 @@ export function buildNearbyDays(
             date,
             dayState: dayStateByEnum[stored.dayState],
             sleepDuration: stripValue(stored.headlineScores.sleepDuration),
+            recovery: stripValue(stored.headlineScores.recovery),
             strain: stripValue(stored.headlineScores.strain),
           }
         : {
             date,
             dayState: date > today ? "future" : "recorded",
             sleepDuration: null,
+            recovery: null,
             strain: null,
           },
     );

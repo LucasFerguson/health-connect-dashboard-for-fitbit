@@ -137,6 +137,9 @@ export interface DayStripCellData {
   /** Sleep-duration fraction of the fixed reference (0-1), or null if the
    * day has no displayable sleep duration. */
   sleepFraction: number | null;
+  /** Recovery score as a fraction of 100 (0-1), or null if recovery isn't
+   * displayable for that day. */
+  recoveryFraction: number | null;
   /** Strain fraction of the 0-21 scale (0-1), or null if strain isn't
    * displayable for that day. */
   strainFraction: number | null;
@@ -144,6 +147,7 @@ export interface DayStripCellData {
 
 const SLEEP_REFERENCE_MINUTES = 480;
 const STRAIN_SCALE_MAX = 21;
+const RECOVERY_SCALE_MAX = 100;
 
 /** A strip metric's value, or null when there's nothing honest to draw: no
  * stored day at all, a non-displayable status, or a null value. */
@@ -166,6 +170,7 @@ export function buildDayStripCells(
     .sort((a, b) => a.date.localeCompare(b.date))
     .map((day) => {
       const sleepValue = displayableValue(day.sleepDuration);
+      const recoveryValue = displayableValue(day.recovery);
       const strainValue = displayableValue(day.strain);
       return {
         date: day.date,
@@ -175,6 +180,10 @@ export function buildDayStripCells(
           sleepValue === null
             ? null
             : Math.min(1, sleepValue / SLEEP_REFERENCE_MINUTES),
+        recoveryFraction:
+          recoveryValue === null
+            ? null
+            : Math.min(1, Math.max(0, recoveryValue / RECOVERY_SCALE_MAX)),
         strainFraction:
           strainValue === null
             ? null

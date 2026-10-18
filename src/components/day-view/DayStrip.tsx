@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState, useTransition } from "react";
+import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { clsx } from "clsx";
 import { Spinner } from "~/components/ui/Spinner";
@@ -17,37 +17,35 @@ function dayLabelFor(date: string): string {
 }
 
 /**
- * Band 3 — the ±7-day scrubbable strip (radius=7: 15 cells total). Built
- * directly from the view model's `nearbyDays` (via `buildDayStripCells`),
- * which the adapter already filled out to the full window. Bars
- * show real sleep-duration and strain fractions when the underlying
- * metric's status is displayable; recovery has no per-day strip bar since
- * that pillar has no numeric value to show (see the pillar cards' own
- * "not available" handling).
+ * Each cell needs 64px plus its 3px gap, so showing every day up to `d` away
+ * from the selected one takes `(2d + 1) * 67px`. Below that width the
+ * strip's container query hides the days at distance `d`. Literal class
+ * strings so Tailwind can see them.
+ */
+const HIDE_AT_DISTANCE: Record<number, string> = {
+  2: "@max-[335px]:hidden",
+  3: "@max-[469px]:hidden",
+  4: "@max-[603px]:hidden",
+  5: "@max-[737px]:hidden",
+  6: "@max-[871px]:hidden",
+  7: "@max-[1005px]:hidden",
+};
+
+/**
+ * Band 3 — the day strip. Built directly from the view model's
+ * `nearbyDays` (via `buildDayStripCells`), which the adapter fills out to
+ * ±7 days around the selected one, so the selected day is always the middle
+ * cell. Rather than scrolling sideways, the strip shows as many days either
+ * side of it as fit: the ones furthest out drop first, so the selected day
+ * always stays centered and on screen. Bars show real sleep-duration,
+ * recovery and strain fractions when the metric's status is displayable.
  */
 export function DayStrip({ cells }: { cells: DayStripCellData[] }) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
   const [pendingDate, setPendingDate] = useState<string | null>(null);
 
-  const scrollerRef = useRef<HTMLDivElement>(null);
-  const selectedDate = cells.find((cell) => cell.isSelected)?.date ?? null;
-
-  // On a phone the 15 cells don't fit, so the strip scrolls sideways;
-  // bring the selected day (today, on /day) into the middle of the visible
-  // part. The scroller is `relative`, so `offsetLeft` is measured from its
-  // own edge. Sets `scrollLeft` directly rather than `scrollIntoView`, which
-  // would also scroll the page vertically.
-  useEffect(() => {
-    const scroller = scrollerRef.current;
-    if (!scroller || scroller.scrollWidth <= scroller.clientWidth) return;
-    const selected = scroller.querySelector<HTMLElement>(
-      '[aria-current="date"]',
-    );
-    if (!selected) return;
-    scroller.scrollLeft =
-      selected.offsetLeft - (scroller.clientWidth - selected.offsetWidth) / 2;
-  }, [selectedDate]);
+  const selectedIndex = cells.findIndex((cell) => cell.isSelected);
 
   const goTo = (date: string) => {
     setPendingDate(date);
@@ -58,7 +56,9 @@ export function DayStrip({ cells }: { cells: DayStripCellData[] }) {
 
   return (
     <div className="border-ink-600 bg-ink-950 flex h-[54px] shrink-0 items-stretch gap-0 border-b px-4 max-sm:h-[60px]">
-      <div className="border-ink-600 mr-[10px] flex shrink-0 flex-col justify-center gap-0.5 border-r pr-3">
+      {/* The cells already say PLAN, so on a phone the legend gives its
+          width to the dates instead. */}
+      <div className="border-ink-600 mr-[10px] flex shrink-0 flex-col justify-center gap-0.5 border-r pr-3 max-sm:hidden">
         <span className="text-ink-200 font-mono text-[8px] tracking-[.12em] max-sm:text-[11px]">
           RECORDED
         </span>
@@ -66,12 +66,11 @@ export function DayStrip({ cells }: { cells: DayStripCellData[] }) {
           PLANNED
         </span>
       </div>
-      <div
-        ref={scrollerRef}
-        className="relative flex min-w-0 flex-1 gap-[3px] overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
-      >
-        {cells.map((cell) => {
+      <div className="@container flex min-w-0 flex-1 gap-[3px] overflow-hidden">
+        {cells.map((cell, index) => {
           const isCellPending = isPending && pendingDate === cell.date;
+          const distance =
+            selectedIndex === -1 ? 0 : Math.abs(index - selectedIndex);
           return (
             <button
               key={cell.date}
@@ -80,7 +79,8 @@ export function DayStrip({ cells }: { cells: DayStripCellData[] }) {
               aria-current={cell.isSelected ? "date" : undefined}
               disabled={isPending}
               className={clsx(
-                "bg-ink-900 flex min-w-[64px] flex-col justify-center gap-1 px-1.5 text-left transition-colors duration-[120ms] ease-out disabled:pointer-events-none max-sm:min-w-[80px]",
+                "bg-ink-900 flex min-w-[64px] flex-col justify-center gap-1 px-1.5 text-left transition-colors duration-[120ms] ease-out disabled:pointer-events-none",
+                HIDE_AT_DISTANCE[distance],
                 isPending && !isCellPending && "opacity-50",
                 cell.isSelected
                   ? "border-brand-400 bg-ink-800 flex-[1.35] border px-2"
@@ -134,10 +134,14 @@ export function DayStrip({ cells }: { cells: DayStripCellData[] }) {
                   style={{
                     backgroundColor: cell.isFuture
                       ? "var(--color-ink-400)"
-                      : "var(--color-ink-300)",
-                    opacity: 0.35,
+                      : "var(--color-recovery)",
+                    opacity:
+                      cell.recoveryFraction === null
+                        ? 0.2
+                        : cell.isSelected
+                          ? 1
+                          : 0.4 + cell.recoveryFraction * 0.5,
                   }}
-                  title="Recovery is not available"
                 />
                 <div
                   className="flex-1"

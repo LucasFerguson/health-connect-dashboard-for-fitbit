@@ -42,6 +42,16 @@ export function PillarRow({
         ]}
         status={recovery.status}
         note={recovery.note}
+        value={recovery.value}
+        scaleMax={100}
+        formatValue={formatWhole}
+        // The backend marks every recovery score provisional; `partial`
+        // means some inputs were missing and the rest were reweighted.
+        qualifier={
+          recovery.status === "partial"
+            ? "PROVISIONAL · PARTIAL"
+            : "PROVISIONAL"
+        }
       />
       <PlaceholderPillarCard
         label="STRAIN"
