@@ -11,12 +11,15 @@ export function HealthspanCard() {
       className="overflow-hidden rounded-2xl border border-amber-300/20 bg-[radial-gradient(circle_at_20%_20%,rgba(251,191,36,0.18),transparent_38%),rgba(255,255,255,0.08)] p-5 sm:p-7"
       aria-labelledby="healthspan-heading"
     >
-      <div className="flex flex-wrap items-center justify-between gap-6">
+      <div className="flex flex-wrap items-center justify-between gap-4 sm:gap-6">
         <div className="max-w-2xl">
           <p className="text-xs font-semibold tracking-[0.2em] text-amber-200 uppercase">
             Experimental healthspan
           </p>
-          <h2 id="healthspan-heading" className="mt-2 text-3xl font-extrabold">
+          <h2
+            id="healthspan-heading"
+            className="mt-2 text-2xl font-extrabold sm:text-3xl"
+          >
             Health age and pace of aging
           </h2>
           <p className="mt-2 text-sm leading-6 text-white/75">
@@ -26,12 +29,12 @@ export function HealthspanCard() {
           </p>
           <Link
             href="/healthspan"
-            className="mt-5 inline-flex rounded-lg bg-amber-300/15 px-4 py-2 text-sm font-semibold text-amber-100 hover:bg-amber-300/25"
+            className="mt-4 inline-flex min-h-11 items-center rounded-lg bg-amber-300/15 px-4 py-2 text-sm font-semibold text-amber-100 hover:bg-amber-300/25 sm:mt-5"
           >
             Open healthspan →
           </Link>
         </div>
-        <div className="grid min-w-64 grid-cols-2 gap-3">
+        <div className="grid w-full grid-cols-2 gap-2 sm:w-auto sm:min-w-64 sm:gap-3">
           <Stat
             label="Health age"
             value={

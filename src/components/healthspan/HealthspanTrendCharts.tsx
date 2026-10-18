@@ -12,7 +12,7 @@ export function HealthspanTrendCharts({
   const pace = trend.filter((day) => day.paceOfAging !== null);
   return (
     <section
-      className="grid gap-5 lg:grid-cols-2"
+      className="grid gap-4 sm:gap-5 lg:grid-cols-2"
       aria-label="Healthspan trends"
     >
       <TrendChart
@@ -24,6 +24,7 @@ export function HealthspanTrendCharts({
           legend: { top: 0, textStyle: { color: "#cbd5e1" } },
           tooltip: {
             trigger: "axis",
+            confine: true,
             valueFormatter: (value: number) => `${value.toFixed(1)} years`,
           },
           xAxis: axis(age.map((day) => day.date)),
@@ -58,6 +59,7 @@ export function HealthspanTrendCharts({
           legend: { top: 0, textStyle: { color: "#cbd5e1" } },
           tooltip: {
             trigger: "axis",
+            confine: true,
             valueFormatter: (value: number) => `${value.toFixed(2)}×`,
           },
           xAxis: axis(pace.map((day) => day.date)),
@@ -96,9 +98,13 @@ function TrendChart({
   option: object;
 }) {
   return (
-    <article className="rounded-xl border border-white/10 bg-white/5 p-5">
+    <article className="rounded-xl border border-white/10 bg-white/5 p-4 sm:p-5">
       <h2 className="font-semibold tracking-wide uppercase">{title}</h2>
-      <div className="mt-4 h-80" role="img" aria-label={ariaLabel}>
+      <div
+        className="mt-3 h-64 sm:mt-4 sm:h-80"
+        role="img"
+        aria-label={ariaLabel}
+      >
         <ReactECharts
           option={option}
           style={{ height: "100%", width: "100%" }}

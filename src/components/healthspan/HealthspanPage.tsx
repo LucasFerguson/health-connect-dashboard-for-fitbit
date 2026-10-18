@@ -1,4 +1,3 @@
-import Link from "next/link";
 import type { HealthspanAnalytics, HealthspanFactor } from "~/domain/analytics";
 import { formatDurationMinutes } from "~/features/health/metricFormatters";
 import { HealthspanTrendCharts } from "./HealthspanTrendCharts";
@@ -12,18 +11,11 @@ export function HealthspanPage({
   return (
     <main className="min-h-screen bg-gradient-to-b from-[#182023] to-[#0d1214] px-4 py-6 text-white">
       <div className="mx-auto max-w-6xl">
-        <Link
-          href="/"
-          className="inline-flex rounded-lg px-2 py-1 text-sm text-amber-200 hover:bg-white/10 hover:text-white"
-        >
-          ← Health dashboard
-        </Link>
-
-        <header className="mt-6 text-center">
+        <header className="mt-2 text-center sm:mt-6">
           <p className="text-xs font-semibold tracking-[0.25em] text-white/70 uppercase">
             Healthspan · {analytics.modelVersion}
           </p>
-          <div className="mx-auto mt-8 flex h-72 w-72 items-center justify-center [border-radius:45%_55%_61%_39%/43%_38%_62%_57%] bg-[radial-gradient(circle,rgba(8,12,14,0.95)_28%,rgba(245,158,11,0.34)_55%,rgba(250,204,21,0.74)_78%,rgba(245,158,11,0.18)_80%,transparent_81%)]">
+          <div className="mx-auto mt-6 flex h-64 w-64 items-center justify-center [border-radius:45%_55%_61%_39%/43%_38%_62%_57%] bg-[radial-gradient(circle,rgba(8,12,14,0.95)_28%,rgba(245,158,11,0.34)_55%,rgba(250,204,21,0.74)_78%,rgba(245,158,11,0.18)_80%,transparent_81%)] sm:mt-8 sm:h-72 sm:w-72">
             <div>
               <p className="text-5xl font-bold tracking-tight">
                 {latest?.healthAgeYears === null ||
@@ -62,7 +54,7 @@ export function HealthspanPage({
         ) : null}
 
         <section
-          className="mt-8 grid gap-4 sm:grid-cols-3"
+          className="mt-6 grid gap-2 sm:mt-8 sm:grid-cols-3 sm:gap-4"
           aria-label="Healthspan summary"
         >
           <Summary
@@ -88,10 +80,12 @@ export function HealthspanPage({
           />
         </section>
 
-        <section className="mt-8 rounded-xl border border-white/10 bg-white/5 p-5">
+        <section className="mt-6 rounded-xl border border-white/10 bg-white/5 p-4 sm:mt-8 sm:p-5">
           <div className="flex flex-wrap items-end justify-between gap-3">
             <div>
-              <h2 className="text-2xl font-bold">What moves your health age</h2>
+              <h2 className="text-xl font-bold sm:text-2xl">
+                What moves your health age
+              </h2>
               <p className="mt-1 text-sm text-white/70">
                 Thirty-day prepared averages and their exact model contribution.
               </p>
@@ -100,7 +94,7 @@ export function HealthspanPage({
               Latest estimate: {latest?.date ?? "not available"}
             </p>
           </div>
-          <div className="mt-5 grid gap-4 md:grid-cols-2">
+          <div className="mt-4 grid gap-3 sm:mt-5 sm:gap-4 md:grid-cols-2">
             {(latest?.factors ?? []).map((factor) => (
               <FactorCard key={factor.key} factor={factor} />
             ))}
@@ -113,11 +107,11 @@ export function HealthspanPage({
           ) : null}
         </section>
 
-        <div className="mt-8">
+        <div className="mt-6 sm:mt-8">
           <HealthspanTrendCharts trend={analytics.trend} />
         </div>
 
-        <section className="mt-8 rounded-xl border border-white/10 bg-white/5 p-5">
+        <section className="mt-6 rounded-xl border border-white/10 bg-white/5 p-4 sm:mt-8 sm:p-5">
           <h2 className="text-lg font-semibold">Model notes</h2>
           <p className="mt-2 text-sm leading-6 text-white/75">
             {analytics.methodology}
@@ -152,7 +146,9 @@ function FactorCard({ factor }: { factor: HealthspanFactor }) {
         </div>
         <strong
           className={
-            factor.ageImpactYears <= 0 ? "text-emerald-300" : "text-amber-300"
+            factor.ageImpactYears <= 0
+              ? "shrink-0 whitespace-nowrap text-emerald-300"
+              : "shrink-0 whitespace-nowrap text-amber-300"
           }
         >
           {signedYears(factor.ageImpactYears)}
@@ -170,9 +166,9 @@ function FactorCard({ factor }: { factor: HealthspanFactor }) {
 
 function Summary({ label, value }: { label: string; value: string }) {
   return (
-    <article className="rounded-xl border border-white/10 bg-white/5 p-4 text-center">
-      <p className="text-xs text-white/60">{label}</p>
-      <p className="mt-2 text-2xl font-semibold">{value}</p>
+    <article className="flex items-baseline justify-between gap-3 rounded-xl border border-white/10 bg-white/5 px-4 py-3 sm:block sm:p-4 sm:text-center">
+      <p className="text-sm text-white/60 sm:text-xs">{label}</p>
+      <p className="text-xl font-semibold sm:mt-2 sm:text-2xl">{value}</p>
     </article>
   );
 }
