@@ -1,16 +1,16 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 
 export interface HeatmapDatum {
   date: string;
   value: number;
 }
 
-const CELL = 14;
-const BOX = 11;
-const LEFT = 30;
-const TOP = 22;
+const CELL = 16;
+const BOX = 13;
+const LEFT = 34;
+const TOP = 24;
 const WEEKDAYS = ["", "Mon", "", "Wed", "", "Fri", ""];
 const MONTHS = [
   "Jan",
@@ -74,6 +74,24 @@ export function CalendarHeatmap({
   const fillFor = (value: number) =>
     diverging && value < 0 ? diverging.negativeColor : color;
   const weeks = Math.max(...days.map((day) => day.week), 0) + 1;
+  // Tapped square: hover titles don't exist on touchscreens.
+  const [picked, setPicked] = useState<string | null>(null);
+  const scrollerRef = useRef<HTMLDivElement>(null);
+
+  // Open on the most recent data rather than January: the selected date if
+  // it's in this year, else the year's last reading.
+  const focusDate =
+    initialDate?.startsWith(`${year}-`) === true
+      ? initialDate
+      : days.filter((day) => values.has(day.date)).at(-1)?.date;
+  const focusWeek = days.find((day) => day.date === focusDate)?.week;
+  useEffect(() => {
+    const scroller = scrollerRef.current;
+    if (!scroller || focusWeek === undefined) return;
+    scroller.scrollLeft =
+      LEFT + focusWeek * CELL - scroller.clientWidth / 2 + CELL / 2;
+  }, [year, focusWeek]);
+  const pickedValue = picked ? values.get(picked) : undefined;
 
   return (
     <section className="rounded-xl border border-white/10 bg-white/10 p-5">
@@ -86,8 +104,11 @@ export function CalendarHeatmap({
           Year
           <select
             value={year}
-            onChange={(event) => setYear(Number(event.target.value))}
-            className="rounded-lg border border-white/15 bg-[#21154b] px-3 py-2 text-white"
+            onChange={(event) => {
+              setYear(Number(event.target.value));
+              setPicked(null);
+            }}
+            className="min-h-11 rounded-lg border border-white/15 bg-[#21154b] px-3 py-2 text-white sm:min-h-0"
           >
             {(availableYears.length ? availableYears : [year]).map((value) => (
               <option key={value} value={value}>
@@ -97,7 +118,7 @@ export function CalendarHeatmap({
           </select>
         </label>
       </div>
-      <div className="overflow-x-auto pb-2">
+      <div ref={scrollerRef} className="overflow-x-auto pb-2">
         <svg
           width={LEFT + weeks * CELL + 8}
           height={TOP + 7 * CELL + 8}
@@ -108,9 +129,9 @@ export function CalendarHeatmap({
             <text
               key={row}
               x={0}
-              y={TOP + row * CELL + 9}
-              fill="rgba(255,255,255,0.48)"
-              fontSize="9"
+              y={TOP + row * CELL + 11}
+              fill="rgba(255,255,255,0.55)"
+              fontSize="11"
             >
               {weekday}
             </text>
@@ -119,9 +140,9 @@ export function CalendarHeatmap({
             <text
               key={month.label}
               x={LEFT + month.week * CELL}
-              y={10}
-              fill="rgba(255,255,255,0.48)"
-              fontSize="10"
+              y={12}
+              fill="rgba(255,255,255,0.55)"
+              fontSize="11"
             >
               {month.label}
             </text>
@@ -136,6 +157,10 @@ export function CalendarHeatmap({
                 width={BOX}
                 height={BOX}
                 rx={2}
+                onClick={() => setPicked(day.date)}
+                className="cursor-pointer"
+                stroke={picked === day.date ? "#ffffff" : undefined}
+                strokeWidth={picked === day.date ? 1.5 : undefined}
                 fill={
                   value === undefined
                     ? "rgba(255,255,255,0.06)"
@@ -155,6 +180,11 @@ export function CalendarHeatmap({
           })}
         </svg>
       </div>
+      <p className="min-h-5 text-sm text-white/80" aria-live="polite">
+        {picked
+          ? `${picked}: ${pickedValue === undefined ? "No reading" : formatValue(pickedValue)}`
+          : "Tap a square to see that day."}
+      </p>
       {diverging ? (
         <div className="mt-2 flex items-center justify-end gap-1 text-xs text-white/60">
           <span className="mr-1">{diverging.negativeLabel}</span>
