@@ -102,7 +102,7 @@ export function BackendErrorPanel({
                 className={`rounded-lg border px-3 py-2 text-xs ${styles}`}
               >
                 <span className="font-mono">{mark}</span> {step}
-                <span className="block text-[10px] opacity-70">
+                <span className="block text-[11px] opacity-70">
                   {state === "skipped" ? "not reached" : state}
                 </span>
               </li>
@@ -226,7 +226,7 @@ export function BackendErrorPanel({
         </div>
 
         <details className="rounded-lg border border-white/10 bg-white/[0.03] p-3">
-          <summary className="cursor-pointer text-xs text-white/75">
+          <summary className="cursor-pointer py-1 text-xs text-white/75">
             Raw diagnosis (JSON, safe to paste into a bug report)
           </summary>
           <Code>{JSON.stringify(diagnostics, null, 2)}</Code>

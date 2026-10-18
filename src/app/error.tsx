@@ -39,7 +39,7 @@ export default function GlobalError({
       <button
         type="button"
         onClick={reset}
-        className="rounded-lg bg-violet-500 px-4 py-2 text-sm font-semibold text-white shadow-lg shadow-violet-500/25 transition hover:bg-violet-400"
+        className="min-h-11 rounded-lg bg-violet-500 px-4 py-2 text-sm font-semibold text-white shadow-lg shadow-violet-500/25 transition hover:bg-violet-400"
       >
         Try again
       </button>
