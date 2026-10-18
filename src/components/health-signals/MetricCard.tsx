@@ -33,7 +33,8 @@ export function MetricCard({
       aria-labelledby={`${id}-heading`}
     >
       <div className="flex items-start justify-between gap-3 sm:min-h-24">
-        <div>
+        {/* min-w-0 lets a long source name wrap instead of widening the card. */}
+        <div className="min-w-0">
           <h3 id={`${id}-heading`} className="text-lg font-semibold">
             {title}
           </h3>
@@ -42,7 +43,10 @@ export function MetricCard({
               <p className="mt-2 text-3xl font-bold tracking-tight">
                 {formatValue(latest.value)}
               </p>
-              <p className="mt-1 text-xs text-white/65">
+              <p
+                className="mt-1 text-xs [overflow-wrap:anywhere] text-white/65"
+                title={latest.source}
+              >
                 {latest.date} · {healthSourceLabel(latest.source)}
               </p>
             </>
@@ -51,7 +55,7 @@ export function MetricCard({
           )}
         </div>
         {average7Day !== null ? (
-          <div className="text-right text-xs text-white/70">
+          <div className="shrink-0 text-right text-xs text-white/70">
             <span className="block">7-day average</span>
             <strong className="mt-1 block text-sm text-white/85">
               {formatValue(average7Day)}
