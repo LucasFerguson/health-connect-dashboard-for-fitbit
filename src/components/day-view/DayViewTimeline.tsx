@@ -6,7 +6,6 @@ import type { HealthDay } from "~/domain/dayView";
 import type { HeartRateDetail } from "~/domain/heartRateDetail";
 import type { StepDetail, StepSource } from "~/domain/stepDetail";
 import { healthSourceLabel } from "~/features/health/sourceLabels";
-import { slotHourLabel } from "~/domain/dayViewTime";
 import { HeartRateLane, type HeartRateChartMode } from "./HeartRateLane";
 import { HoverCrosshair } from "./HoverCrosshair";
 import { MovementLane } from "./MovementLane";
@@ -86,10 +85,10 @@ export function DayViewTimeline({
   // The line needs the raw samples; without them only hourly candles exist.
   const mode = heartRateDetail ? chosenMode : "candles";
   const hrLabel = !heartRateDetail
-    ? "HOURLY HR CANDLES"
+    ? "HOURLY CANDLES"
     : mode === "line"
-      ? "HR EVERY SAMPLE"
-      : `${heartRateDetail.candleMinutes}-MIN HR CANDLES`;
+      ? "EVERY SAMPLE"
+      : `${heartRateDetail.candleMinutes}-MIN CANDLES`;
   // Several apps count the same steps, so the lane shows one at a time;
   // the default is the finest-grained (`stepDetail.sources[0]`).
   const [chosenStepSource, setStepSource] = useState<string | null>(null);
@@ -97,9 +96,7 @@ export function DayViewTimeline({
     stepDetail?.sources.find((item) => item.source === chosenStepSource) ??
     stepDetail?.sources[0] ??
     null;
-  const stepsLabel = stepSource
-    ? `STEPS: ${healthSourceLabel(stepSource.source).toUpperCase()} ${stepResolutionLabel(stepSource)}`
-    : "HOURLY STEPS";
+  const stepsLabel = stepSource ? stepResolutionLabel(stepSource) : "HOURLY";
 
   return (
     <Card
@@ -110,10 +107,6 @@ export function DayViewTimeline({
       <div className="mb-[11px] flex flex-wrap items-baseline gap-x-3.5 gap-y-1">
         <span className="font-display text-[17px] tracking-[.12em]">
           24-HOUR TIMELINE
-        </span>
-        <span className="text-ink-200 font-mono text-[11px] tracking-[.08em] sm:text-[9px]">
-          {slotHourLabel(0, dayStartHour)} → {slotHourLabel(24, dayStartHour)} ·
-          {hrLabel} · SLEEP STAGES · {stepsLabel} · PLAN
         </span>
         <label className="text-ink-200 flex items-center gap-1.5 font-mono text-[11px] tracking-[.08em] sm:text-[9px]">
           HR
@@ -219,6 +212,12 @@ export function DayViewTimeline({
           />
         </div>
       </div>
+
+      {/* What resolution each lane is drawn at; the dropdowns above pick
+          the HR view and the step app. */}
+      <p className="text-ink-200 mt-2 font-mono text-[11px] tracking-[.08em] sm:text-[9px]">
+        HR {hrLabel} · STEPS {stepsLabel}
+      </p>
     </Card>
   );
 }
