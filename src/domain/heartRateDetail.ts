@@ -1,9 +1,9 @@
 /**
  * Fine-grained heart-rate series for the day view's HR lane, built from the
  * raw `sourceRecords.heartRate` samples. The backend's `timeline.heartRate`
- * only has hourly candles; this buckets the same day's samples into
- * `CANDLE_MINUTES` candles (min/p25/mean/p75/max) and `LINE_MINUTES` mean
- * points for the line view.
+ * only has hourly candles; this keeps every sample of the day for the line
+ * view (Fitbit writes one every few seconds) and buckets them into
+ * `CANDLE_MINUTES` candles (min/p25/mean/p75/max) for the candle view.
  *
  * Like the backend's hourly candles (`_hourly_heart_rate` in HCGateway's
  * `day_dashboard.py`), only the source with the most samples that day is
@@ -11,7 +11,6 @@
  */
 
 export const CANDLE_MINUTES = 5;
-export const LINE_MINUTES = 1;
 const MINUTES_PER_DAY = 24 * 60;
 
 export interface HeartRateSampleInput {
@@ -35,20 +34,20 @@ export interface HeartRateCandle {
   sampleCount: number;
 }
 
-export interface HeartRatePoint {
-  /** Minutes from the axis start to the start of this bucket. */
-  minute: number;
-  mean: number;
-}
+/** One raw sample: [seconds from the axis start, bpm]. Tuples rather than
+ * objects keep the ~28k samples of a day small on the way to the browser. */
+export type HeartRateSamplePoint = [second: number, bpm: number];
 
 export interface HeartRateDetail {
   source: string;
   sampleCount: number;
   candleMinutes: number;
-  lineMinutes: number;
   candles: HeartRateCandle[];
-  points: HeartRatePoint[];
+  /** Every sample from `source`, oldest first. */
+  samples: HeartRateSamplePoint[];
 }
+
+const roundTenth = (value: number) => Math.round(value * 10) / 10;
 
 /** Linear-interpolated quantile of an ascending-sorted array. */
 function quantile(sorted: number[], q: number): number {
@@ -97,23 +96,29 @@ export function buildHeartRateDetail(
     source,
     sampleCount: samples.length,
     candleMinutes: CANDLE_MINUTES,
-    lineMinutes: LINE_MINUTES,
     candles: bucket(samples, CANDLE_MINUTES).map(([minute, values]) => {
       values.sort((a, b) => a - b);
       return {
         minute,
         min: values[0]!,
-        p25: quantile(values, 0.25),
-        mean: values.reduce((sum, value) => sum + value, 0) / values.length,
-        p75: quantile(values, 0.75),
+        // Tenths are plenty on a 40-180 bpm lane and keep the payload small.
+        p25: roundTenth(quantile(values, 0.25)),
+        mean: roundTenth(
+          values.reduce((sum, value) => sum + value, 0) / values.length,
+        ),
+        p75: roundTenth(quantile(values, 0.75)),
         max: values[values.length - 1]!,
         sampleCount: values.length,
       };
     }),
-    points: bucket(samples, LINE_MINUTES).map(([minute, values]) => ({
-      minute,
-      mean: values.reduce((sum, value) => sum + value, 0) / values.length,
-    })),
+    samples: samples
+      .map(
+        ({ minute, bpm }): HeartRateSamplePoint => [
+          Math.round(minute * 60),
+          bpm,
+        ],
+      )
+      .sort((a, b) => a[0] - b[0]),
   };
 }
 
@@ -131,4 +136,30 @@ function bucket(
     buckets.set(start, list);
   }
   return [...buckets.entries()].sort((a, b) => a[0] - b[0]);
+}
+
+/** The sample nearest `second` (from the axis start), if one is within
+ * `maxGapSeconds`; for the timeline's hover readout. Binary search, since
+ * `samples` is sorted. */
+export function nearestSample(
+  samples: HeartRateSamplePoint[],
+  second: number,
+  maxGapSeconds = 60,
+): HeartRateSamplePoint | null {
+  let low = 0;
+  let high = samples.length - 1;
+  while (low < high) {
+    const middle = (low + high) >> 1;
+    if (samples[middle]![0] < second) low = middle + 1;
+    else high = middle;
+  }
+  let best: HeartRateSamplePoint | null = null;
+  for (const index of [low - 1, low]) {
+    const sample = samples[index];
+    if (!sample) continue;
+    if (!best || Math.abs(sample[0] - second) < Math.abs(best[0] - second)) {
+      best = sample;
+    }
+  }
+  return best && Math.abs(best[0] - second) <= maxGapSeconds ? best : null;
 }

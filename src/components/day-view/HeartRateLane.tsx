@@ -22,7 +22,7 @@ const MINUTES_PER_DAY = 24 * 60;
 /**
  * HR lane. With `detail` (bucketed from the raw samples, see
  * `~/domain/heartRateDetail`) it draws either 5-minute candlesticks or a
- * 1-minute mean line, per `mode`. Without it, it falls back to the
+ * line through every raw sample, per `mode`. Without it, it falls back to the
  * backend's hourly candles from `timeline.heartRate.hours[]`. Candle wicks
  * span min→max and bodies the interquartile range p25→p75, colored from the
  * shared HR ramp by the bucket's mean. Empty buckets and hours whose
@@ -167,30 +167,30 @@ function candleOption(
 }
 
 /**
- * The 1-minute means as a line on a 0-1440 minute axis, colored by bpm with
- * the same six-stop ramp (and the same cut points) as the candles. A gap of
- * more than `MAX_LINE_GAP_MINUTES` between points breaks the line instead of
- * drawing a straight run across missing data.
+ * Every raw sample as a line on a 0-86400 second axis, colored by bpm with
+ * the same six-stop ramp (and the same cut points) as the candles. Fitbit
+ * samples every few seconds while worn, so a gap of more than
+ * `MAX_LINE_GAP_SECONDS` breaks the line instead of drawing a straight run
+ * across time the watch wasn't recording.
  */
-const MAX_LINE_GAP_MINUTES = 5;
+const MAX_LINE_GAP_SECONDS = 120;
 
 function lineOption(detail: HeartRateDetail) {
-  const half = detail.lineMinutes / 2;
   const data: Array<[number, number] | [number, null]> = [];
   let previous: number | null = null;
-  for (const point of detail.points) {
-    if (previous !== null && point.minute - previous > MAX_LINE_GAP_MINUTES) {
-      data.push([previous + half + 0.01, null]);
+  for (const [second, bpm] of detail.samples) {
+    if (previous !== null && second - previous > MAX_LINE_GAP_SECONDS) {
+      data.push([previous + 1, null]);
     }
-    data.push([point.minute + half, point.mean]);
-    previous = point.minute;
+    data.push([second, bpm]);
+    previous = second;
   }
   const step = (HR_SCALE_MAX - HR_SCALE_MIN) / HR_RAMP_HEX.length;
   return {
     animation: false,
     backgroundColor: "transparent",
     grid,
-    xAxis: { type: "value", min: 0, max: MINUTES_PER_DAY, show: false },
+    xAxis: { type: "value", min: 0, max: MINUTES_PER_DAY * 60, show: false },
     yAxis,
     visualMap: {
       show: false,
@@ -210,7 +210,7 @@ function lineOption(detail: HeartRateDetail) {
         data,
         showSymbol: false,
         connectNulls: false,
-        lineStyle: { width: 1.25 },
+        lineStyle: { width: 1 },
       },
     ],
   };

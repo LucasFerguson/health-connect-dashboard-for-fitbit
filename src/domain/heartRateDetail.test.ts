@@ -1,13 +1,13 @@
 import assert from "node:assert/strict";
 import { describe, it } from "node:test";
-import { buildHeartRateDetail } from "./heartRateDetail";
+import { buildHeartRateDetail, nearestSample } from "./heartRateDetail";
 
 const START = Date.parse("2026-10-17T04:00:00Z");
 const at = (minutes: number) =>
   new Date(START + minutes * 60_000).toISOString();
 
 void describe("buildHeartRateDetail", () => {
-  void it("buckets samples into 5-minute candles and 1-minute points", () => {
+  void it("buckets samples into 5-minute candles and keeps every sample", () => {
     const detail = buildHeartRateDetail(
       [
         {
@@ -34,15 +34,13 @@ void describe("buildHeartRateDetail", () => {
     assert.equal(first.mean, 75);
     assert.equal(first.p25, 67.5);
     assert.equal(first.p75, 82.5);
-    assert.deepEqual(
-      detail.points.map((point) => [point.minute, point.mean]),
-      [
-        [0, 65],
-        [2, 80],
-        [4, 90],
-        [12, 100],
-      ],
-    );
+    assert.deepEqual(detail.samples, [
+      [0, 60],
+      [30, 70],
+      [120, 80],
+      [294, 90],
+      [720, 100],
+    ]);
   });
 
   void it("keeps only the source with the most samples", () => {
@@ -78,5 +76,22 @@ void describe("buildHeartRateDetail", () => {
       START,
     );
     assert.equal(detail, null);
+  });
+});
+
+void describe("nearestSample", () => {
+  const samples: Array<[number, number]> = [
+    [0, 60],
+    [10, 62],
+    [500, 90],
+  ];
+  void it("finds the closest sample on either side", () => {
+    assert.deepEqual(nearestSample(samples, 4), [0, 60]);
+    assert.deepEqual(nearestSample(samples, 6), [10, 62]);
+    assert.deepEqual(nearestSample(samples, 480), [500, 90]);
+  });
+  void it("returns null across a gap wider than the limit", () => {
+    assert.equal(nearestSample(samples, 250), null);
+    assert.equal(nearestSample([], 0), null);
   });
 });

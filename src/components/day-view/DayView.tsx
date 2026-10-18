@@ -60,6 +60,7 @@ export function DayView({ data }: { data: DayViewData }) {
         <DayViewTimeline
           day={day}
           heartRateDetail={data.heartRateDetail ?? null}
+          stepDetail={data.stepDetail ?? null}
           dayStartHour={DAY_START_HOUR}
           isToday={isToday}
           isPastDay={isPastDay}

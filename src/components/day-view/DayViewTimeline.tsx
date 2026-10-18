@@ -4,6 +4,8 @@ import { useEffect, useRef, useState } from "react";
 import { Card } from "~/components/ui/Card";
 import type { HealthDay } from "~/domain/dayView";
 import type { HeartRateDetail } from "~/domain/heartRateDetail";
+import type { StepDetail, StepSource } from "~/domain/stepDetail";
+import { healthSourceLabel } from "~/features/health/sourceLabels";
 import { slotHourLabel } from "~/domain/dayViewTime";
 import { HeartRateLane, type HeartRateChartMode } from "./HeartRateLane";
 import { HoverCrosshair } from "./HoverCrosshair";
@@ -15,14 +17,6 @@ import { TimelineGutter } from "./TimelineGutter";
 import { TimelineOverlays } from "./TimelineOverlays";
 import { HR_RAMP } from "./timelineConstants";
 
-/**
- * The 24-hour timeline — the core of the day view. Four lanes (HR
- * candlesticks, sleep stages, movement, plan) share one time axis built
- * from `~/domain/dayViewTime`'s shared math, so a heart-rate bump can be
- * read straight down into "REM". Lane data comes from `day.timeline.*` as
- * the backend bucketed it, except the HR lane, which prefers the 5-minute /
- * 1-minute `heartRateDetail` built from the raw samples when there is one.
- */
 const MODE_STORAGE_KEY = "day-view:hr-chart-mode";
 
 /** The viewer's last candles/line choice. Storage can throw (private
@@ -44,9 +38,30 @@ function useHeartRateChartMode() {
   return [mode, choose] as const;
 }
 
+/** How finely a step source records, from its typical record length. */
+function stepResolutionLabel(source: StepSource): string {
+  const minutes = source.typicalMinutes;
+  if (minutes < 0.95) return "SUB-MINUTE RECORDS";
+  if (minutes < 90) return `${Math.round(minutes)}-MIN RECORDS`;
+  return `${Math.round(minutes / 60)}-HOUR RECORDS`;
+}
+
+const selectClass =
+  "border-ink-500 bg-ink-850 text-ink-0 hover:border-ink-300 focus-visible:outline-brand-400 max-w-[11rem] cursor-pointer border px-1.5 py-1 font-mono text-[11px] tracking-[.06em] disabled:cursor-not-allowed disabled:opacity-60 sm:py-0.5 sm:text-[9px]";
+
+/**
+ * The 24-hour timeline — the core of the day view. Four lanes (HR, sleep
+ * stages, movement, plan) share one time axis built from
+ * `~/domain/dayViewTime`'s shared math, so a heart-rate bump can be read
+ * straight down into "REM". The HR and movement lanes draw the day's raw
+ * samples and step records when they could be read (`heartRateDetail`,
+ * `stepDetail`), and otherwise the backend's hourly `day.timeline.*`
+ * aggregates; the other lanes always come from `day.timeline.*`.
+ */
 export function DayViewTimeline({
   day,
   heartRateDetail,
+  stepDetail,
   dayStartHour,
   isToday,
   isPastDay,
@@ -57,6 +72,7 @@ export function DayViewTimeline({
 }: {
   day: HealthDay;
   heartRateDetail: HeartRateDetail | null;
+  stepDetail: StepDetail | null;
   dayStartHour: number;
   isToday: boolean;
   isPastDay: boolean;
@@ -72,8 +88,18 @@ export function DayViewTimeline({
   const hrLabel = !heartRateDetail
     ? "HOURLY HR CANDLES"
     : mode === "line"
-      ? `${heartRateDetail.lineMinutes}-MIN HR LINE`
+      ? "HR EVERY SAMPLE"
       : `${heartRateDetail.candleMinutes}-MIN HR CANDLES`;
+  // Several apps count the same steps, so the lane shows one at a time;
+  // the default is the finest-grained (`stepDetail.sources[0]`).
+  const [chosenStepSource, setStepSource] = useState<string | null>(null);
+  const stepSource =
+    stepDetail?.sources.find((item) => item.source === chosenStepSource) ??
+    stepDetail?.sources[0] ??
+    null;
+  const stepsLabel = stepSource
+    ? `STEPS: ${healthSourceLabel(stepSource.source).toUpperCase()} ${stepResolutionLabel(stepSource)}`
+    : "HOURLY STEPS";
 
   return (
     <Card
@@ -87,7 +113,7 @@ export function DayViewTimeline({
         </span>
         <span className="text-ink-200 font-mono text-[11px] tracking-[.08em] sm:text-[9px]">
           {slotHourLabel(0, dayStartHour)} → {slotHourLabel(24, dayStartHour)} ·
-          {hrLabel} · SLEEP STAGES · MOVEMENT · PLAN
+          {hrLabel} · SLEEP STAGES · {stepsLabel} · PLAN
         </span>
         <label className="text-ink-200 flex items-center gap-1.5 font-mono text-[11px] tracking-[.08em] sm:text-[9px]">
           HR
@@ -102,12 +128,29 @@ export function DayViewTimeline({
                 ? undefined
                 : "Raw heart-rate samples couldn't be read for this day, so only the hourly candles are available."
             }
-            className="border-ink-500 bg-ink-850 text-ink-0 hover:border-ink-300 focus-visible:outline-brand-400 cursor-pointer border px-1.5 py-1 font-mono text-[11px] tracking-[.06em] disabled:cursor-not-allowed disabled:opacity-60 sm:py-0.5 sm:text-[9px]"
+            className={selectClass}
           >
             <option value="candles">CANDLESTICK</option>
             <option value="line">LINE</option>
           </select>
         </label>
+        {stepDetail && stepSource ? (
+          <label className="text-ink-200 flex items-center gap-1.5 font-mono text-[11px] tracking-[.08em] sm:text-[9px]">
+            STEPS
+            <select
+              value={stepSource.source}
+              onChange={(event) => setStepSource(event.target.value)}
+              className={selectClass}
+            >
+              {stepDetail.sources.map((item) => (
+                <option key={item.source} value={item.source}>
+                  {healthSourceLabel(item.source).toUpperCase()} ·{" "}
+                  {item.records.length} RECORDS
+                </option>
+              ))}
+            </select>
+          </label>
+        ) : null}
         <div className="text-ink-200 flex items-center gap-2 font-mono text-[11px] sm:ml-auto sm:text-[8.5px]">
           <span>40</span>
           <div className="flex h-[7px] w-[120px]">
@@ -152,6 +195,7 @@ export function DayViewTimeline({
           />
           <MovementLane
             hours={day.timeline.steps}
+            source={stepSource}
             dayStartHour={dayStartHour}
           />
           <PlanLane schedule={day.timeline.schedule} />
@@ -169,6 +213,8 @@ export function DayViewTimeline({
           <HoverCrosshair
             plotRef={plotRef}
             day={day}
+            heartRateDetail={heartRateDetail}
+            stepSource={stepSource}
             dayStartHour={dayStartHour}
           />
         </div>

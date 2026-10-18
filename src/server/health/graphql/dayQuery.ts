@@ -182,12 +182,13 @@ export const DAY_QUERY = graphql(`
 `);
 
 /**
- * Raw heart-rate samples for one day, for the day view's high-resolution HR
- * lane (`~/domain/heartRateDetail`). Separate from `DayPage` so a slow or
- * failed sample read only costs the fine-grained chart, never the page.
+ * The day's raw heart-rate samples and step records, for the day view's
+ * full-resolution HR and movement lanes (`~/domain/heartRateDetail`,
+ * `~/domain/stepDetail`). Separate from `DayPage` so a slow or failed read
+ * only costs the detailed lanes, never the page.
  */
-export const DAY_HEART_RATE_QUERY = graphql(`
-  query DayHeartRateSamples($range: TimeRange!) {
+export const DAY_RAW_RECORDS_QUERY = graphql(`
+  query DayRawRecords($range: TimeRange!) {
     viewer {
       sourceRecords {
         heartRate(range: $range) {
@@ -199,6 +200,13 @@ export const DAY_HEART_RATE_QUERY = graphql(`
               bpm
             }
           }
+        }
+        steps(range: $range) {
+          id
+          source
+          startAt
+          endAt
+          count
         }
       }
     }

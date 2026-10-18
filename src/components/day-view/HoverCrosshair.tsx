@@ -12,11 +12,22 @@ import {
 import type { HealthDay } from "~/domain/dayView";
 import { valuesAtInstant, type InstantValues } from "~/domain/dayViewInstant";
 import {
+  axisStartMs,
   formatClock,
   formatHourLabel,
   percentToInstantMs,
 } from "~/domain/dayViewTime";
 import { formatSteps } from "~/features/health/metricFormatters";
+import {
+  nearestSample,
+  type HeartRateDetail,
+  type HeartRateSamplePoint,
+} from "~/domain/heartRateDetail";
+import {
+  stepRecordsAt,
+  type StepRecordSpan,
+  type StepSource,
+} from "~/domain/stepDetail";
 import { SLEEP_STAGE_STYLE } from "./timelineConstants";
 
 /** Gap between the crosshair line and the readout card, px. */
@@ -57,13 +68,25 @@ interface HoverPosition {
  * overlay is absolutely positioned against, so the line's `left: %` lines
  * up with the lanes underneath it without any extra coordinate math.
  */
+/** What the raw records say at the hovered instant, when they were read. */
+interface RawAtInstant {
+  sample: HeartRateSamplePoint | null;
+  stepRecords: StepRecordSpan[];
+  /** For turning the records' axis offsets back into clock times. */
+  axisStart: number;
+}
+
 export function HoverCrosshair({
   plotRef,
   day,
+  heartRateDetail,
+  stepSource,
   dayStartHour,
 }: {
   plotRef: RefObject<HTMLDivElement | null>;
   day: Pick<HealthDay, "date" | "timeZone" | "timeline">;
+  heartRateDetail: HeartRateDetail | null;
+  stepSource: StepSource | null;
   dayStartHour: number;
 }) {
   const [hover, setHover] = useState<HoverPosition | null>(null);
@@ -115,6 +138,7 @@ export function HoverCrosshair({
   let readout: {
     time: string;
     values: InstantValues;
+    raw: RawAtInstant;
     /** Card's left edge relative to the crosshair line. */
     offsetPx: number;
   } | null = null;
@@ -125,9 +149,19 @@ export function HoverCrosshair({
       dayStartHour,
       day.timeZone,
     );
+    // The raw series are measured from local midnight (see getDayView).
+    const axisStart = axisStartMs(day.date, 0, day.timeZone);
+    const seconds = (instantMs - axisStart) / 1000;
     readout = {
       time: formatClock(instantMs, day.timeZone),
       values: valuesAtInstant(day, instantMs, dayStartHour),
+      raw: {
+        sample: heartRateDetail
+          ? nearestSample(heartRateDetail.samples, seconds)
+          : null,
+        stepRecords: stepSource ? stepRecordsAt(stepSource, seconds / 60) : [],
+        axisStart,
+      },
       offsetPx: cardOffset(hover, cardWidth),
     };
   }
@@ -157,7 +191,13 @@ export function HoverCrosshair({
               transform: `translateX(${readout.offsetPx}px)`,
             }}
           >
-            <ReadoutBody time={readout.time} values={readout.values} />
+            <ReadoutBody
+              time={readout.time}
+              values={readout.values}
+              raw={readout.raw}
+              timeZone={day.timeZone}
+              hasRawSteps={stepSource !== null}
+            />
           </div>
         </>
       )}
@@ -168,12 +208,23 @@ export function HoverCrosshair({
 function ReadoutBody({
   time,
   values,
+  raw,
+  timeZone,
+  hasRawSteps,
 }: {
   time: string;
   values: InstantValues;
+  raw: RawAtInstant;
+  timeZone: string;
+  /** The movement lane is drawing raw records, so the hourly step total
+   * would describe a different picture than the one under the cursor. */
+  hasRawSteps: boolean;
 }) {
-  const { sleepStage, heartRate, steps, workout } = values;
+  const { sleepStage, heartRate, workout } = values;
+  const steps = hasRawSteps ? null : values.steps;
   const hourlyHour = heartRate?.hour ?? steps?.hour ?? null;
+  const clock = (minute: number) =>
+    formatClock(raw.axisStart + minute * 60_000, timeZone);
 
   return (
     <>
@@ -191,8 +242,14 @@ function ReadoutBody({
             </span>
           </Row>
         ) : null}
+        {raw.sample ? (
+          <Row label="BPM">
+            {Math.round(raw.sample[1])}{" "}
+            <span className="text-ink-200">AT {clock(raw.sample[0] / 60)}</span>
+          </Row>
+        ) : null}
         {heartRate ? (
-          <Row label="HR">
+          <Row label={raw.sample ? "HOUR" : "HR"}>
             {[
               heartRate.mean !== null ? (
                 <span key="avg">AVG {Math.round(heartRate.mean)}</span>
@@ -222,11 +279,22 @@ function ReadoutBody({
           </Row>
         ) : null}
         {steps ? <Row label="STEPS">{formatSteps(steps.count)}</Row> : null}
+        {raw.stepRecords.map((record) => (
+          <Row key={record.id} label="STEPS">
+            {formatSteps(record.count)}{" "}
+            <span className="text-ink-200">
+              {clock(record.startMinute)}–{clock(record.endMinute)}
+              {record.endMinute - record.startMinute >= 60
+                ? ` (${Math.round((record.endMinute - record.startMinute) / 60)} H)`
+                : ""}
+            </span>
+          </Row>
+        ))}
         {workout ? <Row label="WORKOUT">{workout}</Row> : null}
       </dl>
       {hourlyHour !== null ? (
         <div className="text-ink-200 text-[7.5px] max-sm:text-[10px]">
-          HR/STEPS FOR {formatHourLabel(hourlyHour)}–
+          {steps ? "HR/STEPS" : "HOUR"} FOR {formatHourLabel(hourlyHour)}–
           {formatHourLabel((hourlyHour + 1) % 24)}
         </div>
       ) : null}

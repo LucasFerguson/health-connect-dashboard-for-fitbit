@@ -1,4 +1,5 @@
 import type { HeartRateDetail } from "./heartRateDetail";
+import type { StepDetail } from "./stepDetail";
 import type { AnalyticsStatus } from "./analyticsStatus";
 import type { DateKey, ISODateTime, SleepStageKind } from "./health";
 
@@ -187,6 +188,9 @@ export interface DayViewData {
   /** Fine-grained HR candles/points from the raw samples; null (or absent)
    * when they couldn't be read, so the lane uses the hourly candles. */
   heartRateDetail?: HeartRateDetail | null;
+  /** The day's raw step records by source; null (or absent) when they
+   * couldn't be read, so the movement lane uses the hourly bars. */
+  stepDetail?: StepDetail | null;
 }
 
 // ---------------------------------------------------------------------------
