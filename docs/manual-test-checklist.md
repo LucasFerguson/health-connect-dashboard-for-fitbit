@@ -8,6 +8,17 @@ Dashboard: http://192.168.8.239:3000 (prod), http://192.168.8.239:3001 (dev).
 
 ## Waiting on you
 
+### Mobile cleanup (deployed 2026-10-18; signed-in pages not yet seen in a browser)
+On your phone, check each page looks right and nothing scrolls sideways:
+- [ ] Nav: the menu button opens every page grouped by topic; the bar shows the current page.
+- [ ] `/day`: readable card labels, 44px prev/next/TODAY, the day strip opens on today, the whole page scrolls normally.
+- [ ] `/` overview: day tiles two per row; long sections fold closed with a Show button; the sleep calendar fits.
+- [ ] `/recovery`: each day is a readable card; tapping a day opens its score details.
+- [ ] Metric pages (Steps, Calories, Heart, HRV, Skin temp, Weight): charts open on the last 90 days and the slider reaches older data; swiping over a chart scrolls the page.
+- [ ] `/habits`, `/explore`: controls are easy to tap; the Explore lag slider works by touch.
+- [ ] `/data-sources`: categories are collapsed with counts and open on tap.
+- If anything is broken: `scripts/deploy.sh rollback` restores the previous version.
+
 ### Nav analysis indicator and raw records (added 2026-10-17, deployed to prod 2026-10-18)
 - [ ] After a phone sync, the nav shows ANALYZING · Nm (purple) while the server recomputes (about 5 minutes), then a dim ANALYZED · just now; open pages refresh with the new numbers.
 - [ ] On your phone, only a small purple pulsing square appears while analysis runs, and the nav doesn't scroll sideways.
