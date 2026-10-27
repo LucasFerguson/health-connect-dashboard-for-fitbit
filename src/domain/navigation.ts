@@ -31,6 +31,7 @@ export const NAV_GROUPS: NavGroup[] = [
     items: [
       { href: "/day", label: "Day" },
       { href: "/", label: "Overview" },
+      { href: "/leaderboard", label: "Leaderboard" },
     ],
   },
   {

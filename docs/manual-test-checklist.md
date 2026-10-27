@@ -8,6 +8,15 @@ Dashboard: http://192.168.8.239:3000 (prod), http://192.168.8.239:3001 (dev).
 
 ## Waiting on you
 
+### Leaderboard (deployed to prod 2026-10-27; not checked in a browser)
+Open **Leaderboard** in the nav (next to Day and Overview), as yourself and, if you can, as John:
+- [ ] The page shows "Lucas vs John" with both names, "you" next to the signed-in person, and each person's "data through" date. A yellow note says John's data is a few days old.
+- [ ] The big numbers count how many stats each of you leads; 7 DAYS / 30 DAYS switches the whole page.
+- [ ] Sleep, Activity and Recovery cards list each stat with both values, coverage like "5/7 nights", and ▲ on the leader. John's Avg strain and Avg HRV show "—" (he has none), not 0.
+- [ ] HRV and resting HR say "not ranked"; sleep debt and red days say "lower wins".
+- [ ] Side by side: sleep, recovery (with faint red/yellow/green bands) and steps per day, one color per person; hovering shows both values for that date.
+- [ ] John signs in and sees the same board from his side (him first).
+
 ### Day view: date strip, recovery card, full-resolution HR and steps (deployed to prod 2026-10-18; not checked in a browser)
 On `/day` at desktop width and on your phone:
 - [ ] The date at the top reads "September 27, 2026" with "SUNDAY · DAY 270" beside it (under it on a phone). Clicking it opens a month calendar: the arrows and month/year dropdowns move between months, clicking a day opens it, and Escape or a click outside closes it. The DAY START menu is gone.

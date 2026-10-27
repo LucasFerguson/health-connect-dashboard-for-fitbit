@@ -1,6 +1,7 @@
 {
   "data": {
     "__schema": {
+      "description": null,
       "queryType": {
         "name": "Query",
         "kind": "OBJECT"
@@ -11,7 +12,9 @@
         {
           "kind": "SCALAR",
           "name": "DateTime",
-          "description": "ISO 8601 instant, always serialized in UTC.",
+          "description": "KNOWN GAP (as of 2026-09-19): @apollo/server's current stable, rc, and\nalpha releases (v4 and v5 alike) all declare a graphql peer range of\n^16.x - none support graphql-js 17's now-stable (non-alpha) incremental\nexecution. Apollo's own incremental-delivery polyfill\n(@apollo/server/dist/esm/incrementalDeliveryPolyfill.js) only activates\nreal streaming execution when graphql-js reports itself as the exact\nbuild \"17.0.0-alpha.9\"; on any other graphql version (including the\nnow-released stable 17.0.x, and the 16.x this service runs to satisfy\n@apollo/server's peer dependency) it silently falls back to plain\n`execute()`, returning one complete JSON response instead of a\nmultipart/mixed incremental stream. The directives above are declared so\nschema/query validation accepts @defer/@stream and so this is a additive,\nforward-compatible no-op today; queries using them still execute\ncorrectly, just without the latency benefit of incremental delivery,\nuntil @apollo/server ships a release whose peer range includes a stable\ngraphql 17.",
+          "specifiedByURL": null,
+          "isOneOf": null,
           "fields": null,
           "inputFields": null,
           "interfaces": null,
@@ -21,7 +24,9 @@
         {
           "kind": "SCALAR",
           "name": "Date",
-          "description": "A local calendar date in YYYY-MM-DD format.",
+          "description": null,
+          "specifiedByURL": null,
+          "isOneOf": null,
           "fields": null,
           "inputFields": null,
           "interfaces": null,
@@ -31,7 +36,9 @@
         {
           "kind": "SCALAR",
           "name": "JSON",
-          "description": "Opaque JSON value.",
+          "description": null,
+          "specifiedByURL": null,
+          "isOneOf": null,
           "fields": null,
           "inputFields": null,
           "interfaces": null,
@@ -42,6 +49,8 @@
           "kind": "ENUM",
           "name": "MetricStatus",
           "description": null,
+          "specifiedByURL": null,
+          "isOneOf": null,
           "fields": null,
           "inputFields": null,
           "interfaces": null,
@@ -101,6 +110,8 @@
           "kind": "OBJECT",
           "name": "MetricValue",
           "description": null,
+          "specifiedByURL": null,
+          "isOneOf": null,
           "fields": [
             {
               "name": "status",
@@ -200,6 +211,8 @@
           "kind": "SCALAR",
           "name": "Float",
           "description": "The `Float` scalar type represents signed double-precision fractional values as specified by [IEEE 754](https://en.wikipedia.org/wiki/IEEE_floating_point).",
+          "specifiedByURL": null,
+          "isOneOf": null,
           "fields": null,
           "inputFields": null,
           "interfaces": null,
@@ -210,6 +223,8 @@
           "kind": "INPUT_OBJECT",
           "name": "TimeRange",
           "description": null,
+          "specifiedByURL": null,
+          "isOneOf": false,
           "fields": null,
           "inputFields": [
             {
@@ -224,7 +239,9 @@
                   "ofType": null
                 }
               },
-              "defaultValue": null
+              "defaultValue": null,
+              "isDeprecated": false,
+              "deprecationReason": null
             },
             {
               "name": "endExclusive",
@@ -238,7 +255,9 @@
                   "ofType": null
                 }
               },
-              "defaultValue": null
+              "defaultValue": null,
+              "isDeprecated": false,
+              "deprecationReason": null
             }
           ],
           "interfaces": null,
@@ -249,6 +268,8 @@
           "kind": "ENUM",
           "name": "RangeMatch",
           "description": null,
+          "specifiedByURL": null,
+          "isOneOf": null,
           "fields": null,
           "inputFields": null,
           "interfaces": null,
@@ -272,6 +293,8 @@
           "kind": "OBJECT",
           "name": "Query",
           "description": null,
+          "specifiedByURL": null,
+          "isOneOf": null,
           "fields": [
             {
               "name": "viewer",
@@ -299,6 +322,8 @@
           "kind": "OBJECT",
           "name": "Viewer",
           "description": null,
+          "specifiedByURL": null,
+          "isOneOf": null,
           "fields": [
             {
               "name": "analytics",
@@ -392,7 +417,9 @@
                     "name": "TimeRange",
                     "ofType": null
                   },
-                  "defaultValue": null
+                  "defaultValue": null,
+                  "isDeprecated": false,
+                  "deprecationReason": null
                 }
               ],
               "type": {
@@ -414,6 +441,763 @@
               },
               "isDeprecated": false,
               "deprecationReason": null
+            },
+            {
+              "name": "leaderboards",
+              "description": "Prepared boards of the leaderboard groups the viewer belongs to ([] when\nnone). Written whole by the analytics worker (leaderboard-v1); every\nvalue and rank is read as stored. Only isViewer is derived here.",
+              "args": [],
+              "type": {
+                "kind": "NON_NULL",
+                "name": null,
+                "ofType": {
+                  "name": null,
+                  "kind": "LIST",
+                  "ofType": {
+                    "name": null,
+                    "kind": "NON_NULL",
+                    "ofType": {
+                      "name": "Leaderboard",
+                      "kind": "OBJECT",
+                      "ofType": null
+                    }
+                  }
+                }
+              },
+              "isDeprecated": false,
+              "deprecationReason": null
+            }
+          ],
+          "inputFields": null,
+          "interfaces": [],
+          "enumValues": null,
+          "possibleTypes": null
+        },
+        {
+          "kind": "ENUM",
+          "name": "LeaderboardCategory",
+          "description": null,
+          "specifiedByURL": null,
+          "isOneOf": null,
+          "fields": null,
+          "inputFields": null,
+          "interfaces": null,
+          "enumValues": [
+            {
+              "name": "SLEEP",
+              "description": null,
+              "isDeprecated": false,
+              "deprecationReason": null
+            },
+            {
+              "name": "ACTIVITY",
+              "description": null,
+              "isDeprecated": false,
+              "deprecationReason": null
+            },
+            {
+              "name": "RECOVERY",
+              "description": null,
+              "isDeprecated": false,
+              "deprecationReason": null
+            }
+          ],
+          "possibleTypes": null
+        },
+        {
+          "kind": "ENUM",
+          "name": "LeaderboardRanking",
+          "description": null,
+          "specifiedByURL": null,
+          "isOneOf": null,
+          "fields": null,
+          "inputFields": null,
+          "interfaces": null,
+          "enumValues": [
+            {
+              "name": "HIGHER_BETTER",
+              "description": null,
+              "isDeprecated": false,
+              "deprecationReason": null
+            },
+            {
+              "name": "LOWER_BETTER",
+              "description": null,
+              "isDeprecated": false,
+              "deprecationReason": null
+            },
+            {
+              "name": "NOT_RANKED",
+              "description": null,
+              "isDeprecated": false,
+              "deprecationReason": null
+            }
+          ],
+          "possibleTypes": null
+        },
+        {
+          "kind": "OBJECT",
+          "name": "Leaderboard",
+          "description": null,
+          "specifiedByURL": null,
+          "isOneOf": null,
+          "fields": [
+            {
+              "name": "id",
+              "description": "The group id.",
+              "args": [],
+              "type": {
+                "kind": "NON_NULL",
+                "name": null,
+                "ofType": {
+                  "name": "ID",
+                  "kind": "SCALAR",
+                  "ofType": null
+                }
+              },
+              "isDeprecated": false,
+              "deprecationReason": null
+            },
+            {
+              "name": "name",
+              "description": null,
+              "args": [],
+              "type": {
+                "kind": "NON_NULL",
+                "name": null,
+                "ofType": {
+                  "name": "String",
+                  "kind": "SCALAR",
+                  "ofType": null
+                }
+              },
+              "isDeprecated": false,
+              "deprecationReason": null
+            },
+            {
+              "name": "algorithmVersion",
+              "description": null,
+              "args": [],
+              "type": {
+                "kind": "NON_NULL",
+                "name": null,
+                "ofType": {
+                  "name": "String",
+                  "kind": "SCALAR",
+                  "ofType": null
+                }
+              },
+              "isDeprecated": false,
+              "deprecationReason": null
+            },
+            {
+              "name": "computedAt",
+              "description": null,
+              "args": [],
+              "type": {
+                "kind": "NON_NULL",
+                "name": null,
+                "ofType": {
+                  "name": "DateTime",
+                  "kind": "SCALAR",
+                  "ofType": null
+                }
+              },
+              "isDeprecated": false,
+              "deprecationReason": null
+            },
+            {
+              "name": "members",
+              "description": null,
+              "args": [],
+              "type": {
+                "kind": "NON_NULL",
+                "name": null,
+                "ofType": {
+                  "name": null,
+                  "kind": "LIST",
+                  "ofType": {
+                    "name": null,
+                    "kind": "NON_NULL",
+                    "ofType": {
+                      "name": "LeaderboardMember",
+                      "kind": "OBJECT",
+                      "ofType": null
+                    }
+                  }
+                }
+              },
+              "isDeprecated": false,
+              "deprecationReason": null
+            },
+            {
+              "name": "windows",
+              "description": "Rolling 7- and 30-day windows, in each member's own home time zone.",
+              "args": [],
+              "type": {
+                "kind": "NON_NULL",
+                "name": null,
+                "ofType": {
+                  "name": null,
+                  "kind": "LIST",
+                  "ofType": {
+                    "name": null,
+                    "kind": "NON_NULL",
+                    "ofType": {
+                      "name": "LeaderboardWindow",
+                      "kind": "OBJECT",
+                      "ofType": null
+                    }
+                  }
+                }
+              },
+              "isDeprecated": false,
+              "deprecationReason": null
+            },
+            {
+              "name": "daily",
+              "description": "Per member, the last 30 local dates ending today.",
+              "args": [],
+              "type": {
+                "kind": "NON_NULL",
+                "name": null,
+                "ofType": {
+                  "name": null,
+                  "kind": "LIST",
+                  "ofType": {
+                    "name": null,
+                    "kind": "NON_NULL",
+                    "ofType": {
+                      "name": "LeaderboardMemberDaily",
+                      "kind": "OBJECT",
+                      "ofType": null
+                    }
+                  }
+                }
+              },
+              "isDeprecated": false,
+              "deprecationReason": null
+            }
+          ],
+          "inputFields": null,
+          "interfaces": [],
+          "enumValues": null,
+          "possibleTypes": null
+        },
+        {
+          "kind": "SCALAR",
+          "name": "ID",
+          "description": "The `ID` scalar type represents a unique identifier, often used to refetch an object or as key for a cache. The ID type appears in a JSON response as a String; however, it is not intended to be human-readable. When expected as an input type, any string (such as `\"4\"`) or integer (such as `4`) input value will be accepted as an ID.",
+          "specifiedByURL": null,
+          "isOneOf": null,
+          "fields": null,
+          "inputFields": null,
+          "interfaces": null,
+          "enumValues": null,
+          "possibleTypes": null
+        },
+        {
+          "kind": "OBJECT",
+          "name": "LeaderboardMember",
+          "description": null,
+          "specifiedByURL": null,
+          "isOneOf": null,
+          "fields": [
+            {
+              "name": "userId",
+              "description": null,
+              "args": [],
+              "type": {
+                "kind": "NON_NULL",
+                "name": null,
+                "ofType": {
+                  "name": "ID",
+                  "kind": "SCALAR",
+                  "ofType": null
+                }
+              },
+              "isDeprecated": false,
+              "deprecationReason": null
+            },
+            {
+              "name": "displayName",
+              "description": null,
+              "args": [],
+              "type": {
+                "kind": "NON_NULL",
+                "name": null,
+                "ofType": {
+                  "name": "String",
+                  "kind": "SCALAR",
+                  "ofType": null
+                }
+              },
+              "isDeprecated": false,
+              "deprecationReason": null
+            },
+            {
+              "name": "isViewer",
+              "description": null,
+              "args": [],
+              "type": {
+                "kind": "NON_NULL",
+                "name": null,
+                "ofType": {
+                  "name": "Boolean",
+                  "kind": "SCALAR",
+                  "ofType": null
+                }
+              },
+              "isDeprecated": false,
+              "deprecationReason": null
+            },
+            {
+              "name": "timeZone",
+              "description": "IANA home time zone the member's windows are computed in.",
+              "args": [],
+              "type": {
+                "kind": "NON_NULL",
+                "name": null,
+                "ofType": {
+                  "name": "String",
+                  "kind": "SCALAR",
+                  "ofType": null
+                }
+              },
+              "isDeprecated": false,
+              "deprecationReason": null
+            },
+            {
+              "name": "latestDataDate",
+              "description": "Latest local date in the member's prepared analytics; null when none.",
+              "args": [],
+              "type": {
+                "kind": "SCALAR",
+                "name": "Date",
+                "ofType": null
+              },
+              "isDeprecated": false,
+              "deprecationReason": null
+            },
+            {
+              "name": "analyzedAt",
+              "description": "When the member's prepared analytics run completed; null when never.",
+              "args": [],
+              "type": {
+                "kind": "SCALAR",
+                "name": "DateTime",
+                "ofType": null
+              },
+              "isDeprecated": false,
+              "deprecationReason": null
+            }
+          ],
+          "inputFields": null,
+          "interfaces": [],
+          "enumValues": null,
+          "possibleTypes": null
+        },
+        {
+          "kind": "OBJECT",
+          "name": "LeaderboardWindow",
+          "description": null,
+          "specifiedByURL": null,
+          "isOneOf": null,
+          "fields": [
+            {
+              "name": "days",
+              "description": null,
+              "args": [],
+              "type": {
+                "kind": "NON_NULL",
+                "name": null,
+                "ofType": {
+                  "name": "Int",
+                  "kind": "SCALAR",
+                  "ofType": null
+                }
+              },
+              "isDeprecated": false,
+              "deprecationReason": null
+            },
+            {
+              "name": "stats",
+              "description": "Ordered SLEEP, ACTIVITY, RECOVERY.",
+              "args": [],
+              "type": {
+                "kind": "NON_NULL",
+                "name": null,
+                "ofType": {
+                  "name": null,
+                  "kind": "LIST",
+                  "ofType": {
+                    "name": null,
+                    "kind": "NON_NULL",
+                    "ofType": {
+                      "name": "LeaderboardStat",
+                      "kind": "OBJECT",
+                      "ofType": null
+                    }
+                  }
+                }
+              },
+              "isDeprecated": false,
+              "deprecationReason": null
+            }
+          ],
+          "inputFields": null,
+          "interfaces": [],
+          "enumValues": null,
+          "possibleTypes": null
+        },
+        {
+          "kind": "OBJECT",
+          "name": "LeaderboardStat",
+          "description": null,
+          "specifiedByURL": null,
+          "isOneOf": null,
+          "fields": [
+            {
+              "name": "key",
+              "description": null,
+              "args": [],
+              "type": {
+                "kind": "NON_NULL",
+                "name": null,
+                "ofType": {
+                  "name": "String",
+                  "kind": "SCALAR",
+                  "ofType": null
+                }
+              },
+              "isDeprecated": false,
+              "deprecationReason": null
+            },
+            {
+              "name": "category",
+              "description": null,
+              "args": [],
+              "type": {
+                "kind": "NON_NULL",
+                "name": null,
+                "ofType": {
+                  "name": "LeaderboardCategory",
+                  "kind": "ENUM",
+                  "ofType": null
+                }
+              },
+              "isDeprecated": false,
+              "deprecationReason": null
+            },
+            {
+              "name": "label",
+              "description": null,
+              "args": [],
+              "type": {
+                "kind": "NON_NULL",
+                "name": null,
+                "ofType": {
+                  "name": "String",
+                  "kind": "SCALAR",
+                  "ofType": null
+                }
+              },
+              "isDeprecated": false,
+              "deprecationReason": null
+            },
+            {
+              "name": "unit",
+              "description": "minutes, nights, score, steps, workouts, days, ms or bpm.",
+              "args": [],
+              "type": {
+                "kind": "NON_NULL",
+                "name": null,
+                "ofType": {
+                  "name": "String",
+                  "kind": "SCALAR",
+                  "ofType": null
+                }
+              },
+              "isDeprecated": false,
+              "deprecationReason": null
+            },
+            {
+              "name": "ranking",
+              "description": null,
+              "args": [],
+              "type": {
+                "kind": "NON_NULL",
+                "name": null,
+                "ofType": {
+                  "name": "LeaderboardRanking",
+                  "kind": "ENUM",
+                  "ofType": null
+                }
+              },
+              "isDeprecated": false,
+              "deprecationReason": null
+            },
+            {
+              "name": "entries",
+              "description": "One entry per member, in member order.",
+              "args": [],
+              "type": {
+                "kind": "NON_NULL",
+                "name": null,
+                "ofType": {
+                  "name": null,
+                  "kind": "LIST",
+                  "ofType": {
+                    "name": null,
+                    "kind": "NON_NULL",
+                    "ofType": {
+                      "name": "LeaderboardEntry",
+                      "kind": "OBJECT",
+                      "ofType": null
+                    }
+                  }
+                }
+              },
+              "isDeprecated": false,
+              "deprecationReason": null
+            }
+          ],
+          "inputFields": null,
+          "interfaces": [],
+          "enumValues": null,
+          "possibleTypes": null
+        },
+        {
+          "kind": "OBJECT",
+          "name": "LeaderboardEntry",
+          "description": null,
+          "specifiedByURL": null,
+          "isOneOf": null,
+          "fields": [
+            {
+              "name": "userId",
+              "description": null,
+              "args": [],
+              "type": {
+                "kind": "NON_NULL",
+                "name": null,
+                "ofType": {
+                  "name": "ID",
+                  "kind": "SCALAR",
+                  "ofType": null
+                }
+              },
+              "isDeprecated": false,
+              "deprecationReason": null
+            },
+            {
+              "name": "value",
+              "description": "Null when the member has no data for this stat in the window (never 0).",
+              "args": [],
+              "type": {
+                "kind": "SCALAR",
+                "name": "Float",
+                "ofType": null
+              },
+              "isDeprecated": false,
+              "deprecationReason": null
+            },
+            {
+              "name": "daysWithData",
+              "description": null,
+              "args": [],
+              "type": {
+                "kind": "NON_NULL",
+                "name": null,
+                "ofType": {
+                  "name": "Int",
+                  "kind": "SCALAR",
+                  "ofType": null
+                }
+              },
+              "isDeprecated": false,
+              "deprecationReason": null
+            },
+            {
+              "name": "windowDays",
+              "description": null,
+              "args": [],
+              "type": {
+                "kind": "NON_NULL",
+                "name": null,
+                "ofType": {
+                  "name": "Int",
+                  "kind": "SCALAR",
+                  "ofType": null
+                }
+              },
+              "isDeprecated": false,
+              "deprecationReason": null
+            },
+            {
+              "name": "rank",
+              "description": "1 = best; ties share a rank. Null when value is null or the stat is NOT_RANKED.",
+              "args": [],
+              "type": {
+                "kind": "SCALAR",
+                "name": "Int",
+                "ofType": null
+              },
+              "isDeprecated": false,
+              "deprecationReason": null
+            }
+          ],
+          "inputFields": null,
+          "interfaces": [],
+          "enumValues": null,
+          "possibleTypes": null
+        },
+        {
+          "kind": "OBJECT",
+          "name": "LeaderboardMemberDaily",
+          "description": null,
+          "specifiedByURL": null,
+          "isOneOf": null,
+          "fields": [
+            {
+              "name": "userId",
+              "description": null,
+              "args": [],
+              "type": {
+                "kind": "NON_NULL",
+                "name": null,
+                "ofType": {
+                  "name": "ID",
+                  "kind": "SCALAR",
+                  "ofType": null
+                }
+              },
+              "isDeprecated": false,
+              "deprecationReason": null
+            },
+            {
+              "name": "days",
+              "description": null,
+              "args": [],
+              "type": {
+                "kind": "NON_NULL",
+                "name": null,
+                "ofType": {
+                  "name": null,
+                  "kind": "LIST",
+                  "ofType": {
+                    "name": null,
+                    "kind": "NON_NULL",
+                    "ofType": {
+                      "name": "LeaderboardDay",
+                      "kind": "OBJECT",
+                      "ofType": null
+                    }
+                  }
+                }
+              },
+              "isDeprecated": false,
+              "deprecationReason": null
+            }
+          ],
+          "inputFields": null,
+          "interfaces": [],
+          "enumValues": null,
+          "possibleTypes": null
+        },
+        {
+          "kind": "OBJECT",
+          "name": "LeaderboardDay",
+          "description": null,
+          "specifiedByURL": null,
+          "isOneOf": null,
+          "fields": [
+            {
+              "name": "date",
+              "description": null,
+              "args": [],
+              "type": {
+                "kind": "NON_NULL",
+                "name": null,
+                "ofType": {
+                  "name": "Date",
+                  "kind": "SCALAR",
+                  "ofType": null
+                }
+              },
+              "isDeprecated": false,
+              "deprecationReason": null
+            },
+            {
+              "name": "sleepMinutes",
+              "description": null,
+              "args": [],
+              "type": {
+                "kind": "SCALAR",
+                "name": "Float",
+                "ofType": null
+              },
+              "isDeprecated": false,
+              "deprecationReason": null
+            },
+            {
+              "name": "recoveryScore",
+              "description": null,
+              "args": [],
+              "type": {
+                "kind": "SCALAR",
+                "name": "Float",
+                "ofType": null
+              },
+              "isDeprecated": false,
+              "deprecationReason": null
+            },
+            {
+              "name": "recoveryBand",
+              "description": "Stored recovery band: high (green), moderate (yellow) or low (red).",
+              "args": [],
+              "type": {
+                "kind": "SCALAR",
+                "name": "String",
+                "ofType": null
+              },
+              "isDeprecated": false,
+              "deprecationReason": null
+            },
+            {
+              "name": "steps",
+              "description": null,
+              "args": [],
+              "type": {
+                "kind": "SCALAR",
+                "name": "Float",
+                "ofType": null
+              },
+              "isDeprecated": false,
+              "deprecationReason": null
+            },
+            {
+              "name": "strain",
+              "description": null,
+              "args": [],
+              "type": {
+                "kind": "SCALAR",
+                "name": "Float",
+                "ofType": null
+              },
+              "isDeprecated": false,
+              "deprecationReason": null
+            },
+            {
+              "name": "workoutMinutes",
+              "description": null,
+              "args": [],
+              "type": {
+                "kind": "SCALAR",
+                "name": "Float",
+                "ofType": null
+              },
+              "isDeprecated": false,
+              "deprecationReason": null
             }
           ],
           "inputFields": null,
@@ -425,6 +1209,8 @@
           "kind": "OBJECT",
           "name": "Habit",
           "description": null,
+          "specifiedByURL": null,
+          "isOneOf": null,
           "fields": [
             {
               "name": "id",
@@ -553,19 +1339,11 @@
           "possibleTypes": null
         },
         {
-          "kind": "SCALAR",
-          "name": "ID",
-          "description": "The `ID` scalar type represents a unique identifier, often used to refetch an object or as key for a cache. The ID type appears in a JSON response as a String; however, it is not intended to be human-readable. When expected as an input type, any string (such as `\"4\"`) or integer (such as `4`) input value will be accepted as an ID.",
-          "fields": null,
-          "inputFields": null,
-          "interfaces": null,
-          "enumValues": null,
-          "possibleTypes": null
-        },
-        {
           "kind": "OBJECT",
           "name": "HabitEntry",
           "description": null,
+          "specifiedByURL": null,
+          "isOneOf": null,
           "fields": [
             {
               "name": "id",
@@ -733,6 +1511,8 @@
           "kind": "OBJECT",
           "name": "SourceRecords",
           "description": null,
+          "specifiedByURL": null,
+          "isOneOf": null,
           "fields": [
             {
               "name": "heartRate",
@@ -746,7 +1526,9 @@
                     "name": "TimeRange",
                     "ofType": null
                   },
-                  "defaultValue": null
+                  "defaultValue": null,
+                  "isDeprecated": false,
+                  "deprecationReason": null
                 }
               ],
               "type": {
@@ -773,7 +1555,9 @@
                     "name": "TimeRange",
                     "ofType": null
                   },
-                  "defaultValue": null
+                  "defaultValue": null,
+                  "isDeprecated": false,
+                  "deprecationReason": null
                 },
                 {
                   "name": "match",
@@ -783,7 +1567,9 @@
                     "name": "RangeMatch",
                     "ofType": null
                   },
-                  "defaultValue": "OVERLAPS"
+                  "defaultValue": "OVERLAPS",
+                  "isDeprecated": false,
+                  "deprecationReason": null
                 }
               ],
               "type": {
@@ -818,7 +1604,9 @@
                     "name": "TimeRange",
                     "ofType": null
                   },
-                  "defaultValue": null
+                  "defaultValue": null,
+                  "isDeprecated": false,
+                  "deprecationReason": null
                 }
               ],
               "type": {
@@ -853,7 +1641,9 @@
                     "name": "TimeRange",
                     "ofType": null
                   },
-                  "defaultValue": null
+                  "defaultValue": null,
+                  "isDeprecated": false,
+                  "deprecationReason": null
                 }
               ],
               "type": {
@@ -888,7 +1678,9 @@
                     "name": "TimeRange",
                     "ofType": null
                   },
-                  "defaultValue": null
+                  "defaultValue": null,
+                  "isDeprecated": false,
+                  "deprecationReason": null
                 }
               ],
               "type": {
@@ -923,7 +1715,9 @@
                     "name": "TimeRange",
                     "ofType": null
                   },
-                  "defaultValue": null
+                  "defaultValue": null,
+                  "isDeprecated": false,
+                  "deprecationReason": null
                 }
               ],
               "type": {
@@ -958,7 +1752,9 @@
                     "name": "TimeRange",
                     "ofType": null
                   },
-                  "defaultValue": null
+                  "defaultValue": null,
+                  "isDeprecated": false,
+                  "deprecationReason": null
                 }
               ],
               "type": {
@@ -993,7 +1789,9 @@
                     "name": "TimeRange",
                     "ofType": null
                   },
-                  "defaultValue": null
+                  "defaultValue": null,
+                  "isDeprecated": false,
+                  "deprecationReason": null
                 }
               ],
               "type": {
@@ -1028,7 +1826,9 @@
                     "name": "TimeRange",
                     "ofType": null
                   },
-                  "defaultValue": null
+                  "defaultValue": null,
+                  "isDeprecated": false,
+                  "deprecationReason": null
                 }
               ],
               "type": {
@@ -1063,7 +1863,9 @@
                     "name": "TimeRange",
                     "ofType": null
                   },
-                  "defaultValue": null
+                  "defaultValue": null,
+                  "isDeprecated": false,
+                  "deprecationReason": null
                 }
               ],
               "type": {
@@ -1098,7 +1900,9 @@
                     "name": "TimeRange",
                     "ofType": null
                   },
-                  "defaultValue": null
+                  "defaultValue": null,
+                  "isDeprecated": false,
+                  "deprecationReason": null
                 }
               ],
               "type": {
@@ -1133,7 +1937,9 @@
                     "name": "TimeRange",
                     "ofType": null
                   },
-                  "defaultValue": null
+                  "defaultValue": null,
+                  "isDeprecated": false,
+                  "deprecationReason": null
                 }
               ],
               "type": {
@@ -1166,6 +1972,8 @@
           "kind": "OBJECT",
           "name": "HeartRateData",
           "description": null,
+          "specifiedByURL": null,
+          "isOneOf": null,
           "fields": [
             {
               "name": "status",
@@ -1223,7 +2031,9 @@
                     "name": "TimeRange",
                     "ofType": null
                   },
-                  "defaultValue": null
+                  "defaultValue": null,
+                  "isDeprecated": false,
+                  "deprecationReason": null
                 }
               ],
               "type": {
@@ -1258,7 +2068,9 @@
                     "name": "TimeRange",
                     "ofType": null
                   },
-                  "defaultValue": null
+                  "defaultValue": null,
+                  "isDeprecated": false,
+                  "deprecationReason": null
                 }
               ],
               "type": {
@@ -1291,6 +2103,8 @@
           "kind": "OBJECT",
           "name": "HeartRateRecord",
           "description": null,
+          "specifiedByURL": null,
+          "isOneOf": null,
           "fields": [
             {
               "name": "id",
@@ -1390,6 +2204,8 @@
           "kind": "OBJECT",
           "name": "HeartRateSample",
           "description": null,
+          "specifiedByURL": null,
+          "isOneOf": null,
           "fields": [
             {
               "name": "observedAt",
@@ -1433,6 +2249,8 @@
           "kind": "OBJECT",
           "name": "SleepSession",
           "description": null,
+          "specifiedByURL": null,
+          "isOneOf": null,
           "fields": [
             {
               "name": "id",
@@ -1568,6 +2386,8 @@
           "kind": "OBJECT",
           "name": "SleepStage",
           "description": null,
+          "specifiedByURL": null,
+          "isOneOf": null,
           "fields": [
             {
               "name": "startAt",
@@ -1627,6 +2447,8 @@
           "kind": "ENUM",
           "name": "SleepStageKind",
           "description": null,
+          "specifiedByURL": null,
+          "isOneOf": null,
           "fields": null,
           "inputFields": null,
           "interfaces": null,
@@ -1674,6 +2496,8 @@
           "kind": "OBJECT",
           "name": "ZoneOffsets",
           "description": null,
+          "specifiedByURL": null,
+          "isOneOf": null,
           "fields": [
             {
               "name": "start",
@@ -1709,6 +2533,8 @@
           "kind": "OBJECT",
           "name": "StepRecord",
           "description": null,
+          "specifiedByURL": null,
+          "isOneOf": null,
           "fields": [
             {
               "name": "id",
@@ -1800,6 +2626,8 @@
           "kind": "OBJECT",
           "name": "EnergyRecord",
           "description": null,
+          "specifiedByURL": null,
+          "isOneOf": null,
           "fields": [
             {
               "name": "id",
@@ -1891,6 +2719,8 @@
           "kind": "OBJECT",
           "name": "RestingHeartRateRecord",
           "description": null,
+          "specifiedByURL": null,
+          "isOneOf": null,
           "fields": [
             {
               "name": "id",
@@ -1966,6 +2796,8 @@
           "kind": "OBJECT",
           "name": "HeartRateVariabilityRecord",
           "description": null,
+          "specifiedByURL": null,
+          "isOneOf": null,
           "fields": [
             {
               "name": "id",
@@ -2041,6 +2873,8 @@
           "kind": "OBJECT",
           "name": "RespiratoryRateRecord",
           "description": null,
+          "specifiedByURL": null,
+          "isOneOf": null,
           "fields": [
             {
               "name": "id",
@@ -2116,6 +2950,8 @@
           "kind": "OBJECT",
           "name": "OxygenSaturationRecord",
           "description": null,
+          "specifiedByURL": null,
+          "isOneOf": null,
           "fields": [
             {
               "name": "id",
@@ -2191,6 +3027,8 @@
           "kind": "OBJECT",
           "name": "WeightRecord",
           "description": null,
+          "specifiedByURL": null,
+          "isOneOf": null,
           "fields": [
             {
               "name": "id",
@@ -2266,6 +3104,8 @@
           "kind": "OBJECT",
           "name": "SkinTemperatureRecord",
           "description": "One Health Connect SkinTemperature record, read straight from the stored\nrecord. Pixel Watch writes one per night: each delta is sleep-time skin\ntemperature relative to the wearer's baseline. baselineCelsius is null when\nthe writer supplied no baseline. No per-record summary is computed here;\nthe nightly value lives in analytics.skinTemperature.",
+          "specifiedByURL": null,
+          "isOneOf": null,
           "fields": [
             {
               "name": "id",
@@ -2389,6 +3229,8 @@
           "kind": "OBJECT",
           "name": "SkinTemperatureDelta",
           "description": null,
+          "specifiedByURL": null,
+          "isOneOf": null,
           "fields": [
             {
               "name": "observedAt",
@@ -2432,6 +3274,8 @@
           "kind": "OBJECT",
           "name": "ExerciseSession",
           "description": null,
+          "specifiedByURL": null,
+          "isOneOf": null,
           "fields": [
             {
               "name": "id",
@@ -2559,6 +3403,8 @@
           "kind": "OBJECT",
           "name": "Analytics",
           "description": null,
+          "specifiedByURL": null,
+          "isOneOf": null,
           "fields": [
             {
               "name": "id",
@@ -2652,7 +3498,9 @@
                       "ofType": null
                     }
                   },
-                  "defaultValue": null
+                  "defaultValue": null,
+                  "isDeprecated": false,
+                  "deprecationReason": null
                 },
                 {
                   "name": "radius",
@@ -2662,7 +3510,9 @@
                     "name": "Int",
                     "ofType": null
                   },
-                  "defaultValue": "0"
+                  "defaultValue": "0",
+                  "isDeprecated": false,
+                  "deprecationReason": null
                 }
               ],
               "type": {
@@ -2685,7 +3535,9 @@
                     "name": "TimeRange",
                     "ofType": null
                   },
-                  "defaultValue": null
+                  "defaultValue": null,
+                  "isDeprecated": false,
+                  "deprecationReason": null
                 }
               ],
               "type": {
@@ -2720,7 +3572,9 @@
                     "name": "TimeRange",
                     "ofType": null
                   },
-                  "defaultValue": null
+                  "defaultValue": null,
+                  "isDeprecated": false,
+                  "deprecationReason": null
                 }
               ],
               "type": {
@@ -2969,6 +3823,8 @@
           "kind": "ENUM",
           "name": "DayState",
           "description": null,
+          "specifiedByURL": null,
+          "isOneOf": null,
           "fields": null,
           "inputFields": null,
           "interfaces": null,
@@ -2992,6 +3848,8 @@
           "kind": "OBJECT",
           "name": "DayNote",
           "description": null,
+          "specifiedByURL": null,
+          "isOneOf": null,
           "fields": [
             {
               "name": "code",
@@ -3035,6 +3893,8 @@
           "kind": "OBJECT",
           "name": "Day",
           "description": null,
+          "specifiedByURL": null,
+          "isOneOf": null,
           "fields": [
             {
               "name": "id",
@@ -3226,6 +4086,8 @@
           "kind": "OBJECT",
           "name": "HeadlineScores",
           "description": null,
+          "specifiedByURL": null,
+          "isOneOf": null,
           "fields": [
             {
               "name": "sleepDuration",
@@ -3317,6 +4179,8 @@
           "kind": "OBJECT",
           "name": "SleepDurationMetric",
           "description": null,
+          "specifiedByURL": null,
+          "isOneOf": null,
           "fields": [
             {
               "name": "status",
@@ -3524,6 +4388,8 @@
           "kind": "OBJECT",
           "name": "TimeWindow",
           "description": null,
+          "specifiedByURL": null,
+          "isOneOf": null,
           "fields": [
             {
               "name": "startAt",
@@ -3567,6 +4433,8 @@
           "kind": "OBJECT",
           "name": "StageMinutes",
           "description": null,
+          "specifiedByURL": null,
+          "isOneOf": null,
           "fields": [
             {
               "name": "deep",
@@ -3674,6 +4542,8 @@
           "kind": "OBJECT",
           "name": "SleepEventSummary",
           "description": null,
+          "specifiedByURL": null,
+          "isOneOf": null,
           "fields": [
             {
               "name": "id",
@@ -3841,6 +4711,8 @@
           "kind": "ENUM",
           "name": "SleepEventRole",
           "description": null,
+          "specifiedByURL": null,
+          "isOneOf": null,
           "fields": null,
           "inputFields": null,
           "interfaces": null,
@@ -3864,6 +4736,8 @@
           "kind": "OBJECT",
           "name": "RecoveryMetric",
           "description": null,
+          "specifiedByURL": null,
+          "isOneOf": null,
           "fields": [
             {
               "name": "status",
@@ -4023,6 +4897,8 @@
           "kind": "ENUM",
           "name": "RecoveryBand",
           "description": null,
+          "specifiedByURL": null,
+          "isOneOf": null,
           "fields": null,
           "inputFields": null,
           "interfaces": null,
@@ -4052,6 +4928,8 @@
           "kind": "OBJECT",
           "name": "StrainMetric",
           "description": null,
+          "specifiedByURL": null,
+          "isOneOf": null,
           "fields": [
             {
               "name": "status",
@@ -4175,6 +5053,8 @@
           "kind": "OBJECT",
           "name": "SupportingMetrics",
           "description": null,
+          "specifiedByURL": null,
+          "isOneOf": null,
           "fields": [
             {
               "name": "hrv",
@@ -4314,6 +5194,8 @@
           "kind": "OBJECT",
           "name": "DayTimeline",
           "description": null,
+          "specifiedByURL": null,
+          "isOneOf": null,
           "fields": [
             {
               "name": "heartRate",
@@ -4501,6 +5383,8 @@
           "kind": "OBJECT",
           "name": "HeartRateTimeline",
           "description": null,
+          "specifiedByURL": null,
+          "isOneOf": null,
           "fields": [
             {
               "name": "status",
@@ -4608,6 +5492,8 @@
           "kind": "OBJECT",
           "name": "HourlyHeartRate",
           "description": null,
+          "specifiedByURL": null,
+          "isOneOf": null,
           "fields": [
             {
               "name": "hour",
@@ -4727,6 +5613,8 @@
           "kind": "OBJECT",
           "name": "StrainTimelinePoint",
           "description": null,
+          "specifiedByURL": null,
+          "isOneOf": null,
           "fields": [
             {
               "name": "at",
@@ -4782,6 +5670,8 @@
           "kind": "OBJECT",
           "name": "HourlyStepBucket",
           "description": null,
+          "specifiedByURL": null,
+          "isOneOf": null,
           "fields": [
             {
               "name": "hour",
@@ -4841,6 +5731,8 @@
           "kind": "OBJECT",
           "name": "WorkoutSummary",
           "description": null,
+          "specifiedByURL": null,
+          "isOneOf": null,
           "fields": [
             {
               "name": "id",
@@ -4968,6 +5860,8 @@
           "kind": "OBJECT",
           "name": "NowMarker",
           "description": null,
+          "specifiedByURL": null,
+          "isOneOf": null,
           "fields": [
             {
               "name": "status",
@@ -5019,6 +5913,8 @@
           "kind": "OBJECT",
           "name": "SleepEvent",
           "description": null,
+          "specifiedByURL": null,
+          "isOneOf": null,
           "fields": [
             {
               "name": "id",
@@ -5366,6 +6262,8 @@
           "kind": "OBJECT",
           "name": "PrimarySelection",
           "description": null,
+          "specifiedByURL": null,
+          "isOneOf": null,
           "fields": [
             {
               "name": "method",
@@ -5505,6 +6403,8 @@
           "kind": "OBJECT",
           "name": "SleepDebtSummary",
           "description": null,
+          "specifiedByURL": null,
+          "isOneOf": null,
           "fields": [
             {
               "name": "targetMinutes",
@@ -5550,7 +6450,9 @@
                     "name": "TimeRange",
                     "ofType": null
                   },
-                  "defaultValue": null
+                  "defaultValue": null,
+                  "isDeprecated": false,
+                  "deprecationReason": null
                 }
               ],
               "type": {
@@ -5643,6 +6545,8 @@
           "kind": "OBJECT",
           "name": "SleepDebtBreakdown",
           "description": null,
+          "specifiedByURL": null,
+          "isOneOf": null,
           "fields": [
             {
               "name": "recordedDays",
@@ -5734,6 +6638,8 @@
           "kind": "OBJECT",
           "name": "SleepDebtDay",
           "description": null,
+          "specifiedByURL": null,
+          "isOneOf": null,
           "fields": [
             {
               "name": "id",
@@ -5893,6 +6799,8 @@
           "kind": "ENUM",
           "name": "DebtCategory",
           "description": null,
+          "specifiedByURL": null,
+          "isOneOf": null,
           "fields": null,
           "inputFields": null,
           "interfaces": null,
@@ -5928,6 +6836,8 @@
           "kind": "OBJECT",
           "name": "SleepConsistencySummary",
           "description": null,
+          "specifiedByURL": null,
+          "isOneOf": null,
           "fields": [
             {
               "name": "baselineWindowDays",
@@ -5989,7 +6899,9 @@
                     "name": "TimeRange",
                     "ofType": null
                   },
-                  "defaultValue": null
+                  "defaultValue": null,
+                  "isDeprecated": false,
+                  "deprecationReason": null
                 }
               ],
               "type": {
@@ -6082,6 +6994,8 @@
           "kind": "OBJECT",
           "name": "SleepConsistencyBreakdown",
           "description": null,
+          "specifiedByURL": null,
+          "isOneOf": null,
           "fields": [
             {
               "name": "scoredDays",
@@ -6157,6 +7071,8 @@
           "kind": "OBJECT",
           "name": "SleepConsistencyDay",
           "description": null,
+          "specifiedByURL": null,
+          "isOneOf": null,
           "fields": [
             {
               "name": "id",
@@ -6416,6 +7332,8 @@
           "kind": "ENUM",
           "name": "ConsistencyCategory",
           "description": null,
+          "specifiedByURL": null,
+          "isOneOf": null,
           "fields": null,
           "inputFields": null,
           "interfaces": null,
@@ -6445,6 +7363,8 @@
           "kind": "OBJECT",
           "name": "HealthspanSummary",
           "description": null,
+          "specifiedByURL": null,
+          "isOneOf": null,
           "fields": [
             {
               "name": "modelVersion",
@@ -6546,7 +7466,9 @@
                     "name": "TimeRange",
                     "ofType": null
                   },
-                  "defaultValue": null
+                  "defaultValue": null,
+                  "isDeprecated": false,
+                  "deprecationReason": null
                 }
               ],
               "type": {
@@ -6615,6 +7537,8 @@
           "kind": "ENUM",
           "name": "HealthspanStatus",
           "description": null,
+          "specifiedByURL": null,
+          "isOneOf": null,
           "fields": null,
           "inputFields": null,
           "interfaces": null,
@@ -6644,6 +7568,8 @@
           "kind": "OBJECT",
           "name": "HealthspanDay",
           "description": null,
+          "specifiedByURL": null,
+          "isOneOf": null,
           "fields": [
             {
               "name": "id",
@@ -6783,6 +7709,8 @@
           "kind": "OBJECT",
           "name": "HealthspanFactor",
           "description": null,
+          "specifiedByURL": null,
+          "isOneOf": null,
           "fields": [
             {
               "name": "id",
@@ -6922,6 +7850,8 @@
           "kind": "ENUM",
           "name": "HealthspanFactorKey",
           "description": null,
+          "specifiedByURL": null,
+          "isOneOf": null,
           "fields": null,
           "inputFields": null,
           "interfaces": null,
@@ -6957,6 +7887,8 @@
           "kind": "ENUM",
           "name": "HealthspanFactorUnit",
           "description": null,
+          "specifiedByURL": null,
+          "isOneOf": null,
           "fields": null,
           "inputFields": null,
           "interfaces": null,
@@ -6992,6 +7924,8 @@
           "kind": "OBJECT",
           "name": "DeviceSleepComparison",
           "description": null,
+          "specifiedByURL": null,
+          "isOneOf": null,
           "fields": [
             {
               "name": "source",
@@ -7083,6 +8017,8 @@
           "kind": "OBJECT",
           "name": "MetricSeries",
           "description": null,
+          "specifiedByURL": null,
+          "isOneOf": null,
           "fields": [
             {
               "name": "unit",
@@ -7112,7 +8048,9 @@
                     "name": "TimeRange",
                     "ofType": null
                   },
-                  "defaultValue": null
+                  "defaultValue": null,
+                  "isDeprecated": false,
+                  "deprecationReason": null
                 }
               ],
               "type": {
@@ -7163,7 +8101,9 @@
                     "name": "TimeRange",
                     "ofType": null
                   },
-                  "defaultValue": null
+                  "defaultValue": null,
+                  "isDeprecated": false,
+                  "deprecationReason": null
                 }
               ],
               "type": {
@@ -7220,6 +8160,8 @@
           "kind": "ENUM",
           "name": "MetricUnit",
           "description": null,
+          "specifiedByURL": null,
+          "isOneOf": null,
           "fields": null,
           "inputFields": null,
           "interfaces": null,
@@ -7267,6 +8209,8 @@
           "kind": "OBJECT",
           "name": "MetricDay",
           "description": null,
+          "specifiedByURL": null,
+          "isOneOf": null,
           "fields": [
             {
               "name": "id",
@@ -7390,6 +8334,8 @@
           "kind": "OBJECT",
           "name": "SourceContribution",
           "description": null,
+          "specifiedByURL": null,
+          "isOneOf": null,
           "fields": [
             {
               "name": "source",
@@ -7461,6 +8407,8 @@
           "kind": "OBJECT",
           "name": "MetricOverview",
           "description": null,
+          "specifiedByURL": null,
+          "isOneOf": null,
           "fields": [
             {
               "name": "latest",
@@ -7548,6 +8496,8 @@
           "kind": "OBJECT",
           "name": "RollingPoint",
           "description": null,
+          "specifiedByURL": null,
+          "isOneOf": null,
           "fields": [
             {
               "name": "id",
@@ -7623,6 +8573,8 @@
           "kind": "OBJECT",
           "name": "MonthlyPoint",
           "description": null,
+          "specifiedByURL": null,
+          "isOneOf": null,
           "fields": [
             {
               "name": "id",
@@ -7698,6 +8650,8 @@
           "kind": "OBJECT",
           "name": "StrainSummary",
           "description": null,
+          "specifiedByURL": null,
+          "isOneOf": null,
           "fields": [
             {
               "name": "algorithmVersion",
@@ -7831,7 +8785,9 @@
                     "name": "TimeRange",
                     "ofType": null
                   },
-                  "defaultValue": null
+                  "defaultValue": null,
+                  "isDeprecated": false,
+                  "deprecationReason": null
                 }
               ],
               "type": {
@@ -7866,7 +8822,9 @@
                     "name": "TimeRange",
                     "ofType": null
                   },
-                  "defaultValue": null
+                  "defaultValue": null,
+                  "isDeprecated": false,
+                  "deprecationReason": null
                 }
               ],
               "type": {
@@ -7927,6 +8885,8 @@
           "kind": "OBJECT",
           "name": "StrainCalibration",
           "description": null,
+          "specifiedByURL": null,
+          "isOneOf": null,
           "fields": [
             {
               "name": "available",
@@ -8070,6 +9030,8 @@
           "kind": "OBJECT",
           "name": "StrainDay",
           "description": null,
+          "specifiedByURL": null,
+          "isOneOf": null,
           "fields": [
             {
               "name": "id",
@@ -8197,6 +9159,8 @@
           "kind": "OBJECT",
           "name": "StrainWorkout",
           "description": null,
+          "specifiedByURL": null,
+          "isOneOf": null,
           "fields": [
             {
               "name": "id",
@@ -8336,6 +9300,8 @@
           "kind": "OBJECT",
           "name": "ZoneMinutes",
           "description": null,
+          "specifiedByURL": null,
+          "isOneOf": null,
           "fields": [
             {
               "name": "belowZone1",
@@ -8443,6 +9409,8 @@
           "kind": "OBJECT",
           "name": "StrainQuality",
           "description": null,
+          "specifiedByURL": null,
+          "isOneOf": null,
           "fields": [
             {
               "name": "publishable",
@@ -8570,6 +9538,8 @@
           "kind": "OBJECT",
           "name": "Availability",
           "description": null,
+          "specifiedByURL": null,
+          "isOneOf": null,
           "fields": [
             {
               "name": "available",
@@ -8621,6 +9591,8 @@
           "kind": "OBJECT",
           "name": "RecoverySummary",
           "description": null,
+          "specifiedByURL": null,
+          "isOneOf": null,
           "fields": [
             {
               "name": "algorithmVersion",
@@ -8738,7 +9710,9 @@
                     "name": "TimeRange",
                     "ofType": null
                   },
-                  "defaultValue": null
+                  "defaultValue": null,
+                  "isDeprecated": false,
+                  "deprecationReason": null
                 }
               ],
               "type": {
@@ -8787,6 +9761,8 @@
           "kind": "OBJECT",
           "name": "RecoveryWeights",
           "description": null,
+          "specifiedByURL": null,
+          "isOneOf": null,
           "fields": [
             {
               "name": "sleep",
@@ -8862,6 +9838,8 @@
           "kind": "OBJECT",
           "name": "RecoveryDay",
           "description": null,
+          "specifiedByURL": null,
+          "isOneOf": null,
           "fields": [
             {
               "name": "id",
@@ -8993,6 +9971,8 @@
           "kind": "OBJECT",
           "name": "RecoveryComponents",
           "description": null,
+          "specifiedByURL": null,
+          "isOneOf": null,
           "fields": [
             {
               "name": "sleep",
@@ -9052,6 +10032,8 @@
           "kind": "OBJECT",
           "name": "RecoveryComponent",
           "description": null,
+          "specifiedByURL": null,
+          "isOneOf": null,
           "fields": [
             {
               "name": "score",
@@ -9135,6 +10117,8 @@
           "kind": "OBJECT",
           "name": "RecoveryDayQuality",
           "description": null,
+          "specifiedByURL": null,
+          "isOneOf": null,
           "fields": [
             {
               "name": "publishable",
@@ -9266,6 +10250,8 @@
           "kind": "ENUM",
           "name": "RecoveryEstimateBasis",
           "description": null,
+          "specifiedByURL": null,
+          "isOneOf": null,
           "fields": null,
           "inputFields": null,
           "interfaces": null,
@@ -9301,6 +10287,8 @@
           "kind": "OBJECT",
           "name": "RecoveryQuality",
           "description": null,
+          "specifiedByURL": null,
+          "isOneOf": null,
           "fields": [
             {
               "name": "publishable",
@@ -9356,6 +10344,8 @@
           "kind": "OBJECT",
           "name": "RecoveryAvailability",
           "description": null,
+          "specifiedByURL": null,
+          "isOneOf": null,
           "fields": [
             {
               "name": "available",
@@ -9439,6 +10429,8 @@
           "kind": "OBJECT",
           "name": "SourceCatalog",
           "description": null,
+          "specifiedByURL": null,
+          "isOneOf": null,
           "fields": [
             {
               "name": "inventory",
@@ -9482,6 +10474,8 @@
           "kind": "OBJECT",
           "name": "SignalInventory",
           "description": null,
+          "specifiedByURL": null,
+          "isOneOf": null,
           "fields": [
             {
               "name": "totalRecords",
@@ -9581,6 +10575,8 @@
           "kind": "OBJECT",
           "name": "SignalInventoryEntry",
           "description": null,
+          "specifiedByURL": null,
+          "isOneOf": null,
           "fields": [
             {
               "name": "collection",
@@ -9672,6 +10668,8 @@
           "kind": "OBJECT",
           "name": "SourceCount",
           "description": null,
+          "specifiedByURL": null,
+          "isOneOf": null,
           "fields": [
             {
               "name": "source",
@@ -9715,6 +10713,8 @@
           "kind": "OBJECT",
           "name": "SourceSummary",
           "description": null,
+          "specifiedByURL": null,
+          "isOneOf": null,
           "fields": [
             {
               "name": "source",
@@ -9774,6 +10774,8 @@
           "kind": "OBJECT",
           "name": "DeviceCatalog",
           "description": null,
+          "specifiedByURL": null,
+          "isOneOf": null,
           "fields": [
             {
               "name": "count",
@@ -9849,6 +10851,8 @@
           "kind": "OBJECT",
           "name": "ObservedDevice",
           "description": null,
+          "specifiedByURL": null,
+          "isOneOf": null,
           "fields": [
             {
               "name": "id",
@@ -10072,6 +11076,8 @@
           "kind": "ENUM",
           "name": "IdentityQuality",
           "description": null,
+          "specifiedByURL": null,
+          "isOneOf": null,
           "fields": null,
           "inputFields": null,
           "interfaces": null,
@@ -10101,6 +11107,8 @@
           "kind": "OBJECT",
           "name": "DeviceIdentity",
           "description": null,
+          "specifiedByURL": null,
+          "isOneOf": null,
           "fields": [
             {
               "name": "manufacturer",
@@ -10160,6 +11168,8 @@
           "kind": "OBJECT",
           "name": "SignalCount",
           "description": null,
+          "specifiedByURL": null,
+          "isOneOf": null,
           "fields": [
             {
               "name": "collection",
@@ -10203,6 +11213,8 @@
           "kind": "OBJECT",
           "name": "RecordingMethodCount",
           "description": null,
+          "specifiedByURL": null,
+          "isOneOf": null,
           "fields": [
             {
               "name": "value",
@@ -10258,6 +11270,8 @@
           "kind": "OBJECT",
           "name": "DeviceAssociation",
           "description": null,
+          "specifiedByURL": null,
+          "isOneOf": null,
           "fields": [
             {
               "name": "sourcePackage",
@@ -10317,6 +11331,8 @@
           "kind": "OBJECT",
           "name": "IngestionStatus",
           "description": null,
+          "specifiedByURL": null,
+          "isOneOf": null,
           "fields": [
             {
               "name": "phoneSync",
@@ -10368,6 +11384,8 @@
           "kind": "OBJECT",
           "name": "PhoneSyncStatus",
           "description": null,
+          "specifiedByURL": null,
+          "isOneOf": null,
           "fields": [
             {
               "name": "observedActive",
@@ -10535,6 +11553,8 @@
           "kind": "ENUM",
           "name": "SyncState",
           "description": null,
+          "specifiedByURL": null,
+          "isOneOf": null,
           "fields": null,
           "inputFields": null,
           "interfaces": null,
@@ -10564,6 +11584,8 @@
           "kind": "OBJECT",
           "name": "AnalyticsJobStatus",
           "description": null,
+          "specifiedByURL": null,
+          "isOneOf": null,
           "fields": [
             {
               "name": "userId",
@@ -10691,6 +11713,8 @@
           "kind": "OBJECT",
           "name": "CurrentRun",
           "description": null,
+          "specifiedByURL": null,
+          "isOneOf": null,
           "fields": [
             {
               "name": "runId",
@@ -10814,6 +11838,8 @@
           "kind": "OBJECT",
           "name": "AnalyticsConfig",
           "description": null,
+          "specifiedByURL": null,
+          "isOneOf": null,
           "fields": [
             {
               "name": "homeTimeZone",
@@ -10901,6 +11927,8 @@
           "kind": "SCALAR",
           "name": "Boolean",
           "description": "The `Boolean` scalar type represents `true` or `false`.",
+          "specifiedByURL": null,
+          "isOneOf": null,
           "fields": null,
           "inputFields": null,
           "interfaces": null,
@@ -10911,6 +11939,8 @@
           "kind": "SCALAR",
           "name": "String",
           "description": "The `String` scalar type represents textual data, represented as UTF-8 character sequences. The String type is most often used by GraphQL to represent free-form human-readable text.",
+          "specifiedByURL": null,
+          "isOneOf": null,
           "fields": null,
           "inputFields": null,
           "interfaces": null,
@@ -10921,6 +11951,8 @@
           "kind": "SCALAR",
           "name": "Int",
           "description": "The `Int` scalar type represents non-fractional signed whole numeric values. Int can represent values between -(2^31) and 2^31 - 1.",
+          "specifiedByURL": null,
+          "isOneOf": null,
           "fields": null,
           "inputFields": null,
           "interfaces": null,
@@ -10931,6 +11963,8 @@
           "kind": "OBJECT",
           "name": "__Schema",
           "description": "A GraphQL Schema defines the capabilities of a GraphQL server. It exposes all available types and directives on the server, as well as the entry points for query, mutation, and subscription operations.",
+          "specifiedByURL": null,
+          "isOneOf": null,
           "fields": [
             {
               "name": "description",
@@ -11024,7 +12058,9 @@
                       "ofType": null
                     }
                   },
-                  "defaultValue": "false"
+                  "defaultValue": "false",
+                  "isDeprecated": false,
+                  "deprecationReason": null
                 }
               ],
               "type": {
@@ -11057,6 +12093,8 @@
           "kind": "OBJECT",
           "name": "__Type",
           "description": "The fundamental unit of any GraphQL Schema is the type. There are many kinds of types in GraphQL as represented by the `__TypeKind` enum.\n\nDepending on the kind of a type, certain fields describe information about that type. Scalar types provide no information beyond a name, description and optional `specifiedByURL`, while Enum types provide their values. Object and Interface types provide the fields they describe. Abstract types, Union and Interface, provide the Object types possible at runtime. List and NonNull types compose other types.",
+          "specifiedByURL": null,
+          "isOneOf": null,
           "fields": [
             {
               "name": "kind",
@@ -11122,7 +12160,9 @@
                     "name": "Boolean",
                     "ofType": null
                   },
-                  "defaultValue": "false"
+                  "defaultValue": "false",
+                  "isDeprecated": false,
+                  "deprecationReason": null
                 }
               ],
               "type": {
@@ -11193,7 +12233,9 @@
                     "name": "Boolean",
                     "ofType": null
                   },
-                  "defaultValue": "false"
+                  "defaultValue": "false",
+                  "isDeprecated": false,
+                  "deprecationReason": null
                 }
               ],
               "type": {
@@ -11224,7 +12266,9 @@
                     "name": "Boolean",
                     "ofType": null
                   },
-                  "defaultValue": "false"
+                  "defaultValue": "false",
+                  "isDeprecated": false,
+                  "deprecationReason": null
                 }
               ],
               "type": {
@@ -11277,6 +12321,8 @@
           "kind": "ENUM",
           "name": "__TypeKind",
           "description": "An enum describing what kind of type a given `__Type` is.",
+          "specifiedByURL": null,
+          "isOneOf": null,
           "fields": null,
           "inputFields": null,
           "interfaces": null,
@@ -11336,6 +12382,8 @@
           "kind": "OBJECT",
           "name": "__Field",
           "description": "Object and Interface types are described by a list of Fields, each of which has a name, potentially a list of arguments, and a return type.",
+          "specifiedByURL": null,
+          "isOneOf": null,
           "fields": [
             {
               "name": "name",
@@ -11377,7 +12425,9 @@
                     "name": "Boolean",
                     "ofType": null
                   },
-                  "defaultValue": "false"
+                  "defaultValue": "false",
+                  "isDeprecated": false,
+                  "deprecationReason": null
                 }
               ],
               "type": {
@@ -11454,6 +12504,8 @@
           "kind": "OBJECT",
           "name": "__InputValue",
           "description": "Arguments provided to Fields or Directives and the input fields of an InputObject are represented as Input Values which describe their type and optionally a default value.",
+          "specifiedByURL": null,
+          "isOneOf": null,
           "fields": [
             {
               "name": "name",
@@ -11549,6 +12601,8 @@
           "kind": "OBJECT",
           "name": "__EnumValue",
           "description": "One possible value for a given Enum. Enum values are unique values, not a placeholder for a string or numeric value. However an Enum value is returned in a JSON response as a string.",
+          "specifiedByURL": null,
+          "isOneOf": null,
           "fields": [
             {
               "name": "name",
@@ -11616,6 +12670,8 @@
           "kind": "OBJECT",
           "name": "__Directive",
           "description": "A Directive provides a way to describe alternate runtime execution and type validation behavior in a GraphQL document.\n\nIn some cases, you need to provide options to alter GraphQL's execution behavior in ways field arguments will not suffice, such as conditionally including or skipping a field. Directives provide this by describing additional information to the executor.",
+          "specifiedByURL": null,
+          "isOneOf": null,
           "fields": [
             {
               "name": "name",
@@ -11697,7 +12753,9 @@
                     "name": "Boolean",
                     "ofType": null
                   },
-                  "defaultValue": "false"
+                  "defaultValue": "false",
+                  "isDeprecated": false,
+                  "deprecationReason": null
                 }
               ],
               "type": {
@@ -11758,6 +12816,8 @@
           "kind": "ENUM",
           "name": "__DirectiveLocation",
           "description": "A Directive can be adjacent to many parts of the GraphQL language, a __DirectiveLocation describes one such possible adjacencies.",
+          "specifiedByURL": null,
+          "isOneOf": null,
           "fields": null,
           "inputFields": null,
           "interfaces": null,
@@ -11890,6 +12950,9 @@
         {
           "name": "defer",
           "description": "Declared so client operations may apply @defer to a fragment wrapping an\nexpensive selection (e.g. `... on HeartRateData { samples { ... } } @defer`).\nPer GraphQL's spec, @defer/@stream are QUERY-side directives valid only on\nFRAGMENT_SPREAD/INLINE_FRAGMENT, never on a schema FIELD_DEFINITION -\nthe design doc's \"@defer on samples/stages/timeline\" fields is read here as\n\"these are the fields worth wrapping in a deferred fragment\", not literal\nSDL syntax (attaching @defer directly to a field definition does not\nparse). See the KNOWN GAP note below this block for the current runtime\ncaveat on incremental delivery.",
+          "isRepeatable": false,
+          "isDeprecated": false,
+          "deprecationReason": null,
           "locations": [
             "FRAGMENT_SPREAD",
             "INLINE_FRAGMENT"
@@ -11903,7 +12966,9 @@
                 "name": "Boolean",
                 "ofType": null
               },
-              "defaultValue": "true"
+              "defaultValue": "true",
+              "isDeprecated": false,
+              "deprecationReason": null
             },
             {
               "name": "label",
@@ -11913,13 +12978,18 @@
                 "name": "String",
                 "ofType": null
               },
-              "defaultValue": null
+              "defaultValue": null,
+              "isDeprecated": false,
+              "deprecationReason": null
             }
           ]
         },
         {
           "name": "stream",
           "description": null,
+          "isRepeatable": false,
+          "isDeprecated": false,
+          "deprecationReason": null,
           "locations": [
             "FIELD"
           ],
@@ -11932,7 +13002,9 @@
                 "name": "Boolean",
                 "ofType": null
               },
-              "defaultValue": "true"
+              "defaultValue": "true",
+              "isDeprecated": false,
+              "deprecationReason": null
             },
             {
               "name": "label",
@@ -11942,7 +13014,9 @@
                 "name": "String",
                 "ofType": null
               },
-              "defaultValue": null
+              "defaultValue": null,
+              "isDeprecated": false,
+              "deprecationReason": null
             },
             {
               "name": "initialCount",
@@ -11952,13 +13026,18 @@
                 "name": "Int",
                 "ofType": null
               },
-              "defaultValue": "0"
+              "defaultValue": "0",
+              "isDeprecated": false,
+              "deprecationReason": null
             }
           ]
         },
         {
           "name": "include",
           "description": "Directs the executor to include this field or fragment only when the `if` argument is true.",
+          "isRepeatable": false,
+          "isDeprecated": false,
+          "deprecationReason": null,
           "locations": [
             "FIELD",
             "FRAGMENT_SPREAD",
@@ -11977,13 +13056,18 @@
                   "ofType": null
                 }
               },
-              "defaultValue": null
+              "defaultValue": null,
+              "isDeprecated": false,
+              "deprecationReason": null
             }
           ]
         },
         {
           "name": "skip",
           "description": "Directs the executor to skip this field or fragment when the `if` argument is true.",
+          "isRepeatable": false,
+          "isDeprecated": false,
+          "deprecationReason": null,
           "locations": [
             "FIELD",
             "FRAGMENT_SPREAD",
@@ -12002,13 +13086,18 @@
                   "ofType": null
                 }
               },
-              "defaultValue": null
+              "defaultValue": null,
+              "isDeprecated": false,
+              "deprecationReason": null
             }
           ]
         },
         {
           "name": "deprecated",
           "description": "Marks an element of a GraphQL schema as no longer supported.",
+          "isRepeatable": false,
+          "isDeprecated": false,
+          "deprecationReason": null,
           "locations": [
             "FIELD_DEFINITION",
             "ARGUMENT_DEFINITION",
@@ -12025,13 +13114,18 @@
                 "name": "String",
                 "ofType": null
               },
-              "defaultValue": "\"No longer supported\""
+              "defaultValue": "\"No longer supported\"",
+              "isDeprecated": false,
+              "deprecationReason": null
             }
           ]
         },
         {
           "name": "specifiedBy",
           "description": "Exposes a URL that specifies the behavior of this scalar.",
+          "isRepeatable": false,
+          "isDeprecated": false,
+          "deprecationReason": null,
           "locations": [
             "SCALAR"
           ],
@@ -12048,13 +13142,18 @@
                   "ofType": null
                 }
               },
-              "defaultValue": null
+              "defaultValue": null,
+              "isDeprecated": false,
+              "deprecationReason": null
             }
           ]
         },
         {
           "name": "oneOf",
           "description": "Indicates exactly one field must be supplied and this field must not be `null`.",
+          "isRepeatable": false,
+          "isDeprecated": false,
+          "deprecationReason": null,
           "locations": [
             "INPUT_OBJECT"
           ],
